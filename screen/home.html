@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0f766e">
+  <title>Home · Renoguard</title>
+  <style>
+    :root {
+      --teal: #0f766e; --teal-dark: #115e59; --mint: #e8f5f1;
+      --ink: #172d2b; --muted: #60716f; --line: #e3ebe7;
+      --surface: #f5f8f6; --amber: #8b4b10; --amber-bg: #fff4dc;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #e3eae6; color: var(--ink); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; display: grid; place-items: center; min-height: 100vh; padding: 24px; -webkit-font-smoothing: antialiased; }
+    button, input, textarea, select { font: inherit; }
+    button, a { -webkit-tap-highlight-color: transparent; }
+    button { cursor: pointer; }
+    button, a, input, textarea, select { touch-action: manipulation; }
+    button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 3px solid #b76809; outline-offset: 3px; }
+    a { color: inherit; text-decoration: none; }
+    h1, h2, h3, p { margin: 0; }
+    svg { width: 22px; height: 22px; flex: none; }
+    .phone { width: 390px; height: 844px; display: flex; flex-direction: column; overflow: hidden; border-radius: 36px; background: var(--surface); box-shadow: 0 24px 65px #173f3020, 0 0 0 8px #fff; }
+    .header { display: flex; justify-content: space-between; align-items: center; padding: 28px 22px 16px; background: #fff; }
+    .brand { display: flex; align-items: center; gap: 6px; color: var(--teal); font-size: 11px; letter-spacing: 1.7px; font-weight: 750; margin-bottom: 7px; }
+    .brand svg { width: 16px; height: 16px; }
+    h1 { font-size: 25px; letter-spacing: -.8px; line-height: 1.2; }
+    .icon-button { min-width: 44px; height: 44px; border: 1px solid var(--line); background: #fff; border-radius: 15px; display: grid; place-items: center; color: var(--ink); position: relative; }
+    .unread { width: 8px; height: 8px; border-radius: 50%; background: #c97922; border: 2px solid #fff; position: absolute; top: 10px; right: 11px; }
+    main { flex: 1; min-height: 0; overflow-y: auto; padding: 16px 20px 24px; scrollbar-width: thin; }
+    .project { background: var(--mint); border: 1px solid #d6e9e0; padding: 16px; border-radius: 20px; }
+    .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .project-name { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; }
+    .project-name svg { color: var(--teal); width: 19px; }
+    .badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 99px; padding: 5px 8px; font-size: 11px; font-weight: 700; white-space: nowrap; color: var(--teal-dark); background: #fff; }
+    .badge svg { width: 13px; height: 13px; }
+    .project-meta { margin-top: 8px; color: #48635d; font-size: 12px; }
+    .stages { display: flex; list-style: none; margin: 16px 0 5px; padding: 0; }
+    .stages li { position: relative; flex: 1; text-align: center; font-size: 10px; color: #52685f; }
+    .stages li::before { content: ''; display: block; position: absolute; height: 2px; background: #c6dacf; top: 10px; left: -50%; width: 100%; }
+    .stages li:first-child::before { display: none; }
+    .stages .done::before, .stages .current::before { background: var(--teal); }
+    .step-dot { display: grid; place-items: center; position: relative; width: 21px; height: 21px; border-radius: 50%; background: #e8f5f1; border: 2px solid #b6ccc0; margin: 0 auto 7px; }
+    .done .step-dot { background: var(--teal); border-color: var(--teal); color: #fff; }
+    .step-dot svg { width: 12px; height: 12px; }
+    .current { font-weight: 750; color: var(--teal-dark) !important; }
+    .current .step-dot { border-color: var(--teal); box-shadow: 0 0 0 3px #cee7dc; }
+    .current .step-dot::after { content: ''; width: 7px; height: 7px; background: var(--teal); border-radius: 50%; }
+    .text-button { border: 0; background: none; color: var(--teal); font-size: 12px; font-weight: 700; padding: 10px 0; display: inline-flex; align-items: center; gap: 4px; min-height: 44px; }
+    .text-button svg { width: 15px; height: 15px; }
+    .project .text-button { min-height: 34px; padding-bottom: 0; }
+    .section-heading { display: flex; align-items: center; gap: 8px; margin: 21px 0 12px; }
+    h2 { font-size: 16px; letter-spacing: -.3px; }
+    .count { font-size: 11px; border-radius: 50%; width: 19px; height: 19px; background: var(--amber-bg); color: var(--amber); display: grid; place-items: center; font-weight: 700; }
+    .attention { background: #fff; border: 1px solid #e8ddc8; border-radius: 20px; overflow: hidden; }
+    .attention-main { padding: 16px; }
+    .attention .badge { background: var(--amber-bg); color: var(--amber); padding: 5px 9px; }
+    .change { display: flex; align-items: center; gap: 12px; margin: 13px 0; }
+    .tile-swatch { width: 54px; height: 60px; border-radius: 10px; flex: none; border: 1px solid #cfc7b7; background-color: #dfd8c9; background-image: linear-gradient(90deg, transparent 47%, #f8f5ee 48%, #f8f5ee 52%, transparent 53%), linear-gradient(transparent 47%, #f8f5ee 48%, #f8f5ee 52%, transparent 53%); }
+    h3 { font-size: 16px; line-height: 1.3; letter-spacing: -.2px; }
+    .muted { color: var(--muted); font-size: 12px; line-height: 1.5; }
+    .change p { margin-top: 4px; }
+    .price { font-size: 17px; font-weight: 750; font-variant-numeric: tabular-nums; }
+    .primary { display: flex; justify-content: center; align-items: center; gap: 8px; width: 100%; min-height: 44px; border: 0; border-radius: 11px; background: var(--teal); color: #fff; font-size: 14px; font-weight: 650; padding: 12px; }
+    .primary:hover { background: var(--teal-dark); }
+    .primary svg { width: 17px; height: 17px; }
+    .defect-link { width: 100%; display: flex; align-items: center; gap: 9px; border: 0; border-top: 1px solid var(--line); background: #fcfcfa; padding: 12px 16px; text-align: left; color: var(--ink); }
+    .defect-link > svg:first-child { width: 17px; color: #8b673c; }
+    .defect-link > svg:last-child { margin-left: auto; width: 16px; }
+    .defect-link strong { display: block; font-size: 12px; margin-bottom: 2px; }
+    .defect-link small { color: var(--muted); font-size: 11px; }
+    .shortcuts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .shortcut { padding: 0; border: 0; background: none; display: flex; align-items: center; flex-direction: column; gap: 8px; color: var(--ink); font-size: 11px; font-weight: 600; min-height: 76px; }
+    .shortcut-icon { display: grid; place-items: center; width: 52px; height: 48px; border: 1px solid #d9e8e0; background: #e8f3ed; border-radius: 15px; color: var(--teal); transition: transform .15s; }
+    .shortcut:nth-child(2) .shortcut-icon { background: #fff2df; border-color: #f0e2c8; color: #906224; }
+    .shortcut:nth-child(3) .shortcut-icon { background: #ebeffb; border-color: #dfe4f2; color: #536789; }
+    .shortcut:nth-child(4) .shortcut-icon { background: #f0ebf8; border-color: #e6ddf1; color: #775797; }
+    .shortcut:hover .shortcut-icon { transform: translateY(-2px); }
+    .budget { display: block; background: #fff; border: 1px solid var(--line); border-radius: 18px; margin-top: 16px; padding: 16px; }
+    .budget strong { display: block; font-size: 25px; letter-spacing: -.7px; margin: 3px 0; font-variant-numeric: tabular-nums; }
+    .budget-arrow { display: grid; place-items: center; border-radius: 50%; height: 36px; width: 36px; color: var(--teal); background: var(--mint); }
+    .budget-meter { height: 6px; background: #e4efe9; border-radius: 10px; overflow: hidden; margin: 12px 0 7px; }
+    .budget-meter span { display: block; height: 100%; width: 93.8889%; background: var(--teal); border-radius: inherit; }
+    .budget-caption { font-size: 11px; color: var(--muted); }
+    nav { display: grid; grid-template-columns: repeat(5, 1fr); border-top: 1px solid var(--line); background: #fff; flex: none; padding: 9px 8px max(13px, env(safe-area-inset-bottom)); }
+    .nav-item { border: 0; background: none; padding: 3px 0; min-height: 48px; color: var(--muted); display: flex; flex-direction: column; gap: 4px; align-items: center; justify-content: center; font-size: 10px; }
+    .nav-item[aria-current="page"] { color: var(--teal); font-weight: 750; }
+    .nav-item[aria-current="page"] .nav-icon { background: var(--mint); border-radius: 9px; padding: 3px 12px; }
+    .nav-icon { height: 27px; display: flex; align-items: center; }
+    dialog { border: 0; border-radius: 24px; width: min(360px, calc(100vw - 28px)); max-height: 85dvh; padding: 0; color: var(--ink); box-shadow: 0 20px 70px #163b3540; }
+    dialog::backdrop { background: #122e2a66; }
+    .dialog-header { padding: 16px 20px; display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--line); }
+    .dialog-header h2 { font-size: 18px; }
+    .dialog-body { padding: 20px; font-size: 14px; line-height: 1.6; }
+    .dialog-body p + p { margin-top: 12px; }
+    .detail-row { display: flex; justify-content: space-between; gap: 15px; padding: 11px 0; border-bottom: 1px solid var(--line); }
+    .detail-row strong { text-align: right; }
+    .dialog-body .primary { margin-top: 18px; }
+    .dialog-body label { display: block; font-weight: 650; margin: 12px 0 5px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #aabbb2; border-radius: 9px; background: #fff; color: var(--ink); font-size: 16px; }
+    textarea { resize: vertical; min-height: 100px; }
+    .room-plan { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; border: 4px solid #42675a; background: #42675a; margin: 15px 0; }
+    .room-plan span { padding: 22px 8px; text-align: center; background: #edf5ef; font-size: 12px; }
+    .room-plan .kitchen { background: #fff0d2; color: #7c4a17; }
+    .room-plan .living { grid-column: span 2; }
+    @media (max-width: 430px) { body { padding: 0; background: var(--surface); } .phone { width: 100%; height: 100dvh; border-radius: 0; box-shadow: none; } .header { padding-top: max(20px, env(safe-area-inset-top)); } }
+    @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  </style>
+</head>
+<body>
+  <div class="phone">
+    <header class="header">
+      <div><div class="brand"><span data-icon="shield"></span> RENOGUARD</div><h1>Hi, Thomas <span aria-hidden="true">👋</span></h1></div>
+      <button class="icon-button" data-panel="notifications" aria-label="Notifications, one unread"><span data-icon="bell"></span><span class="unread" aria-hidden="true"></span></button>
+    </header>
+    <main id="main">
+      <section class="project" aria-label="Renovation status">
+        <div class="row"><div class="project-name"><span data-icon="home"></span>Punggol BTO</div><span class="badge"><span data-icon="check"></span>On track</span></div>
+        <p class="project-meta">Expected handover <strong>30 September</strong></p>
+        <ol class="stages" aria-label="Renovation stages">
+          <li class="done"><span class="step-dot" data-icon="check"></span>Planning<span hidden> completed</span></li>
+          <li class="done"><span class="step-dot" data-icon="check"></span>Works<span hidden> completed</span></li>
+          <li class="current" aria-current="step"><span class="step-dot"></span>Finishing</li>
+          <li><span class="step-dot"></span>Handover</li>
+        </ol>
+        <button class="text-button" data-panel="timeline">View timeline <span data-icon="arrow"></span></button>
+      </section>
+      <div class="section-heading"><h2>Needs your attention</h2><span class="count" aria-label="One pending decision">1</span></div>
+      <article class="attention">
+        <div class="attention-main">
+          <div class="row"><span class="badge">Pending approval</span><span class="price">+S$180</span></div>
+          <div class="change"><div class="tile-swatch" aria-hidden="true"></div><div><h3>Kitchen tile replacement</h3><p class="muted">Original tile unavailable.<br>Tile B proposed as a replacement.</p></div></div>
+          <button class="primary" data-panel="proposal">Review proposal <span data-icon="arrow"></span></button>
+        </div>
+        <button class="defect-link" data-panel="defect"><span data-icon="alert"></span><span><strong>Related defect · Cracked kitchen tiles</strong><small>Awaiting your replacement decision</small></span><span data-icon="chevron"></span></button>
+      </article>
+      <div class="section-heading"><h2>Quick access</h2></div>
+      <div class="shortcuts" aria-label="Quick access">
+        <button class="shortcut" data-panel="floor"><span class="shortcut-icon" data-icon="plan"></span>Floor plan</button>
+        <button class="shortcut" data-panel="report"><span class="shortcut-icon" data-icon="camera"></span>Report defect</button>
+        <button class="shortcut" data-panel="documents"><span class="shortcut-icon" data-icon="file"></span>Documents</button>
+        <button class="shortcut" data-panel="ai"><span class="shortcut-icon" data-icon="sparkles"></span>AI assistant</button>
+      </div>
+      <a class="budget" href="budget.html" aria-label="View budget. 2,750 Singapore dollars available before pending changes">
+        <div class="row"><div><p class="muted">Available budget</p><strong>S$2,750</strong><p class="muted">Before pending changes</p></div><span class="budget-arrow" data-icon="arrow"></span></div>
+        <div class="budget-meter" role="meter" aria-label="Approved costs out of 45,000 SGD budget" aria-valuemin="0" aria-valuemax="45000" aria-valuenow="42250" aria-valuetext="S$42,250 approved out of S$45,000"><span></span></div>
+        <div class="row budget-caption"><span>S$42,250 approved</span><span>S$45,000 budget</span></div>
+      </a>
+    </main>
+    <nav aria-label="Main navigation">
+      <a class="nav-item" href="home.html" aria-current="page"><span class="nav-icon" data-icon="home"></span>Home</a>
+      <button class="nav-item" data-panel="floor"><span class="nav-icon" data-icon="plan"></span>My Home</button>
+      <button class="nav-item" data-panel="ai"><span class="nav-icon" data-icon="sparkles"></span>AI Assistant</button>
+      <button class="nav-item" data-panel="project"><span class="nav-icon" data-icon="folder"></span>Project</button>
+      <a class="nav-item" href="budget.html"><span class="nav-icon" data-icon="wallet"></span>Budget</a>
+    </nav>
+  </div>
+  <dialog id="panel" aria-labelledby="panel-title"><div class="dialog-header"><h2 id="panel-title"></h2><button class="icon-button" id="close-panel" aria-label="Close"><span data-icon="close"></span></button></div><div class="dialog-body" id="panel-body"></div></dialog>
+  <script>
+    // Inline SVG icons: no external libraries, fonts or network requests.
+    const paths = {
+      home: '<path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/>',
+      shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/>',
+      bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',
+      check: '<path d="m5 12 4 4L19 6"/>', arrow: '<path d="M4 12h16m-6-6 6 6-6 6"/>',
+      chevron: '<path d="m9 5 7 7-7 7"/>', close: '<path d="m6 6 12 12M6 18 18 6"/>',
+      alert: '<path d="m12 3 10 18H2zM12 9v5m0 3v.1"/>',
+      plan: '<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 12h8m4 0h6M12 3v5m0 8v5"/>',
+      camera: '<path d="M8 5 6 8H3v12h18V8h-3l-2-3z"/><circle cx="12" cy="13" r="3"/>',
+      file: '<path d="M14 3H5v18h14V8zM14 3v5h5M8 12h8m-8 4h6"/>',
+      sparkles: '<path d="m10 3 2.5 6.5L19 12l-6.5 2.5L10 21l-2.5-6.5L1 12l6.5-2.5zM19 2v5m-2.5-2.5h5"/>',
+      folder: '<path d="M3 6h7l2 3h9v12H3z"/>',
+      wallet: '<rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18m0 4h-6v4h6"/>'
+    };
+    document.querySelectorAll('[data-icon]').forEach(el => {
+      el.innerHTML = `<svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${paths[el.dataset.icon]}</svg>`;
+    });
+    const panel = document.getElementById('panel');
+    const title = document.getElementById('panel-title');
+    const content = document.getElementById('panel-body');
+    // These supporting panels are local prototype content, not live project data.
+    const screens = {
+      proposal: ['Kitchen tile replacement', `<span class="badge" style="background:var(--amber-bg);color:var(--amber)">Pending approval</span><p style="margin-top:12px">The original tile is unavailable until 12 October. Your ID proposes Tile B for the cracked kitchen tiles.</p><div class="detail-row"><span>Material upgrade</span><strong>+S$180</strong></div><div class="detail-row"><span>Extra repair labour</span><strong>S$0</strong></div><div class="detail-row"><span>Proposed repair completion</span><strong>19 September</strong></div><div class="detail-row"><span>Expected handover</span><strong>30 September</strong></div><a class="primary" href="budget.html">Check budget impact</a>`],
+      timeline: ['Project timeline', '<p><strong>Current stage: Finishing & rectification</strong></p><div class="detail-row"><span>Kitchen tile repair</span><strong>19 September<br><small>Subject to approval</small></strong></div><div class="detail-row"><span>Expected handover</span><strong>30 September</strong></div><p style="margin-top:15px">The proposed repair fits within the current handover schedule.</p>'],
+      defect: ['Cracked kitchen tiles', '<p><strong>Kitchen · Beside the doorway</strong></p><p>Two newly installed floor tiles have visible cracks. Reported on 13 September.</p><div class="detail-row"><span>Responsible contact</span><strong>Interior designer</strong></div><div class="detail-row"><span>Status</span><strong>Awaiting your replacement decision</strong></div><p style="margin-top:15px">Your ID has acknowledged the report. Replacement options are linked to the repair.</p><button class="primary" data-panel="proposal">Review replacement proposal</button>'],
+      floor: ['My Home', '<p>Punggol BTO · Room overview</p><div class="room-plan" aria-label="Illustrative room layout, not to scale"><span>Master bedroom</span><span>Bedroom</span><span>Bedroom</span><span class="kitchen">Kitchen<br>1 open defect</span><span class="living">Living / dining</span></div><p class="muted">Illustrative layout · Not to scale</p><button class="primary" data-panel="defect">View kitchen defect</button>'],
+      documents: ['Project documents', '<p>Records relevant to your pending decision.</p><div class="detail-row"><span>Signed quotation</span><strong>Original scope</strong></div><div class="detail-row"><span>Tile replacement proposal</span><strong>Pending approval</strong></div><button class="primary" data-panel="proposal">View proposal summary</button>'],
+      ai: ['AI assistant', '<p>Understand the proposed change using your project records.</p><button class="primary" data-panel="answer">What does the extra S$180 cover?</button>'],
+      answer: ['Understanding the S$180', '<p>The replacement proposal lists <strong>S$180 as the material upgrade for Tile B</strong>. The ID’s repair commitment covers labour, so the additional repair labour charge is S$0.</p><p>If approved, your available budget would decrease from S$2,750 to <strong>S$2,570</strong>.</p><p class="muted">Based on the replacement proposal and ID’s repair commitment.</p><button class="primary" data-panel="proposal">Review the proposal</button>'],
+      notifications: ['Notifications', '<p><strong>A proposal needs your review</strong></p><p>Your ID has proposed Tile B to replace the cracked kitchen tiles. Additional material cost: S$180.</p><button class="primary" data-panel="proposal">Review proposal</button>'],
+      project: ['Project', '<button class="primary" data-panel="timeline">Project timeline</button><button class="primary" data-panel="documents">Documents</button><button class="primary" data-panel="proposal">Pending change proposal</button>'],
+      report: ['Report a defect', '<form id="report-form"><label for="room">Room</label><select id="room" name="room"><option>Kitchen</option><option>Living room</option><option>Master bedroom</option><option>Bedroom</option></select><label for="description">What needs fixing?</label><textarea id="description" name="description" required maxlength="1000" placeholder="Describe the problem and its exact location."></textarea><label for="photo">Photo (optional)</label><input id="photo" type="file" accept="image/*"><button class="primary" type="submit">Record defect</button></form>']
+    };
+    function showPanel(name) {
+      const screen = screens[name];
+      if (!screen) return;
+      title.textContent = screen[0]; content.innerHTML = screen[1];
+      if (!panel.open) panel.showModal();
+      document.getElementById('close-panel').focus();
+    }
+    document.addEventListener('click', event => {
+      const button = event.target.closest('[data-panel]');
+      if (button) showPanel(button.dataset.panel);
+    });
+    document.getElementById('close-panel').addEventListener('click', () => panel.close());
+    panel.addEventListener('click', event => { if (event.target === panel) { const box = panel.getBoundingClientRect(); if (event.clientX < box.left || event.clientX > box.right || event.clientY < box.top || event.clientY > box.bottom) panel.close(); } });
+    content.addEventListener('submit', event => {
+      if (event.target.id !== 'report-form') return;
+      event.preventDefault();
+      const room = document.getElementById('room').value;
+      const description = document.getElementById('description').value.trim();
+      if (!description) { document.getElementById('description').setCustomValidity('Please describe the defect.'); document.getElementById('description').reportValidity(); return; }
+      title.textContent = 'Report preview';
+      content.innerHTML = '<p><strong id="report-room"></strong></p><p id="report-description"></p><p class="muted" style="margin-top:16px">Prototype preview only. This report has not been sent or saved.</p>';
+      document.getElementById('report-room').textContent = room;
+      document.getElementById('report-description').textContent = description;
+    });
+    content.addEventListener('input', event => { if (event.target.id === 'description') event.target.setCustomValidity(''); });
+    if (location.hash === '#proposal') showPanel('proposal');
+  </script>
+</body>
+</html>

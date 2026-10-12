@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Overview - Renoguard</title>
+  <style>
+    /* Design Tokens */
+    :root {
+      --teal-50: #F0FDFA;
+      --teal-600: #0D9488;
+      --teal-700: #0F766E;
+      --gray-50: #F9FAFB;
+      --gray-100: #F3F4F6;
+      --gray-200: #E5E7EB;
+      --gray-300: #D1D5DB;
+      --gray-400: #9CA3AF;
+      --gray-500: #6B7280;
+      --gray-600: #4B5563;
+      --gray-700: #374151;
+      --gray-800: #1F2937;
+      --gray-900: #111827;
+      --amber-50: #FFFBEB;
+      --amber-800: #92400E;
+      --green-700: #15803D;
+      --green-800: #166534;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Presentation frame for desktop viewing */
+    body {
+      background-color: #E5E7EB;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      color: var(--gray-900);
+      padding: 20px;
+    }
+
+    .mobile-frame {
+      width: 390px;
+      height: 844px;
+      background-color: var(--gray-100);
+      border-radius: 40px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15), 0 0 0 10px #FFFFFF;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    @media (max-width: 430px) {
+      body { padding: 0; background-color: var(--gray-100); }
+      .mobile-frame { width: 100vw; height: 100vh; border-radius: 0; box-shadow: none; }
+    }
+
+    /* Header */
+    .header {
+      background-color: #FFFFFF;
+      padding: 54px 20px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      z-index: 10;
+    }
+
+    .back-btn {
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--gray-700);
+      cursor: pointer;
+      margin-left: -8px;
+      border-radius: 50%;
+    }
+
+    .header-text { flex: 1; }
+
+    .header-title {
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: -0.3px;
+      color: var(--gray-900);
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--gray-500);
+      margin-top: 2px;
+    }
+
+    /* Main Content */
+    .app-content {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .section {
+      background-color: #FFFFFF;
+      padding: 24px 20px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      letter-spacing: -0.3px;
+      color: var(--gray-900);
+    }
+
+    /* Budget Summary */
+    .budget-available {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .budget-available-label {
+      font-size: 14px;
+      color: var(--gray-500);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+
+    .budget-available-amount {
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--teal-700);
+      letter-spacing: -1.5px;
+      line-height: 1;
+    }
+
+    .progress-container {
+      margin-bottom: 28px;
+    }
+
+    .progress-bar-bg {
+      height: 8px;
+      background-color: var(--gray-100);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background-color: var(--teal-600);
+      width: 93.88%; /* 42250 / 45000 */
+      border-radius: 4px;
+    }
+
+    .budget-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      font-size: 15px;
+      margin-bottom: 16px;
+    }
+
+    .budget-row:last-child { margin-bottom: 0; }
+
+    .label-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .main-label { color: var(--gray-700); }
+    .sub-label { color: var(--gray-500); font-size: 13px; }
+
+    .value {
+      font-weight: 500;
+      color: var(--gray-900);
+      text-align: right;
+    }
+
+    /* Proposed Change Card */
+    .card {
+      border: 1px solid var(--gray-200);
+      border-radius: 16px;
+      padding: 20px;
+      background-color: #FFFFFF;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+      gap: 12px;
+    }
+
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      line-height: 1.4;
+      color: var(--gray-900);
+    }
+
+    .badge {
+      background-color: var(--amber-50);
+      color: var(--amber-800);
+      border: 1px solid rgba(180, 83, 9, 0.2);
+      font-size: 12px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+
+    .card-option {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--gray-900);
+      margin-bottom: 20px;
+      background-color: var(--gray-50);
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--gray-100);
+    }
+
+    .card-option-label {
+      color: var(--gray-500);
+      font-weight: 400;
+      margin-right: 4px;
+    }
+
+    .divider {
+      height: 1px;
+      background-color: var(--gray-100);
+      margin: 16px 0;
+    }
+
+    .card-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 15px;
+      margin-bottom: 14px;
+    }
+
+    .card-row:last-child { margin-bottom: 0; }
+    .card-row .label { color: var(--gray-600); }
+
+    .card-row.total {
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-top: 4px;
+    }
+
+    .card-row.total .value { font-size: 16px; }
+
+    /* Impact Section */
+    .impact-section { padding-bottom: 40px; }
+
+    .comparison-block { margin-bottom: 24px; }
+
+    .comparison-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      font-size: 15px;
+      border-bottom: 1px solid var(--gray-100);
+    }
+
+    .comparison-row:last-child { border-bottom: none; }
+    .comparison-row .label { color: var(--gray-600); }
+
+    .comparison-values {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .value-old { color: var(--gray-400); }
+    .value-new { font-weight: 600; color: var(--gray-900); }
+
+    .arrow-icon-small {
+      width: 14px;
+      height: 14px;
+      color: var(--gray-300);
+    }
+
+    .impact-outcome {
+      background-color: var(--gray-50);
+      border: 1px solid var(--gray-200);
+      padding: 20px;
+      border-radius: 16px;
+    }
+
+    .outcome-title {
+      font-size: 17px;
+      font-weight: 600;
+      color: var(--gray-900);
+      margin-bottom: 10px;
+      letter-spacing: -0.2px;
+    }
+
+    .success-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--green-800);
+      margin-bottom: 12px;
+    }
+
+    .check-icon {
+      width: 18px;
+      height: 18px;
+      color: var(--green-700);
+    }
+
+    .info-note {
+      font-size: 13px;
+      color: var(--gray-600);
+      line-height: 1.4;
+    }
+
+    /* Bottom Action */
+    .bottom-bar {
+      background-color: #FFFFFF;
+      padding: 16px 20px 32px;
+      border-top: 1px solid var(--gray-200);
+    }
+
+    .primary-btn {
+      display: block;
+      width: 100%;
+      background-color: var(--teal-600);
+      color: #FFFFFF;
+      text-align: center;
+      padding: 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .primary-btn:hover { background-color: var(--teal-700); }
+    svg { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="mobile-frame">
+
+    <!-- 1. Header -->
+    <header class="header">
+      <a class="back-btn" href="home.html" aria-label="Back to home">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="15 18 9 12 15 6"></polyline>
+        </svg>
+      </a>
+      <div class="header-text">
+        <div class="header-title">Budget overview</div>
+        <div class="header-subtitle">Punggol BTO</div>
+      </div>
+    </header>
+
+    <!-- 2. Scrollable Content -->
+    <main class="app-content">
+
+      <!-- Current Budget Section -->
+      <section class="section">
+        <div class="budget-available">
+          <div class="budget-available-label">Available budget</div>
+          <div class="budget-available-amount">S$2,750</div>
+        </div>
+
+        <div class="progress-container">
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill"></div>
+          </div>
+        </div>
+
+        <div class="budget-row">
+          <span class="main-label">Total budget</span>
+          <span class="value">S$45,000</span>
+        </div>
+        <div class="budget-row">
+          <div class="label-group">
+            <span class="main-label">Approved costs</span>
+            <span class="sub-label">Committed spending, not payments made</span>
+          </div>
+          <span class="value">S$42,250</span>
+        </div>
+      </section>
+
+      <!-- Proposed Change Section -->
+      <section class="section">
+        <h2 class="section-title">Proposed change</h2>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Kitchen tile replacement</div>
+            <div class="badge">Pending approval</div>
+          </div>
+
+          <div class="card-option">
+            <span class="card-option-label">Selected option:</span> Tile B
+          </div>
+
+          <div class="card-row">
+            <span class="label">Material upgrade</span>
+            <span class="value">+S$180</span>
+          </div>
+          <div class="card-row">
+            <span class="label">Additional repair labour</span>
+            <span class="value">S$0</span>
+          </div>
+
+          <div class="divider"></div>
+
+          <div class="card-row total">
+            <span class="label">Total additional cost</span>
+            <span class="value">+S$180</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Impact Section -->
+      <section class="section impact-section">
+        <h2 class="section-title">Impact if approved</h2>
+
+        <div class="comparison-block">
+          <div class="comparison-row">
+            <span class="label">Approved costs</span>
+            <div class="comparison-values">
+              <span class="value-old">S$42,250</span>
+              <svg class="arrow-icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              <span class="value-new">S$42,430</span>
+            </div>
+          </div>
+          <div class="comparison-row">
+            <span class="label">Available budget</span>
+            <div class="comparison-values">
+              <span class="value-old">S$2,750</span>
+              <svg class="arrow-icon-small" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+              <span class="value-new">S$2,570</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="impact-outcome">
+          <div class="outcome-title">S$2,570 remaining if approved</div>
+          <div class="success-message">
+            <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" clip-rule="evenodd" />
+            </svg>
+            Within your budget.
+          </div>
+          <div class="info-note">
+            This change has not been added to your approved costs.
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 3. Bottom Action -->
+    <div class="bottom-bar">
+      <a class="primary-btn" href="home.html#proposal" style="text-decoration:none">Review change proposal</a>
+    </div>
+
+  </div>
+
+</body>
+</html>
