@@ -8,35 +8,44 @@ Built as a frontend prototype for **SMU IS211 — Interaction Design and Prototy
 
 ## Features
 
-The prototype is being developed to support:
+The prototype includes:
 
 - **Project dashboard** — renovation progress, pending decisions, and recent updates.
-- **Quotations and change approvals** — compare original and proposed work, review additional costs, and confirm variation orders.
-- **Defect tracking** — record issues with photographs and room locations, track repairs, and verify completion.
+- **Quotations and change approvals** — compare proposed work, confirm additional costs, and withdraw eligible approvals.
+- **Defect tracking** — record room-specific issues, edit or withdraw new reports, follow repairs, and verify completion.
 - **Budget and timeline** — understand the impact of proposed changes and monitor approved costs and milestones.
-- **Room and material previews** — explore the floor plan and compare replacement finishes in context.
+- **Room and material previews** — explore room records and compare replacement finishes.
 - **Project guidance** — plain-language explanations of recorded scope and costs.
 
-The current preview contains dashboard and budget drafts with sample data. The app uses simulated project information and does not process real payments or send reports to contractors.
+The web dashboard is at the project root. The dedicated mobile app is in `mobile/`, with Overview, Rooms, Defects, Changes, and Budget screens plus their supporting journeys.
+
+Both interfaces share project rules and browser storage through `shared/project-store.js`. Saved decisions and reports update between tabs on the same browser and origin. Photo previews last only for the current page session. No real payments or messages are sent.
 
 ## Technology
 
 - HTML, CSS, and vanilla JavaScript
 - Node.js for the local preview server
 
-No frontend framework, database, or backend setup is required.
+No frontend framework, database, or backend setup is required. The shared data layer provides a single place to connect both interfaces to a future backend API.
 
 ## Getting started
 
 With Node.js installed, run this command from the project folder:
 
 ```sh
-node screen/preview-server.cjs
+node preview-server.cjs
 ```
 
-Open [http://127.0.0.1:8765](http://127.0.0.1:8765) in your browser. No package installation is needed. Stop the server with `Ctrl+C`.
+Open either interface in your browser:
 
-You can also open `screen/home.html` directly in a browser to view the drafts.
+- [Web dashboard](http://127.0.0.1:8765/)
+- [Mobile app](http://127.0.0.1:8765/mobile/)
+
+Both use the same preview server. No package installation is needed. Stop it with `Ctrl+C`.
+
+You can also open `index.html` or `mobile/index.html` directly. The preview server is recommended for shared storage between the two views.
+
+Earlier screen explorations are preserved in `drafts/`. While the server is running, open [the original drafts](http://127.0.0.1:8765/drafts/) to view them.
 
 ## Design resources
 
