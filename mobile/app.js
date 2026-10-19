@@ -42,7 +42,7 @@
   const link = (label, target, type = 'secondary', extra = '') => `<a class="button ${type}" href="#${esc(target)}" ${extra}>${esc(label)}${icon('arrow')}</a>`;
   const action = (label, name, type = 'secondary', extra = '') => `<button type="button" class="button ${type}" data-action="${name}" ${extra}>${esc(label)}</button>`;
   const row = (label, value) => `<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
-  const heading = (title, eyebrow, intro = '') => `<div class="screen-heading"><p class="eyebrow">${esc(eyebrow)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${intro ? `<p class="intro">${esc(intro)}</p>` : ''}</div>`;
+  const heading = (title, eyebrow, intro = '', className = '') => `<div class="screen-heading ${esc(className)}"><p class="eyebrow">${esc(eyebrow)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${intro ? `<p class="intro">${esc(intro)}</p>` : ''}</div>`;
   const notice = (text, amber = false) => `<div class="notice${amber ? ' amber' : ''}">${icon('info')}<div>${text}</div></div>`;
   const localNote = () => '<p class="demo-note">Local demo only. Nothing is sent to your contractor, and no payment is taken.</p>';
   const section = (title, body) => `<section class="detail-section"><h2>${esc(title)}</h2>${body}</section>`;
@@ -71,6 +71,8 @@
   function parentTab(path) {
     const first = path.split('/')[0];
     if (primaryRoutes.includes(first)) return first;
+    if (first === 'timeline') return 'budget';
+    if (['documents', 'document'].includes(first)) return 'changes';
     if (['room', 'preview', 'material'].includes(first)) return ['room','preview'].includes(first) ? 'rooms' : 'changes';
     if (['defect', 'report', 'request', 'request-receipt', 'withdraw-report', 'inspect', 'verify-confirm', 'followup'].includes(first)) return 'defects';
     if (['change', 'approve', 'approval-receipt', 'withdraw-approval', 'revision'].includes(first)) return 'changes';
@@ -150,7 +152,7 @@
 
   function overview() {
     const metrics = totals();
-    return heading('Hi Thomas', 'Thursday, 18 June', 'Punggol BTO · Your home, taking shape.') +
+    return heading('Hi Thomas', 'Thursday, 18 June', 'Punggol BTO · Your home, taking shape.', 'home-heading') +
       (state.proposal.status === 'pending' ? proposalCard() : `<a class="approved-banner" href="#approval-receipt">${icon('check')}<span><strong>Bathroom tiles approved</strong><small>${tileName()} · +${money(PROPOSAL_COST)}</small></span>${icon('right')}</a>`) +
       `<section class="card home-progress"><div class="progress-top"><span class="progress-ring"><span>60%<small>complete</small></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling &amp; carpentry</h2><p>Stage 3 of 5 · Handover ${handover()}</p></div></div><div class="stage-bars" aria-label="Stage 3 of 5"><span class="done">Prep</span><span class="done">Electrical</span><span class="current">Tiling</span><span>Carpentry</span><span>Handover</span></div><div class="project-pair"><a href="#budget"><small>Remaining budget</small><strong>${money(metrics.available)}</strong></a><a href="#defects"><small>Open defects</small><strong>${metrics.openDefects}${icon('right')}</strong></a></div></section>
       <div class="section-heading"><h2>Step inside your home</h2><a class="text-link" href="#rooms">Explore${icon('arrow')}</a></div><div class="model-card home-model"><div class="model-caption"><span class="eyebrow">Interactive room overview</span>${badge('3D cutaway', 'green')}</div>${window.RenoGuardRooms.scene({ defects: state.defects, tile: state.proposal.tile })}<p class="model-hint">Tap a room to explore · <span class="attention-key">!</span> needs attention</p></div>
@@ -159,7 +161,7 @@
 
   function defectRow(defect) {
     const next = { approval: 'Review linked proposal', verification: 'Inspect before you verify', followup: 'Discuss remaining work', reported: 'Saved on this device', scheduled: 'Repair planned · see record', withdrawn: 'Restore if needed', verified: 'Reopen if the issue returns' }[defect.status];
-    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div>${statusBadge(defect.status)}<h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported)}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
+    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div class="record-content">${statusBadge(defect.status)}<h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported)}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
   }
 
   function filteredDefects() {
@@ -213,7 +215,7 @@
   function updateTile(tile) {
     if(state.proposal.status==='approved') return;
     mutate(()=>Store.selectTile(tile)); approvalAcknowledged=false;
-    if(route.startsWith('preview/')) {
+    if(document.getElementById('ar-scene')) {
       const material=materials[tile];
       const scene=document.getElementById('ar-scene');
       scene.classList.toggle('warm-floor',tile==='sabbia');
@@ -221,7 +223,7 @@
       document.querySelectorAll('[data-action="select-tile"]').forEach(button=>{const selected=button.dataset.tile===tile; button.setAttribute('aria-pressed',String(selected));button.querySelector('i').textContent=selected?'✓':'';});
       document.getElementById('material-summary').innerHTML=`<h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span>`;
     } else render();
-    document.getElementById('header-context').textContent=route.startsWith('preview/bathroom')?'AR Room Preview':document.getElementById('screen-title')?.textContent;
+    document.getElementById('header-context').textContent=content.querySelector('.ar-preview')?'AR Room Preview':document.getElementById('screen-title')?.textContent;
     document.title=`${document.getElementById('screen-title')?.textContent || 'Project'} · RenoGuard Mobile`;
     announce(`${tileName()} selected. Additional cost S$250. Not approved yet.`);
   }
@@ -308,9 +310,18 @@
   }
 
   function requestReceipt(id) {
-    const defect=findDefect(id);
-    if(!defect?.changeRequest)return missing('No change request saved',`defect/${id}`);
-    return `<div class="success-icon">${icon('check')}</div>`+heading('Change request saved',`${id} · ${defect.changeRequest.room}`,'You have not approved any additional spending.')+`<ol class="request-steps"><li><strong>Defect recorded</strong><p>${esc(defect.changeRequest.description)}</p></li><li><strong>Change request saved locally</strong><p>Linked to ${id}. No message was sent.</p></li><li><strong>Quotation needed</strong><p>Your designer will propose options, costs and timing before you decide.</p></li><li><strong>You review and approve</strong><p>Only an explicit approval adds a variation to your budget.</p></li></ol><div class="action-stack">${link('Back to defect record',`defect/${id}`,'primary')}${link('View current approvals','changes')}</div>`+localNote();
+    const defect = findDefect(id);
+    if (!defect?.changeRequest) return missing('No change request saved', `defect/${id}`);
+    const saved = new Date(defect.changeRequest.savedAt);
+    const savedTime = Number.isNaN(saved.valueOf()) ? 'Saved on this device' : saved.toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    const steps = [
+      { title: 'Defect logged', detail: `${defect.id} · ${defect.reported}`, state: 'complete' },
+      { title: 'Change request saved', detail: savedTime, state: 'complete' },
+      { title: 'Pending quotation', detail: 'Next: John checks replacement options and costs.', state: 'current' },
+      { title: 'Review & approve the variation', detail: 'You review the cost and timing before deciding.', state: 'upcoming' },
+      { title: 'Repair scheduled', detail: 'Work can proceed after your approval.', state: 'upcoming' }
+    ];
+    return `<div class="request-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('send')}</div><h1 id="screen-title" tabindex="-1">Change request saved</h1><p>No additional spending approved.</p>${badge('Pending quotation', 'amber')}</header><section class="request-progress card" aria-labelledby="request-progress-title"><h2 id="request-progress-title" class="eyebrow">What happens next</h2><ol class="request-timeline">${steps.map(step => `<li class="${step.state}" ${step.state === 'current' ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.state === 'complete' ? icon('check') : ''}</span><div class="request-step-copy"><h3>${esc(step.title)}</h3><p>${esc(step.detail)}</p><span class="sr-only">${step.state === 'complete' ? 'Completed' : step.state === 'current' ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol></section><div class="action-stack">${link('Back to home', 'overview', 'primary')}${link(`View defect ${id}`, `defect/${id}`)}</div><p class="demo-note">Saved on this device. No request has been sent to John.</p></div>`;
   }
 
   function getReportDraft() {
@@ -560,10 +571,12 @@
   function render({ focus = false, restore = false } = {}) {
     updateChrome();
     content.innerHTML = screenHTML();
-    document.querySelector('.mobile-app').classList.toggle('preview-mode',route.startsWith('preview/bathroom'));
+    document.querySelector('.mobile-app').classList.toggle('home-screen', route === 'overview');
+    document.querySelector('.mobile-app').classList.toggle('request-confirmation-mode', Boolean(content.querySelector('.request-confirmation')));
+    document.querySelector('.mobile-app').classList.toggle('preview-mode', Boolean(content.querySelector('.ar-preview')));
     document.querySelector('.header-home').hidden = primaryRoutes.includes(route);
     const title = document.getElementById('screen-title');
-    document.getElementById('header-context').textContent = route.startsWith('preview/bathroom')?'AR Room Preview':title?.textContent || 'Your project';
+    document.getElementById('header-context').textContent = content.querySelector('.ar-preview')?'AR Room Preview':title?.textContent || 'Your project';
     document.title = `${title?.textContent || 'Project'} · RenoGuard Mobile`;
     if (focus) title?.focus({ preventScroll: true });
     if (restore) screenScroller().scrollTo({ top: scrollPositions.get(route) || 0, behavior: 'instant' });
