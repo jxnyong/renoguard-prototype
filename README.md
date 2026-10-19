@@ -6,6 +6,8 @@ RenoGuard is a mobile-first renovation management prototype that helps homeowner
 
 Created for **SMU IS211 — Interaction Design and Prototyping**.
 
+<br>
+
 ## ✨ Features
 
 - **Project dashboard** — progress, pending decisions and recent updates.
@@ -15,11 +17,15 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Change approvals** — compare materials, review quotations and confirm variations.
 - **Budget and payments** — track approved costs and upcoming payment milestones.
 
+<br>
+
 ## 📱 Preview
 
 App screenshots will be added once the prototype is finalised.
 
 <!-- Add final app screenshots here. -->
+
+<br>
 
 ## 🛠️ Technology
 
@@ -28,6 +34,8 @@ App screenshots will be added once the prototype is finalised.
 - **Demo storage:** Browser local storage
 
 No backend or package installation is required.
+
+<br>
 
 ## 🚀 Getting started
 
@@ -52,6 +60,8 @@ Press <kbd>Ctrl</kbd> + <kbd>C</kbd> in the terminal.
 
 *If images or styles do not load, use the local address above instead of opening the HTML file directly.*
 
+<br>
+
 ## 📁 Project structure
 
 ```text
@@ -66,6 +76,8 @@ renoguard-prototype/
 └── README.md            Project overview
 ```
 
+<br>
+
 ## 🎬 Walkthrough
 
 | Video | Link |
@@ -74,6 +86,8 @@ renoguard-prototype/
 | Low-fidelity walkthrough | [Watch on YouTube](https://www.youtube.com/watch?v=oRJ63LUH_NY) |
 
 <!-- Add the high-fidelity walkthrough URL when the recording is ready. -->
+
+<br>
 
 ## 🎨 Design resources
 
