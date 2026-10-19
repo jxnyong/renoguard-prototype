@@ -2,39 +2,36 @@
 
 *Renovate with proof, not promises.*
 
-A renovation management frontend for homeowners to track defects, visualise proposed finishes, and understand changes to their budget and timeline before approving work.
+RenoGuard is a mobile-first renovation management prototype that helps homeowners track defects, compare proposed changes, and review their impact on costs and completion dates before approving work.
 
-Built for **SMU IS211 — Interaction Design and Prototyping**.
+Created for **SMU IS211 — Interaction Design and Prototyping**.
 
 ## Features
 
-- Project dashboard with progress, pending approvals and recent updates.
-- Interactive 3D room overview with highlighted rooms, issue indicators and room details.
-- Realistic bathroom preview with switchable floor tile finishes.
-- Defect reports with photo previews, linked change requests and repair verification.
-- Variation orders with material comparisons, quotation breakdowns and explicit approval.
-- Budget tracking and payment milestones that update after approval.
-
-The mobile interface follows the Figma's **390 × 844** reference frames. On computers, it appears in a centred phone frame with internal scrolling and scales down to fit shorter screens. On phones, it adapts to the device screen. AR previews and room models are illustrative simulations.
+- **Project dashboard** — progress, pending decisions and recent updates.
+- **Interactive room overview** — explore rooms, open defect records and preview finishes.
+- **Simulated AR preview** — compare bathroom floor tiles with live visual changes.
+- **Defect tracking** — report issues with photos and verify completed repairs.
+- **Change approvals** — compare materials, review quotations and confirm variations.
+- **Budget and payments** — track approved costs and upcoming payment milestones.
 
 ## Preview
 
-Final screenshots of the mobile app and its main journeys will be added here once the design and implementation are finalised.
+App screenshots will be added once the prototype is finalised.
 
-<!-- Add screenshots to docs/images/ when ready, then replace this comment with
-working Markdown images. Suggested views: project dashboard, interactive room
-overview, bathroom tile comparison, and approval/budget updates. Do not add
-image links until their files exist. -->
+<!-- Add final app screenshots here. -->
 
 ## Technology
 
-- HTML, CSS and vanilla JavaScript
-- Browser local storage for demo records
-- Node.js built-in modules for the preview server
+- **Frontend:** HTML, CSS and vanilla JavaScript
+- **Preview server:** Node.js
+- **Demo storage:** Browser local storage
 
-No package installation, database or backend is required. Mobile and desktop share the same project data adapter in `shared/`.
+No backend or package installation is required.
 
-## Run locally
+## Getting started
+
+New to the project? Follow the [Windows and macOS setup guide](docs/setup.md).
 
 With [Node.js](https://nodejs.org/) installed, run this command from the project folder:
 
@@ -42,34 +39,32 @@ With [Node.js](https://nodejs.org/) installed, run this command from the project
 node preview-server.cjs
 ```
 
-Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) for the mobile app. The earlier desktop interface is available at [/web/](http://127.0.0.1:8765/web/).
+| View | Local address |
+| --- | --- |
+| Mobile app | [http://127.0.0.1:8765/](http://127.0.0.1:8765/) |
+| Desktop interface | [http://127.0.0.1:8765/web/](http://127.0.0.1:8765/web/) |
 
-Use your browser's responsive device mode to preview at **390 × 844**. Stop the server with `Ctrl+C`.
+The mobile app automatically appears in a phone-sized frame on computers.
 
-Use the preview server rather than opening HTML files directly; asset paths start at the server root.
+**Stop the preview server**
 
-### First-time setup
+Press <kbd>Ctrl</kbd> + <kbd>C</kbd> in the terminal.
 
-For installation, cloning, mobile preview instructions and troubleshooting, follow the [detailed Windows and macOS setup guide](docs/setup.md).
+*If images or styles do not load, use the local address above instead of opening the HTML file directly.*
 
-## Project structure
+## Walkthrough
 
-```text
-mobile/    Mobile interface and room renderer
-web/       Desktop interface
-shared/    Project rules and local storage adapter
-assets/    Room images and material samples
-drafts/    Earlier HTML screen explorations
-docs/      Detailed setup walkthrough
-```
+| Video | Link |
+| --- | --- |
+| High-fidelity walkthrough | Coming soon |
+| Low-fidelity walkthrough | [Watch on YouTube](https://www.youtube.com/watch?v=oRJ63LUH_NY) |
 
-Decisions and reports stay in this browser on this device. Interfaces opened on the same origin share records. Photo previews last for the current page session. No real messages, signatures or payments are sent. Use **Project settings → Reset demo** to restore the sample project.
+<!-- Add the high-fidelity walkthrough URL when the recording is ready. -->
 
 ## Design resources
 
-- [Figma screens and interaction design](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=1-2)
-- [Earlier screen drafts](http://127.0.0.1:8765/drafts/) — requires the local preview server
-- [Low-fidelity walkthrough](https://www.youtube.com/watch?v=oRJ63LUH_NY)
+- [Figma design and prototype](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=1-2)
+- [Earlier HTML drafts](http://127.0.0.1:8765/drafts/) — available with the preview server running
 - [Project pitch](https://www.youtube.com/watch?v=1Q7eNqnpxkM)
 
-Bathroom imagery and tile samples are adapted from the project's Figma design and stored locally in `assets/`.
+*Bathroom imagery and tile samples are adapted from the project's Figma design.*
