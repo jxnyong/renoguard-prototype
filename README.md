@@ -6,7 +6,7 @@ RenoGuard is a mobile-first renovation management prototype that helps homeowner
 
 Created for **SMU IS211 — Interaction Design and Prototyping**.
 
-## Features
+## ✨ Features
 
 - **Project dashboard** — progress, pending decisions and recent updates.
 - **Interactive room overview** — explore rooms, open defect records and preview finishes.
@@ -15,13 +15,13 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Change approvals** — compare materials, review quotations and confirm variations.
 - **Budget and payments** — track approved costs and upcoming payment milestones.
 
-## Preview
+## 📱 Preview
 
 App screenshots will be added once the prototype is finalised.
 
 <!-- Add final app screenshots here. -->
 
-## Technology
+## 🛠️ Technology
 
 - **Frontend:** HTML, CSS and vanilla JavaScript
 - **Preview server:** Node.js
@@ -29,7 +29,7 @@ App screenshots will be added once the prototype is finalised.
 
 No backend or package installation is required.
 
-## Getting started
+## 🚀 Getting started
 
 New to the project? Follow the [Windows and macOS setup guide](docs/setup.md).
 
@@ -52,7 +52,21 @@ Press <kbd>Ctrl</kbd> + <kbd>C</kbd> in the terminal.
 
 *If images or styles do not load, use the local address above instead of opening the HTML file directly.*
 
-## Walkthrough
+## 📁 Project structure
+
+```text
+renoguard-prototype/
+├── mobile/              Mobile interface and interactive room renderer
+├── web/                 Desktop interface
+├── shared/              Shared project rules and demo storage
+├── assets/              Room images and tile samples
+├── docs/                Windows and macOS setup guide
+├── drafts/              Earlier HTML screen explorations
+├── preview-server.cjs   Local preview server
+└── README.md            Project overview
+```
+
+## 🎬 Walkthrough
 
 | Video | Link |
 | --- | --- |
@@ -61,7 +75,7 @@ Press <kbd>Ctrl</kbd> + <kbd>C</kbd> in the terminal.
 
 <!-- Add the high-fidelity walkthrough URL when the recording is ready. -->
 
-## Design resources
+## 🎨 Design resources
 
 - [Figma design and prototype](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=1-2)
 - [Earlier HTML drafts](http://127.0.0.1:8765/drafts/) — available with the preview server running
