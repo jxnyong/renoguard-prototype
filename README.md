@@ -2,57 +2,74 @@
 
 *Renovate with proof, not promises.*
 
-RenoGuard is a renovation management app for homeowners who want clearer quotations, better defect tracking, and visibility over changes to their budget and timeline. It brings project information together so homeowners can review proposed work before approving it and follow repairs through to completion.
+A renovation management frontend for homeowners to track defects, visualise proposed finishes, and understand changes to their budget and timeline before approving work.
 
-Built as a frontend prototype for **SMU IS211 — Interaction Design and Prototyping**.
+Built for **SMU IS211 — Interaction Design and Prototyping**.
 
 ## Features
 
-The prototype includes:
+- Project dashboard with progress, pending approvals and recent updates.
+- Interactive 3D room overview with highlighted rooms, issue indicators and room details.
+- Realistic bathroom preview with switchable floor tile finishes.
+- Defect reports with photo previews, linked change requests and repair verification.
+- Variation orders with material comparisons, quotation breakdowns and explicit approval.
+- Budget tracking and payment milestones that update after approval.
 
-- **Project dashboard** — renovation progress, pending decisions, and recent updates.
-- **Quotations and change approvals** — compare proposed work, confirm additional costs, and withdraw eligible approvals.
-- **Defect tracking** — record room-specific issues, edit or withdraw new reports, follow repairs, and verify completion.
-- **Budget and timeline** — understand the impact of proposed changes and monitor approved costs and milestones.
-- **Room and material previews** — explore room records and compare replacement finishes.
-- **Project guidance** — plain-language explanations of recorded scope and costs.
+The mobile interface follows the Figma's **390 × 844** reference frames. On computers, it appears in a centred phone frame with internal scrolling and scales down to fit shorter screens. On phones, it adapts to the device screen. AR previews and room models are illustrative simulations.
 
-The web dashboard is at the project root. The dedicated mobile app is in `mobile/`, with Overview, Rooms, Defects, Changes, and Budget screens plus their supporting journeys.
+## Preview
 
-Both interfaces share project rules and browser storage through `shared/project-store.js`. Saved decisions and reports update between tabs on the same browser and origin. Photo previews last only for the current page session. No real payments or messages are sent.
+Final screenshots of the mobile app and its main journeys will be added here once the design and implementation are finalised.
+
+<!-- Add screenshots to docs/images/ when ready, then replace this comment with
+working Markdown images. Suggested views: project dashboard, interactive room
+overview, bathroom tile comparison, and approval/budget updates. Do not add
+image links until their files exist. -->
 
 ## Technology
 
-- HTML, CSS, and vanilla JavaScript
-- Node.js for the local preview server
+- HTML, CSS and vanilla JavaScript
+- Browser local storage for demo records
+- Node.js built-in modules for the preview server
 
-No frontend framework, database, or backend setup is required. The shared data layer provides a single place to connect both interfaces to a future backend API.
+No package installation, database or backend is required. Mobile and desktop share the same project data adapter in `shared/`.
 
-## Getting started
+## Run locally
 
-With Node.js installed, run this command from the project folder:
+With [Node.js](https://nodejs.org/) installed, run this command from the project folder:
 
 ```sh
 node preview-server.cjs
 ```
 
-Open either interface in your browser:
+Open [http://127.0.0.1:8765/](http://127.0.0.1:8765/) for the mobile app. The earlier desktop interface is available at [/web/](http://127.0.0.1:8765/web/).
 
-- [Web dashboard](http://127.0.0.1:8765/)
-- [Mobile app](http://127.0.0.1:8765/mobile/)
+Use your browser's responsive device mode to preview at **390 × 844**. Stop the server with `Ctrl+C`.
 
-Both use the same preview server. No package installation is needed. Stop it with `Ctrl+C`.
+Use the preview server rather than opening HTML files directly; asset paths start at the server root.
 
-You can also open `index.html` or `mobile/index.html` directly. The preview server is recommended for shared storage between the two views.
+### First-time setup
 
-Earlier screen explorations are preserved in `drafts/`. While the server is running, open [the original drafts](http://127.0.0.1:8765/drafts/) to view them.
+For installation, cloning, mobile preview instructions and troubleshooting, follow the [detailed Windows and macOS setup guide](docs/setup.md).
+
+## Project structure
+
+```text
+mobile/    Mobile interface and room renderer
+web/       Desktop interface
+shared/    Project rules and local storage adapter
+assets/    Room images and material samples
+drafts/    Earlier HTML screen explorations
+docs/      Detailed setup walkthrough
+```
+
+Decisions and reports stay in this browser on this device. Interfaces opened on the same origin share records. Photo previews last for the current page session. No real messages, signatures or payments are sent. Use **Project settings → Reset demo** to restore the sample project.
 
 ## Design resources
 
-| Resource | Link |
-| --- | --- |
-| Figma UI/UX explorations and drafts | To be added |
-| Figma interactive prototype | To be added |
-| Live app demo | To be added |
-| Low-fidelity walkthrough | [Watch the walkthrough](https://www.youtube.com/watch?v=oRJ63LUH_NY) |
-| Project pitch | [Watch the pitch](https://www.youtube.com/watch?v=1Q7eNqnpxkM) |
+- [Figma screens and interaction design](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=1-2)
+- [Earlier screen drafts](http://127.0.0.1:8765/drafts/) — requires the local preview server
+- [Low-fidelity walkthrough](https://www.youtube.com/watch?v=oRJ63LUH_NY)
+- [Project pitch](https://www.youtube.com/watch?v=1Q7eNqnpxkM)
+
+Bathroom imagery and tile samples are adapted from the project's Figma design and stored locally in `assets/`.

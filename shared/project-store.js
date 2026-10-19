@@ -3,10 +3,10 @@
 ((root) => {
   'use strict';
 
-  const STORAGE_KEY = 'renoguard.homeowner.v1';
-  const PROPOSAL_COST = 180;
+  const STORAGE_KEY = 'renoguard.homeowner.v2';
+  const PROPOSAL_COST = 250;
   const PROJECT_BUDGET = 45000;
-  const ORIGINAL_COMMITMENT = 42250;
+  const ORIGINAL_COMMITMENT = 15000;
   const ROOMS = Object.freeze(['Living room', 'Main bedroom', 'Bedroom 2', 'Kitchen', 'Bathroom']);
   const DEFECT_CATEGORIES = Object.freeze(['Flooring', 'Carpentry', 'Painting', 'Electrical', 'Plumbing', 'Other']);
   const DEFECT_STATUSES = ['approval', 'verification', 'scheduled', 'verified', 'reported', 'followup', 'withdrawn'];
@@ -22,19 +22,19 @@
 
   function getInitialState() {
     return {
-      version: 1,
-      proposal: { status: 'pending', approvedAt: null },
+      version: 2,
+      proposal: { status: 'pending', approvedAt: null, tile: 'grigio' },
       notificationsRead: false,
       defects: [
-        { id: 'DEF-002', room: 'Main bedroom', title: 'Cracked floor tiles', category: 'Flooring', status: 'approval', description: 'Two floor tiles near the window are cracked. The original tile is out of stock until 12 Oct.', reported: '13 Sep 2026', photoName: '' },
-        { id: 'DEF-003', room: 'Kitchen', title: 'Cabinet doors realigned', category: 'Carpentry', status: 'verification', description: 'The contractor has adjusted the cabinet hinges. Check that the doors align and open smoothly before marking the repair as verified.', reported: '15 Sep 2026', photoName: '' },
-        { id: 'DEF-004', room: 'Bedroom 2', title: 'Paint touch-up', category: 'Painting', status: 'scheduled', description: 'Uneven paint coverage near the door frame. A touch-up is scheduled for 19 Sep.', reported: '16 Sep 2026', photoName: '' },
-        { id: 'DEF-001', room: 'Living room', title: 'Loose power outlet secured', category: 'Electrical', status: 'verified', description: 'The outlet was secured and checked. The homeowner verified the repair on 15 Sep.', reported: '14 Sep 2026', photoName: '' }
+        { id: 'DEF-021', room: 'Bathroom', title: 'Cracked bathroom floor tiles', category: 'Flooring', status: 'approval', description: 'Hairline cracks across three newly installed tiles beside the shower. Bianco Matte is out of stock until September 2026.', reported: '15 Jun 2026', photoName: '' },
+        { id: 'DEF-003', room: 'Kitchen', title: 'Cabinet doors realigned', category: 'Carpentry', status: 'verification', description: 'The contractor has adjusted the cabinet hinges. Check that the doors align and open smoothly before marking the repair as verified.', reported: '15 Jun 2026', photoName: '' },
+        { id: 'DEF-004', room: 'Bedroom 2', title: 'Paint touch-up', category: 'Painting', status: 'scheduled', description: 'Uneven paint coverage near the door frame. A touch-up is scheduled for 26 Jun.', reported: '16 Jun 2026', photoName: '' },
+        { id: 'DEF-001', room: 'Living room', title: 'Loose power outlet secured', category: 'Electrical', status: 'verified', description: 'The outlet was secured and checked. The homeowner verified the repair on 15 Sep.', reported: '14 Jun 2026', photoName: '' }
       ],
       activity: [
-        { title: 'Tile replacement proposed', text: 'Main bedroom · +S$180, no handover delay', time: '17 Sep · John Tan', type: 'file' },
-        { title: 'Cabinet alignment completed', text: 'Kitchen · Ready for your inspection', time: '16 Sep · John Tan', type: 'check' },
-        { title: 'Paint touch-up scheduled', text: 'Bedroom 2 · Planned for 19 Sep', time: '16 Sep · John Tan', type: 'clock' }
+        { title: 'Tile replacement proposed', text: 'Bathroom · +S$250, completion proposed for 14 Jul', time: '18 Jun · John Tan', type: 'file' },
+        { title: 'Cabinet alignment completed', text: 'Kitchen · Ready for your inspection', time: '17 Jun · John Tan', type: 'check' },
+        { title: 'Paint touch-up scheduled', text: 'Bedroom 2 · Planned for 26 Jun', time: '17 Jun · John Tan', type: 'clock' }
       ]
     };
   }
@@ -47,7 +47,7 @@
   }
 
   function validateState(value) {
-    if (!value || value.version !== 1 || !Array.isArray(value.defects) || !Array.isArray(value.activity) || !['pending', 'approved'].includes(value.proposal?.status)) {
+    if (!value || value.version !== 2 || !Array.isArray(value.defects) || !Array.isArray(value.activity) || !['pending', 'approved'].includes(value.proposal?.status)) {
       throw new TypeError('Invalid RenoGuard project state.');
     }
     const seen = new Set();
@@ -68,6 +68,7 @@
         reported: requireText(defect.reported ?? seed?.reported ?? 'This demo session', 'Reported date', 80),
         photoName: requireText(defect.photoName ?? '', 'Photo filename', 255)
       };
+      if (defect.changeRequest) record.changeRequest = { savedAt: requireText(defect.changeRequest.savedAt, 'Request date', 120), description: requireText(defect.changeRequest.description, 'Request description', 800, 10), room: requireText(defect.changeRequest.room, 'Request room', 80, 1), category: requireText(defect.changeRequest.category, 'Request category', 80, 1) };
       if (typeof defect.followupNote === 'string' && defect.followupNote) record.followupNote = requireText(defect.followupNote, 'Follow-up note', 800);
       ['updatedAt', 'withdrawnAt'].forEach(key => {
         if (typeof defect[key] === 'string') record[key] = requireText(defect[key], 'Record date', 120);
@@ -77,6 +78,7 @@
     if (!defaults.defects.every(defect => seen.has(defect.id))) throw new TypeError('The sample project records must be retained.');
     const proposal = {
       status: value.proposal.status,
+      tile: ['grigio', 'sabbia'].includes(value.proposal.tile) ? value.proposal.tile : 'grigio',
       approvedAt: value.proposal.approvedAt == null ? null : requireText(value.proposal.approvedAt, 'Approval date', 120)
     };
     ['lastApprovedAt', 'withdrawnAt'].forEach(key => {
@@ -97,7 +99,7 @@
       if (typeof item.title === 'string') record.title = requireText(item.title, 'Activity title', 200);
       return record;
     });
-    return { version: 1, proposal, notificationsRead: Boolean(value.notificationsRead), defects, activity };
+    return { version: 2, proposal, notificationsRead: Boolean(value.notificationsRead), defects, activity };
   }
 
   function readSavedState() {
@@ -173,15 +175,21 @@
     next.notificationsRead = false;
   }
 
+  function selectTile(tile) {
+    if (!['grigio', 'sabbia'].includes(tile)) throw new TypeError('Choose one of the two proposed tiles.');
+    if (state.proposal.status === 'approved' || state.proposal.tile === tile) return getState();
+    const next = getState(); next.proposal.tile = tile; return saveState(next);
+  }
+
   function approveProposal() {
     if (state.proposal.status === 'approved') return getState();
     const next = getState();
     next.proposal.status = 'approved';
     next.proposal.approvedAt = new Date().toLocaleString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
-    const defect = next.defects.find(item => item.id === 'DEF-002');
+    const defect = next.defects.find(item => item.id === 'DEF-021');
     defect.status = 'scheduled';
-    defect.description = 'Two floor tiles near the window are cracked. The original tile is out of stock until 12 Oct. You approved the Ivory Sand replacement; repair is planned for 19 Sep.';
-    addActivity(next, `You approved VO-003 (+${money(PROPOSAL_COST)}). Main bedroom repair is scheduled for 19 Sep.`);
+    defect.description = `Hairline cracks across three bathroom floor tiles. You approved ${next.proposal.tile === 'sabbia' ? 'Sabbia Matte' : 'Grigio Matte'} replacement tiles. Completion and payment are planned for 14 Jul 2026.`;
+    addActivity(next, `You approved VO-015 (+${money(PROPOSAL_COST)}). Bathroom tile replacement is scheduled for completion on 14 Jul 2026.`);
     return saveState(next);
   }
 
@@ -190,21 +198,21 @@
     const description = requireText(typeof text === 'string' ? text.trim() : text, 'Revision request', 800, 10);
     const next = getState();
     next.proposal.revisionRequest = { text: description, savedAt: new Date().toISOString() };
-    addActivity(next, 'You saved a revision request for VO-003. No change was approved.', 'file');
+    addActivity(next, 'You saved a revision request for VO-015. No change was approved.', 'file');
     return saveState(next);
   }
 
   function withdrawApproval() {
     const next = getState();
-    const defect = next.defects.find(item => item.id === 'DEF-002');
+    const defect = next.defects.find(item => item.id === 'DEF-021');
     if (next.proposal.status !== 'approved' || defect.status !== 'scheduled') return next;
     next.proposal.lastApprovedAt = next.proposal.approvedAt;
     next.proposal.approvedAt = null;
     next.proposal.withdrawnAt = new Date().toLocaleString('en-SG', { day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit' });
     next.proposal.status = 'pending';
     defect.status = 'approval';
-    defect.description = getInitialState().defects.find(item => item.id === 'DEF-002').description;
-    addActivity(next, `You withdrew approval for VO-003. The ${money(PROPOSAL_COST)} change is no longer committed.`, 'refresh');
+    defect.description = getInitialState().defects.find(item => item.id === 'DEF-021').description;
+    addActivity(next, `You withdrew approval for VO-015. The ${money(PROPOSAL_COST)} change is no longer committed.`, 'refresh');
     return saveState(next);
   }
 
@@ -255,6 +263,15 @@
     const id = `DEF-${String(nextId).padStart(3, '0')}`;
     next.defects.unshift({ id, room: record.room, category: record.category, title: `${record.category} issue`, description, status: 'reported', reported: 'Just now · local demo', photoName });
     addActivity(next, `You saved a ${record.category.toLowerCase()} defect report for ${record.room.toLowerCase()} (${id}).`, 'defect');
+    return saveState(next);
+  }
+
+  function requestDefectChange(id) {
+    const next=getState();
+    const defect=findDefect(next,id);
+    if(defect.status!=='reported'||defect.changeRequest)return next;
+    defect.changeRequest={savedAt:new Date().toISOString(),description:defect.description,room:defect.room,category:defect.category};
+    addActivity(next,`You saved a change request for ${id}. No spending was approved.`,'file');
     return saveState(next);
   }
 
@@ -319,6 +336,7 @@
     money,
     get storageAvailable() { return storageAvailable; },
     subscribe,
+    selectTile,
     approveProposal,
     withdrawApproval,
     requestRevision,
@@ -326,6 +344,7 @@
     followupRepair,
     restoreVerification,
     addDefect,
+    requestDefectChange,
     updateDefect,
     withdrawDefect,
     restoreDefect,
