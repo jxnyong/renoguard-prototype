@@ -16,6 +16,7 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Defect tracking** — report issues with photos and verify completed repairs.
 - **Change approvals** — compare materials, review quotations and confirm variations.
 - **Budget and payments** — track approved costs and upcoming payment milestones.
+- **Demo modes** — follow the bathroom walkthrough or explore project issues, with separate saved progress.
 
 <br>
 

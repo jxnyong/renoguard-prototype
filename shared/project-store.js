@@ -4,6 +4,9 @@
   'use strict';
 
   const STORAGE_KEY = 'renoguard.homeowner.v2';
+  const WALKTHROUGH_KEY = 'renoguard.walkthrough.v1';
+  const DEMO_MODE_KEY = 'renoguard.mobileDemoMode';
+  const isDesktop = root.location?.pathname?.startsWith('/web') || false;
   const PROPOSAL_COST = 250;
   const PROJECT_BUDGET = 45000;
   const ORIGINAL_COMMITMENT = 15000;
@@ -20,16 +23,17 @@
     return `S$${number.toLocaleString('en-SG', { maximumFractionDigits: 0 })}`;
   }
 
-  function getInitialState() {
-    return {
+  function getInitialState(mode = 'explore') {
+    const initial = {
       version: 2,
+      demoMode: mode,
       proposal: { status: 'pending', approvedAt: null, tile: 'grigio' },
       notificationsRead: false,
       defects: [
         { id: 'DEF-021', room: 'Bathroom', title: 'Cracked bathroom floor tiles', category: 'Flooring', status: 'approval', description: 'Hairline cracks across three newly installed tiles beside the shower. Bianco Matte is out of stock until September 2026.', reported: '15 Jun 2026', photoName: '' },
         { id: 'DEF-003', room: 'Kitchen', title: 'Cabinet doors realigned', category: 'Carpentry', status: 'verification', description: 'The contractor has adjusted the cabinet hinges. Check that the doors align and open smoothly before marking the repair as verified.', reported: '15 Jun 2026', photoName: '' },
         { id: 'DEF-004', room: 'Bedroom 2', title: 'Paint touch-up', category: 'Painting', status: 'scheduled', description: 'Uneven paint coverage near the door frame. A touch-up is scheduled for 26 Jun.', reported: '16 Jun 2026', photoName: '' },
-        { id: 'DEF-001', room: 'Living room', title: 'Loose power outlet secured', category: 'Electrical', status: 'verified', description: 'The outlet was secured and checked. The homeowner verified the repair on 15 Sep.', reported: '14 Jun 2026', photoName: '' }
+        { id: 'DEF-001', room: 'Living room', title: 'Loose power outlet secured', category: 'Electrical', status: 'verified', description: 'The outlet was secured and checked. The homeowner verified the repair on 15 Jun.', reported: '14 Jun 2026', photoName: '' }
       ],
       activity: [
         { title: 'Tile replacement proposed', text: 'Bathroom · +S$250, completion proposed for 14 Jul', time: '18 Jun · John Tan', type: 'file' },
@@ -37,6 +41,12 @@
         { title: 'Paint touch-up scheduled', text: 'Bedroom 2 · Planned for 26 Jun', time: '17 Jun · John Tan', type: 'clock' }
       ]
     };
+    if (mode === 'walkthrough') {
+      initial.walkthrough = { reported: false, reviewed: false, previewed: false, quoteRead: false, budgetChecked: false };
+      initial.activity = [];
+      initial.notificationsRead = true;
+    }
+    return initial;
   }
 
   function requireText(value, name, maxLength, minLength = 0) {
@@ -99,24 +109,39 @@
       if (typeof item.title === 'string') record.title = requireText(item.title, 'Activity title', 200);
       return record;
     });
-    return { version: 2, proposal, notificationsRead: Boolean(value.notificationsRead), defects, activity };
+    const demoMode = value.demoMode === 'walkthrough' ? 'walkthrough' : 'explore';
+    const validated = { version: 2, demoMode, proposal, notificationsRead: Boolean(value.notificationsRead), defects, activity };
+    if (demoMode === 'walkthrough') {
+      validated.walkthrough = Object.fromEntries(['reported', 'reviewed', 'previewed', 'quoteRead', 'budgetChecked'].map(key => [key, Boolean(value.walkthrough?.[key])]));
+      if (!validated.walkthrough.reported && proposal.status === 'approved') throw new TypeError('Report the scenario defect before approving its proposal.');
+    }
+    return validated;
   }
 
-  function readSavedState() {
+  function preferredMode() {
+    if (isDesktop) return 'explore';
+    try { return root.localStorage.getItem(DEMO_MODE_KEY) === 'walkthrough' ? 'walkthrough' : 'explore'; }
+    catch { return 'explore'; }
+  }
+
+  const storageKey = mode => mode === 'walkthrough' ? WALKTHROUGH_KEY : STORAGE_KEY;
+  let activeMode = preferredMode();
+
+  function readSavedState(mode = activeMode) {
     let saved;
     try {
-      saved = root.localStorage.getItem(STORAGE_KEY);
+      saved = root.localStorage.getItem(storageKey(mode));
       storageAvailable = true;
     } catch {
       storageAvailable = false;
-      return getInitialState();
+      return getInitialState(mode);
     }
-    if (!saved) return getInitialState();
+    if (!saved) return getInitialState(mode);
     try {
-      return validateState(JSON.parse(saved));
+      return validateState({ ...JSON.parse(saved), demoMode: mode });
     } catch {
       // Corrupt or obsolete demo data should not prevent either interface opening.
-      return getInitialState();
+      return getInitialState(mode);
     }
   }
 
@@ -126,15 +151,27 @@
     return clone(state);
   }
 
+  function getProjectDefects(projectState = state) {
+    const records = projectState.demoMode === 'walkthrough'
+      ? projectState.defects.filter(defect => !['DEF-003', 'DEF-004', 'DEF-001'].includes(defect.id) && (defect.id !== 'DEF-021' || projectState.walkthrough?.reported))
+      : projectState.defects;
+    return clone(records);
+  }
+
+  function hasProposal(projectState = state) {
+    return projectState.demoMode !== 'walkthrough' || Boolean(projectState.walkthrough?.reported);
+  }
+
   function getMetrics(projectState = state) {
     const approved = ORIGINAL_COMMITMENT + (projectState.proposal.status === 'approved' ? PROPOSAL_COST : 0);
-    const pending = projectState.proposal.status === 'pending' ? 1 : 0;
+    const pending = hasProposal(projectState) && projectState.proposal.status === 'pending' ? 1 : 0;
+    const records = getProjectDefects(projectState);
     return {
       approved,
       available: PROJECT_BUDGET - approved,
-      openDefects: projectState.defects.filter(defect => !['verified', 'withdrawn'].includes(defect.status)).length,
+      openDefects: records.filter(defect => !['verified', 'withdrawn'].includes(defect.status)).length,
       pending,
-      actions: pending + projectState.defects.filter(defect => ['verification', 'followup'].includes(defect.status)).length
+      actions: pending + records.filter(defect => ['verification', 'followup'].includes(defect.status)).length
     };
   }
 
@@ -151,9 +188,11 @@
 
   function saveState(next) {
     // Validate before replacing the in-memory state or writing persistent data.
-    state = validateState(next);
+    const validated = validateState(next);
+    if (validated.demoMode !== activeMode) throw new TypeError('Save project data in its own demo mode.');
+    state = validated;
     try {
-      root.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      root.localStorage.setItem(storageKey(activeMode), JSON.stringify(state));
       storageAvailable = true;
     } catch {
       // Private browsing, quota, and blocked storage all retain a usable session.
@@ -177,11 +216,13 @@
 
   function selectTile(tile) {
     if (!['grigio', 'sabbia'].includes(tile)) throw new TypeError('Choose one of the two proposed tiles.');
+    if (!hasProposal()) throw new Error('Report the bathroom defect to receive the sample proposal.');
     if (state.proposal.status === 'approved' || state.proposal.tile === tile) return getState();
     const next = getState(); next.proposal.tile = tile; return saveState(next);
   }
 
   function approveProposal() {
+    if (!hasProposal()) throw new Error('Report the bathroom defect before reviewing its proposal.');
     if (state.proposal.status === 'approved') return getState();
     const next = getState();
     next.proposal.status = 'approved';
@@ -194,6 +235,7 @@
   }
 
   function requestRevision(text) {
+    if (!hasProposal()) throw new Error('A proposal must be available before requesting changes.');
     if (state.proposal.status === 'approved') return getState();
     const description = requireText(typeof text === 'string' ? text.trim() : text, 'Revision request', 800, 10);
     const next = getState();
@@ -259,6 +301,16 @@
     const description = requireText(typeof record.description === 'string' ? record.description.trim() : record.description, 'Defect description', 800, 10);
     const photoName = requireText(record.photoName ?? '', 'Photo filename', 255);
     const next = getState();
+    if (next.demoMode === 'walkthrough' && !next.walkthrough.reported) {
+      if (record.room !== 'Bathroom' || record.category !== 'Flooring') throw new TypeError('The walkthrough starts with the bathroom flooring defect.');
+      const defect = findDefect(next, 'DEF-021');
+      Object.assign(defect, { description, photoName, status: 'approval', reported: 'Just now' });
+      next.defects = [defect, ...next.defects.filter(item => item.id !== defect.id)];
+      next.walkthrough.reported = true;
+      addActivity(next, 'You reported cracked bathroom tiles (DEF-021).', 'defect');
+      addActivity(next, 'Demo update: John proposed two replacement tiles in VO-015 (+S$250, completion 14 Jul).', 'file');
+      return saveState(next);
+    }
     const nextId = Math.max(4, ...next.defects.map(defect => Number(defect.id.replace('DEF-', '')) || 0)) + 1;
     const id = `DEF-${String(nextId).padStart(3, '0')}`;
     next.defects.unshift({ id, room: record.room, category: record.category, title: `${record.category} issue`, description, status: 'reported', reported: 'Just now · local demo', photoName });
@@ -318,11 +370,30 @@
   }
 
   function reset() {
-    return saveState(getInitialState());
+    return saveState(getInitialState(activeMode));
+  }
+
+  function switchDemo(mode) {
+    if (!['explore', 'walkthrough'].includes(mode)) throw new TypeError('Choose a valid demo mode.');
+    if (mode === activeMode) return getState();
+    activeMode = mode;
+    state = readSavedState(mode);
+    try { root.localStorage.setItem(DEMO_MODE_KEY, mode); }
+    catch { storageAvailable = false; }
+    notify('local');
+    return getState();
+  }
+
+  function markWalkthroughStep(step) {
+    if (state.demoMode !== 'walkthrough' || !state.walkthrough.reported || !['reviewed', 'previewed', 'quoteRead', 'budgetChecked'].includes(step) || state.walkthrough[step]) return getState();
+    const next = getState();
+    next.walkthrough[step] = true;
+    return saveState(next);
   }
 
   root.addEventListener?.('storage', event => {
-    if (event.key !== STORAGE_KEY && event.key !== null) return;
+    if ((event.key === DEMO_MODE_KEY || event.key === null) && !isDesktop) activeMode = preferredMode();
+    else if (event.key !== storageKey(activeMode) && event.key !== null) return;
     state = readSavedState();
     notify('storage');
   });
@@ -333,6 +404,8 @@
     getState,
     saveState,
     getMetrics,
+    getProjectDefects,
+    hasProposal,
     money,
     get storageAvailable() { return storageAvailable; },
     subscribe,
@@ -349,6 +422,8 @@
     withdrawDefect,
     restoreDefect,
     markNotificationsRead,
-    reset
+    reset,
+    switchDemo,
+    markWalkthroughStep
   });
 })(typeof window === 'undefined' ? globalThis : window);

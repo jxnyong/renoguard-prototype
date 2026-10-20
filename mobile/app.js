@@ -9,14 +9,14 @@
   const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
   const roomSlug = room => room.toLowerCase().replaceAll(' ', '-');
   const roomFromSlug = slug => ROOMS.find(room => roomSlug(room) === slug);
-  const primaryRoutes = ['overview', 'rooms', 'defects', 'changes', 'budget'];
+  const primaryRoutes = ['overview', 'defects', 'changes', 'budget', 'more'];
   const scrollPositions = new Map();
   const reportDrafts = new Map();
   const textDrafts = new Map();
   const inspections = new Map();
   const sessionPhotos = new Map();
   const flashes = new Map();
-  const filters = { status: 'open', room: '', search: '', changes: 'pending' };
+  const filters = { status: 'open', search: '', changes: 'pending' };
   let state = Store.getState();
   let route = '';
   let mutating = false;
@@ -33,7 +33,7 @@
     return {
       approval: ['Approval needed', 'amber'], verification: ['Ready to inspect', 'green'],
       scheduled: ['Repair scheduled', 'neutral'], verified: ['Verified', 'green'],
-      reported: ['Reported · local demo', 'neutral'], followup: ['Follow-up needed', 'amber'],
+      reported: ['Reported', 'neutral'], followup: ['Follow-up needed', 'amber'],
       withdrawn: ['Withdrawn', 'neutral']
     }[statusValue] || ['In progress', 'neutral'];
   }
@@ -42,14 +42,18 @@
   const link = (label, target, type = 'secondary', extra = '') => `<a class="button ${type}" href="#${esc(target)}" ${extra}>${esc(label)}${icon('arrow')}</a>`;
   const action = (label, name, type = 'secondary', extra = '') => `<button type="button" class="button ${type}" data-action="${name}" ${extra}>${esc(label)}</button>`;
   const row = (label, value) => `<div><dt>${esc(label)}</dt><dd>${value}</dd></div>`;
-  const heading = (title, eyebrow, intro = '', className = '') => `<div class="screen-heading ${esc(className)}"><p class="eyebrow">${esc(eyebrow)}</p><h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${intro ? `<p class="intro">${esc(intro)}</p>` : ''}</div>`;
+  const heading = (title, eyebrow = '', intro = '', className = '') => `<div class="screen-heading ${esc(className)}">${eyebrow ? `<p class="eyebrow">${esc(eyebrow)}</p>` : ''}<h1 id="screen-title" tabindex="-1">${esc(title)}</h1>${intro ? `<p class="intro">${esc(intro)}</p>` : ''}</div>`;
   const notice = (text, amber = false) => `<div class="notice${amber ? ' amber' : ''}">${icon('info')}<div>${text}</div></div>`;
-  const localNote = () => '<p class="demo-note">Local demo only. Nothing is sent to your contractor, and no payment is taken.</p>';
   const section = (title, body) => `<section class="detail-section"><h2>${esc(title)}</h2>${body}</section>`;
   const documentLink = (label, detail, target) => `<a class="document-row" href="#${target}">${icon('file')}<span>${esc(label)}<small>${esc(detail)}</small></span>${icon('right')}</a>`;
-  const findDefect = id => state.defects.find(defect => defect.id === id);
+  const projectDefects = () => Store.getProjectDefects(state);
+  const findDefect = id => projectDefects().find(defect => defect.id === id);
   const totals = () => Store.getMetrics(state);
-  const openDefects = () => state.defects.filter(defect => !['verified', 'withdrawn'].includes(defect.status));
+  const openDefects = () => projectDefects().filter(defect => !['verified', 'withdrawn'].includes(defect.status));
+  const isWalkthrough = () => state.demoMode === 'walkthrough';
+  const proposalReady = () => Store.hasProposal(state);
+  const firstScenarioReport = () => isWalkthrough() && !state.walkthrough.reported;
+  const demoName = () => isWalkthrough() ? 'Scenario walkthrough' : 'Explore project';
 
   function announce(text) {
     announcements.textContent = '';
@@ -70,11 +74,12 @@
 
   function parentTab(path) {
     const first = path.split('/')[0];
+    if (first === 'profile') return null;
     if (primaryRoutes.includes(first)) return first;
-    if (first === 'timeline') return 'budget';
-    if (['documents', 'document'].includes(first)) return 'changes';
-    if (['room', 'preview', 'material'].includes(first)) return ['room','preview'].includes(first) ? 'rooms' : 'changes';
-    if (['defect', 'report', 'request', 'request-receipt', 'withdraw-report', 'inspect', 'verify-confirm', 'followup'].includes(first)) return 'defects';
+    if (['documents', 'document', 'timeline'].includes(first)) return 'budget';
+    if (['rooms', 'room', 'preview', 'project', 'contact', 'helper', 'reset', 'walkthrough'].includes(first)) return 'more';
+    if (first === 'material') return 'changes';
+    if (['defect', 'report', 'report-saved', 'request', 'request-receipt', 'withdraw-report', 'inspect', 'verify-confirm', 'followup'].includes(first)) return 'defects';
     if (['change', 'approve', 'approval-receipt', 'withdraw-approval', 'revision'].includes(first)) return 'changes';
     return 'overview';
   }
@@ -82,12 +87,18 @@
   function fallbackBack(path) {
     const first = path.split('/')[0];
     const id = path.split('/')[1];
+    if (first === 'profile') return 'overview';
     if (['inspect', 'verify-confirm', 'followup', 'withdraw-report'].includes(first)) return `defect/${id}`;
     if (['approve', 'approval-receipt', 'withdraw-approval', 'revision', 'material'].includes(first)) return 'change/VO-015';
     if (['request','request-receipt'].includes(first)) return `defect/${id}`;
     if (first === 'preview') return 'rooms';
     if (first === 'document') return 'documents';
+    if (first === 'documents') return 'budget';
     if (first === 'reset') return 'project';
+    if (first === 'timeline') return 'budget';
+    if (first === 'room') return 'rooms';
+    if (first === 'report' && id === 'edit') return `defect/${path.split('/')[2]}`;
+    if (first === 'report-saved') return `defect/${id}`;
     return parentTab(path);
   }
 
@@ -126,6 +137,8 @@
 
   function enterScreen() {
     state = Store.getState();
+    const step = route === 'change/VO-015' ? 'reviewed' : ['preview/bathroom', 'material/ivory', 'material/grey'].includes(route) ? 'previewed' : route === 'document/quotation' ? 'quoteRead' : route === 'budget' ? 'budgetChecked' : '';
+    if (step && isWalkthrough() && state.walkthrough.reported && !state.walkthrough[step]) mutate(() => Store.markWalkthroughStep(step));
     if (!route.startsWith('approve/')) approvalAcknowledged=false;
     if (route === 'updates' && !state.notificationsRead) mutate(() => Store.markNotificationsRead());
   }
@@ -133,7 +146,7 @@
   function updateChrome() {
     document.getElementById('notification-dot').hidden = state.notificationsRead;
     document.getElementById('change-nav-dot').hidden = totals().pending === 0;
-    document.getElementById('defect-nav-dot').hidden = !state.defects.some(defect => ['verification', 'followup'].includes(defect.status));
+    document.getElementById('defect-nav-dot').hidden = !projectDefects().some(defect => ['verification', 'followup'].includes(defect.status));
     document.getElementById('storage-notice').hidden = Store.storageAvailable;
     document.querySelectorAll('[data-tab]').forEach(tab => {
       if (tab.dataset.tab === parentTab(route)) tab.setAttribute('aria-current', 'page');
@@ -150,37 +163,86 @@
     return `<article class="card proposal-card"><div class="proposal-main"><div class="card-top">${badge(state.proposal.revisionRequest ? 'Changes requested · Not approved' : 'Your approval needed', 'amber')}<span class="record-id">VO-015</span></div><div class="proposal-title"><img class="proposal-thumbnail" src="/assets/materials/${state.proposal.tile}.webp" alt="${tileName()} tile sample"><div><p class="eyebrow">Bathroom · Flooring</p><h3>New bathroom floor tiles</h3><p>Original tile out of stock. John has proposed two close matches.</p></div></div><div class="impact-inline"><div><small>Additional cost</small><strong>+${money(PROPOSAL_COST)}</strong></div><div><small>Proposed completion</small><strong class="date-impact">14 Jul <span>was 1 Jul</span></strong></div></div>${link('Review the two options', 'change/VO-015', 'primary')}</div><a class="card-link" href="#defect/DEF-021">${icon('defects')}Cracked bathroom tiles · DEF-021${icon('right')}</a></article>`;
   }
 
+  function renovationProgress() {
+    const stages = ['Prep', 'Electrical', 'Tiling', 'Carpentry', 'Handover'];
+    return `<div class="progress-top"><span class="progress-ring" role="progressbar" aria-label="Renovation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><svg viewBox="0 0 76 76" aria-hidden="true" focusable="false"><circle class="progress-ring-track" cx="38" cy="38" r="32"/><circle class="progress-ring-fill" cx="38" cy="38" r="32" pathLength="100" stroke-dasharray="60 100" transform="rotate(-90 38 38)"/></svg><span class="progress-ring-copy"><strong>60%</strong><small>complete</small></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling &amp; carpentry</h2><p>Stage 3 of 5 · Handover ${handover()}</p></div></div><ol class="stage-progress" aria-label="Renovation stages">${stages.map((stage, index) => `<li class="${index < 2 ? 'completed' : index === 2 ? 'current' : ''}" ${index === 2 ? 'aria-current="step"' : ''}><span>${stage}<span class="sr-only"> · ${index < 2 ? 'Completed' : index === 2 ? 'Current stage' : 'Upcoming'}</span></span></li>`).join('')}</ol>`;
+  }
+
   function overview() {
     const metrics = totals();
-    return heading('Hi Thomas', 'Thursday, 18 June', 'Punggol BTO · Your home, taking shape.', 'home-heading') +
-      (state.proposal.status === 'pending' ? proposalCard() : `<a class="approved-banner" href="#approval-receipt">${icon('check')}<span><strong>Bathroom tiles approved</strong><small>${tileName()} · +${money(PROPOSAL_COST)}</small></span>${icon('right')}</a>`) +
-      `<section class="card home-progress"><div class="progress-top"><span class="progress-ring"><span>60%<small>complete</small></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling &amp; carpentry</h2><p>Stage 3 of 5 · Handover ${handover()}</p></div></div><div class="stage-bars" aria-label="Stage 3 of 5"><span class="done">Prep</span><span class="done">Electrical</span><span class="current">Tiling</span><span>Carpentry</span><span>Handover</span></div><div class="project-pair"><a href="#budget"><small>Remaining budget</small><strong>${money(metrics.available)}</strong></a><a href="#defects"><small>Open defects</small><strong>${metrics.openDefects}${icon('right')}</strong></a></div></section>
-      <div class="section-heading"><h2>Step inside your home</h2><a class="text-link" href="#rooms">Explore${icon('arrow')}</a></div><div class="model-card home-model"><div class="model-caption"><span class="eyebrow">Interactive room overview</span>${badge('3D cutaway', 'green')}</div>${window.RenoGuardRooms.scene({ defects: state.defects, tile: state.proposal.tile })}<p class="model-hint">Tap a room to explore · <span class="attention-key">!</span> needs attention</p></div>
-      <div class="quick-actions"><a href="#report">${icon('camera')}<span>Report defect</span></a><a href="#documents">${icon('file')}<span>Quotes &amp; variations</span></a></div><div class="section-heading"><h2>Recent updates</h2><a class="text-link" href="#updates">See all${icon('arrow')}</a></div><div class="card">${activityList(state.activity.slice(0, 2))}</div><p class="demo-note">Sample project · Saved on this device.</p>`;
+    const attention = [];
+    if (proposalReady() && state.proposal.status === 'pending') attention.push(menuRow('Choose your bathroom tiles', '+S$250 · Completion 1 → 14 Jul', 'change/VO-015', 'changes', 'Approval needed'));
+    projectDefects().filter(defect => ['verification', 'followup'].includes(defect.status)).forEach(defect => attention.push(menuRow(defect.title, `${defect.room} · ${defect.status === 'verification' ? 'Check the completed repair' : 'Review remaining work'}`, `defect/${defect.id}`, defect.status === 'verification' ? 'check' : 'defects', status(defect.status)[0])));
+    return heading('Hi Thomas', 'Thursday, 18 June', 'Punggol · 4-room BTO', 'home-heading') + `<section class="card home-progress" aria-label="Renovation summary">${renovationProgress()}<div class="project-pair"><a href="#budget"><small>Remaining budget</small><strong>${money(metrics.available)}${icon('right')}</strong></a><a href="#defects"><small>Open defects</small><strong>${metrics.openDefects}${icon('right')}</strong></a></div></section>${walkthroughPrompt()}
+      <section class="attention-section" aria-labelledby="attention-title"><div class="section-heading"><h2 id="attention-title">Needs attention${attention.length ? `<span class="count">${attention.length}</span>` : ''}</h2></div>${attention.length ? `<div class="menu-group attention-list">${attention.join('')}</div>` : `<div class="card caught-up">${icon('check')}<p>No decisions or repair checks waiting.</p></div>`}</section>
+      <div class="quick-actions"><a href="#report">${icon('camera')}<span>Report a defect</span></a><a href="#timeline">${icon('clock')}<span>Payment timeline</span></a></div>
+      <div class="section-heading"><h2>Rooms &amp; previews</h2><a class="text-link" href="#rooms">Explore${icon('arrow')}</a></div><div class="model-card home-model"><div class="model-caption"><span class="eyebrow">Room overview</span>${badge('3D cutaway', 'green')}</div>${window.RenoGuardRooms.scene({ defects: projectDefects(), tile: state.proposal.tile })}<p class="model-hint">Tap a room to explore · <span class="attention-key">!</span> needs attention</p></div>
+      ${state.activity.length ? `<div class="section-heading"><h2>Recent updates</h2><a class="text-link" href="#updates">See all${icon('arrow')}</a></div><div class="card">${activityList(state.activity.slice(0, 2))}</div>` : ''}`;
+  }
+
+  function menuRow(title, detail, target, symbol, label = '') {
+    return `<a class="menu-row" href="#${esc(target)}"><span class="menu-icon">${icon(symbol)}</span><span class="menu-copy">${label ? `<small class="menu-label">${esc(label)}</small>` : ''}<strong>${esc(title)}</strong><small>${esc(detail)}</small></span>${icon('right')}</a>`;
+  }
+
+  function moreScreen() {
+    return heading('Project tools') +
+      section('Documents & payments', `<div class="menu-group">${menuRow('Quotes & variations', 'Original scope and proposed changes', 'documents', 'file')}${menuRow('Payment timeline', `Target handover · ${handover()} 2026`, 'timeline', 'clock')}</div>`) +
+      section('Your home', `<div class="menu-group">${menuRow('Rooms & AR preview', 'Explore your home and compare finishes', 'rooms', 'rooms')}${menuRow('Project details', 'Punggol · 4-room BTO', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`) +
+      section('Help', `<div class="menu-group">${menuRow('Project helper', 'Understand changes, costs and next steps', 'helper', 'sparkles')}</div>`) +
+      section('Demo modes', `<p class="help">Each mode keeps its own saved progress.</p><div class="demo-modes">${[['walkthrough', 'Scenario walkthrough', 'One bathroom defect, from report to approval.'], ['explore', 'Explore project', 'Multiple room issues, repairs and project records.']].map(([mode, title, description]) => `<button class="demo-mode" data-action="switch-demo" data-mode="${mode}" aria-pressed="${state.demoMode === mode}"><span><strong>${title}</strong><small>${description}</small></span>${state.demoMode === mode ? badge('Active', 'green') : icon('right')}</button>`).join('')}</div>${isWalkthrough() ? link('View walkthrough steps', 'walkthrough', 'quiet') : ''}`) +
+      `<div class="demo-reset">${link('Reset demo', 'reset', 'danger')}<p class="help">Resets only the active demo.</p></div><p class="demo-note">Interactive prototype. Reports and decisions stay in this browser; messages and payments are simulated.</p>`;
+  }
+
+  function walkthroughSteps() {
+    const progress = state.walkthrough || {};
+    return [
+      { title: 'Report the cracked tiles', detail: 'Bathroom floor · DEF-021', target: 'report/room/bathroom', done: Boolean(progress.reported) },
+      { title: 'Review the proposed change', detail: 'Two replacement tiles · +S$250 · 14 Jul', target: 'change/VO-015', done: Boolean(progress.reviewed) },
+      { title: 'Preview the bathroom', detail: 'Compare the bathroom floor in AR preview.', target: 'preview/bathroom', done: Boolean(progress.previewed) },
+      { title: 'Read the quotation', detail: 'Check the S$250 cost breakdown.', target: 'document/quotation', done: Boolean(progress.quoteRead) },
+      { title: 'Check the budget', detail: 'S$30,000 becomes S$29,750 after approval.', target: 'budget', done: Boolean(progress.budgetChecked) },
+      { title: 'Approve your chosen tile', detail: 'Confirm the cost and revised completion date.', target: 'approve/VO-015', done: state.proposal.status === 'approved' }
+    ];
+  }
+
+  function walkthroughPrompt() {
+    if (!isWalkthrough()) return '';
+    const steps = walkthroughSteps();
+    const index = steps.findIndex(step => !step.done);
+    const step = steps[index];
+    return `<a class="walkthrough-prompt" href="#${step ? step.target : 'walkthrough'}"><span>${icon(step ? 'arrow' : 'check')}</span><div><small>${step ? `Walkthrough · Step ${index + 1} of ${steps.length}` : 'Walkthrough completed'}</small><strong>${step ? step.title : 'View your updated project'}</strong></div>${icon('right')}</a>`;
+  }
+
+  function walkthroughScreen() {
+    if (!isWalkthrough()) return heading('Scenario walkthrough', 'Bathroom tile replacement') + `<div class="action-stack">${action('Open scenario walkthrough', 'switch-demo', 'primary', 'data-mode="walkthrough"')}${link('Back to project tools', 'more')}</div>`;
+    const steps = walkthroughSteps();
+    const current = steps.findIndex(step => !step.done);
+    return heading('Scenario walkthrough', 'Bathroom tile replacement') + `<ol class="request-timeline walkthrough-timeline">${steps.map((step, index) => `<li class="${step.done ? 'complete' : index === current ? 'current' : 'upcoming'}" ${index === current ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.done ? icon('check') : ''}</span><div class="request-step-copy"><h3>${step.title}</h3><p>${step.detail}</p><span class="sr-only">${step.done ? 'Completed' : index === current ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol><div class="action-stack">${current >= 0 ? link(`Continue · ${steps[current].title}`, steps[current].target, 'primary') : link('View updated budget', 'budget', 'primary')}${current < 0 ? link('View payment timeline', 'timeline') : ''}${link('Back to project tools', 'more', 'quiet')}</div>`;
   }
 
   function defectRow(defect) {
-    const next = { approval: 'Review linked proposal', verification: 'Inspect before you verify', followup: 'Discuss remaining work', reported: 'Saved on this device', scheduled: 'Repair planned · see record', withdrawn: 'Restore if needed', verified: 'Reopen if the issue returns' }[defect.status];
-    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div class="record-content">${statusBadge(defect.status)}<h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported)}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
+    const next = { approval: 'Review linked proposal', verification: 'Inspect before you verify', followup: 'Discuss remaining work', reported: defect.changeRequest ? 'Track quotation request' : 'View report', scheduled: 'Repair planned · see record', withdrawn: 'Restore if needed', verified: 'Reopen if the issue returns' }[defect.status];
+    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div class="record-content">${defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)}<h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported.replace(' · local demo', ''))}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
   }
 
   function filteredDefects() {
     const search = filters.search.trim().toLowerCase();
-    return state.defects.filter(defect => {
+    return projectDefects().filter(defect => {
       const matchesStatus = filters.status === 'open' ? !['verified', 'withdrawn'].includes(defect.status) : defect.status === filters.status;
-      return matchesStatus && (!filters.room || defect.room === filters.room) && (!search || `${defect.title} ${defect.id} ${defect.room} ${defect.description}`.toLowerCase().includes(search));
+      const searchable = `${defect.title} ${defect.id} ${defect.room} ${defect.category} ${defect.description}`.toLowerCase();
+      return matchesStatus && (!search || search.split(/\s+/).every(term => searchable.includes(term)));
     });
   }
 
   function defectResults() {
     const records = filteredDefects();
-    return `<p class="result-count" role="status">${records.length} ${records.length === 1 ? 'record' : 'records'}${filters.room ? ` in ${esc(filters.room)}` : ''}</p><div class="stack">${records.map(defectRow).join('') || `<div class="empty-state">${icon('search')}<h2>No matching records</h2><p>${filters.search || filters.room ? 'Try another room or search term.' : filters.status === 'withdrawn' ? 'Withdrawn reports will stay here so they can be restored.' : filters.status === 'verified' ? 'Repairs will appear here after your inspection.' : 'No open defects are recorded.'}</p>${filters.search || filters.room ? action('Clear filters', 'clear-filters') : link('Report a defect', 'report')}</div>`}</div>`;
+    return `<p class="result-count" role="status">${records.length} ${records.length === 1 ? 'record' : 'records'}</p><div class="stack">${records.map(defectRow).join('') || `<div class="empty-state">${icon('search')}<h2>No matching records</h2><p>${filters.search ? 'Try another room or issue.' : filters.status === 'withdrawn' ? 'Withdrawn reports will stay here so they can be restored.' : filters.status === 'verified' ? 'Repairs will appear here after your inspection.' : 'No open defects are recorded.'}</p>${filters.search ? action('Clear search', 'clear-search') : link('Report a defect', 'report')}</div>`}</div>`;
   }
 
   function defectsScreen() {
-    return heading('Defects & repairs', 'Your project records', 'From first report to your final inspection.') + link('Report a defect', 'report', 'primary') +
+    return heading('Defects & repairs') + link('Report a defect', 'report', 'primary') +
       `<div class="segmented" aria-label="Defect record status">${['open', 'verified', 'withdrawn'].map(value => `<button type="button" data-action="filter-status" data-status="${value}" aria-pressed="${filters.status === value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join('')}</div>
-      <label class="search-field">${icon('search')}<span class="sr-only">Search defect records</span><input id="defect-search" type="search" placeholder="Search room, issue, or record…" value="${esc(filters.search)}"></label><div class="filter-row"><label for="room-filter">Filter by room</label><select id="room-filter"><option value="">All rooms</option>${ROOMS.map(room => `<option value="${esc(room)}" ${filters.room === room ? 'selected' : ''}>${esc(room)}</option>`).join('')}</select></div><div id="defect-results">${defectResults()}</div>`;
+      <label class="search-field">${icon('search')}<span class="sr-only">Search defect records</span><input id="defect-search" type="search" placeholder="Search by room or issue" value="${esc(filters.search)}"></label><div id="defect-results">${defectResults()}</div>`;
   }
 
   function refreshDefectResults() {
@@ -191,7 +253,7 @@
   }
 
   function roomsScreen() {
-    return heading('Your home, in view', 'Punggol · 4-room BTO', 'Explore each room and see what needs your attention.') + `<div class="model-card"><div class="model-caption"><span class="eyebrow">Room overview</span>${action('Flip view', 'rotate-plan', 'quiet compact')}</div><div id="room-scene">${window.RenoGuardRooms.scene({ defects: state.defects, mirror: mirrorPlan, tile: state.proposal.tile })}</div><p class="model-hint">Tap or hover over a room to highlight it.</p><div class="model-legend"><span><i></i> Room</span><span><b>!</b> Open issue</span></div></div><p class="help">Illustrative cutaway and room areas; not a measured survey of your home.</p><div class="section-heading"><h2>Rooms &amp; records</h2></div><div class="room-list">${ROOMS.map(room => { const issues=openDefects().filter(d=>d.room===room); return `<button class="room-list-item" data-action="open-room" data-room="${roomSlug(room)}"><span class="icon-tile">${icon(room==='Bathroom'?'camera':'rooms')}</span><span><strong>${esc(room)}</strong><small>${issues.length?`${issues.length} open ${issues.length===1?'issue':'issues'}`:'No open issues'}</small></span>${issues.length?'<b class="attention-key">!</b>':icon('right')}</button>`; }).join('')}</div>`;
+    return heading('Rooms & previews', 'Punggol · 4-room BTO') + `<div class="model-card"><div class="model-caption"><span class="eyebrow">Room overview</span>${action('Flip view', 'rotate-plan', 'quiet compact')}</div><div id="room-scene">${window.RenoGuardRooms.scene({ defects: projectDefects(), mirror: mirrorPlan, tile: state.proposal.tile })}</div><p class="model-hint">Tap a room for details.</p><div class="model-legend"><span><i></i> Room</span><span><b>!</b> Open issue</span></div></div><p class="help">Illustrative cutaway and room areas; not a measured survey of your home.</p><div class="section-heading"><h2>Rooms &amp; records</h2></div><div class="room-list">${ROOMS.map(room => { const issues=openDefects().filter(d=>d.room===room); return `<button class="room-list-item" data-action="open-room" data-room="${roomSlug(room)}"><span class="icon-tile">${icon(room==='Bathroom'?'camera':'rooms')}</span><span><strong>${esc(room)}</strong><small>${issues.length?`${issues.length} open ${issues.length===1?'issue':'issues'}`:'No open issues'}</small></span>${issues.length?'<b class="attention-key">!</b>':icon('right')}</button>`; }).join('')}</div>`;
   }
 
   function openRoom(slug) {
@@ -200,14 +262,14 @@
     const dialog = document.getElementById('room-dialog');
     const records = openDefects().filter(d => d.room === room);
     const metadata = window.RenoGuardRooms.rooms.find(r => r.name === room);
-    document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><p class="eyebrow">Room overview · ${metadata.area}</p>${action('Close', 'close-room', 'quiet compact')}</div><h2 id="room-dialog-title">${esc(room)}</h2><p class="intro">${records.length ? `${records.length} open ${records.length===1?'issue':'issues'} in this room` : 'No open issues in this room'}</p>${room==='Bathroom'?`<a class="room-change-summary" href="#change/VO-015">${icon('changes')}<span><strong>Bathroom floor tile replacement</strong><small>${state.proposal.status==='approved'?'Approved · '+tileName():'Approval needed · two tile options'} · +S$250</small></span>${icon('right')}</a>`:''}${records.map(d=>`<a class="sheet-record" href="#defect/${d.id}">${statusBadge(d.status)}<strong>${esc(d.title)}</strong>${icon('right')}</a>`).join('')}<div class="action-stack">${link(room==='Bathroom'?'Open AR room preview':'Enter 3D room view',`preview/${slug}`,'primary')}${link('Room details & records',`room/${slug}`)}</div>`;
+    document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><p class="eyebrow">Room overview · ${metadata.area}</p>${action('Close', 'close-room', 'quiet compact')}</div><h2 id="room-dialog-title">${esc(room)}</h2><p class="intro">${records.length ? `${records.length} open ${records.length===1?'issue':'issues'} in this room` : 'No open issues in this room'}</p>${room==='Bathroom'&&proposalReady()?`<a class="room-change-summary" href="#change/VO-015">${icon('changes')}<span><strong>Bathroom floor tile replacement</strong><small>${state.proposal.status==='approved'?'Approved · '+tileName():'Approval needed · two tile options'} · +S$250</small></span>${icon('right')}</a>`:''}${records.map(d=>`<a class="sheet-record" href="#defect/${d.id}">${statusBadge(d.status)}<strong>${esc(d.title)}</strong>${icon('right')}</a>`).join('')}<div class="action-stack">${link(room==='Bathroom'&&!proposalReady()?'Report the bathroom tiles':room==='Bathroom'?'Open AR room preview':'Enter 3D room view',room==='Bathroom'&&!proposalReady()?'report/room/bathroom':`preview/${slug}`,'primary')}${link('Room details & records',`room/${slug}`)}</div>`;
     dialog.showModal();
   }
 
   function previewScreen(slug) {
     const room = roomFromSlug(slug);
     if (!room) return missing('Room not found', 'rooms');
-    if(room !== 'Bathroom') return heading(room, '3D room view', 'A closer look at the room layout and finishes.') + `<div class="model-card room-closeup"><div id="room-scene">${window.RenoGuardRooms.scene({only:slug,mirror:mirrorPlan})}</div>${action('Flip room view','rotate-plan','secondary')}</div>` + notice('Illustrative 3D cutaway. Furniture, finishes and dimensions are design references.') + `<div class="action-stack">${link('View room records',`room/${slug}`,'primary')}${link('Back to home overview','rooms')}</div>`;
+    if(room !== 'Bathroom') return heading(room, '3D room view') + `<div class="model-card room-closeup"><div id="room-scene">${window.RenoGuardRooms.scene({only:slug,mirror:mirrorPlan})}</div>${action('Flip room view','rotate-plan','secondary')}</div>` + notice('Illustrative 3D cutaway. Furniture, finishes and dimensions are design references.') + `<div class="action-stack">${link('View room records',`room/${slug}`,'primary')}${link('Back to home overview','rooms')}</div>`;
     const material=materials[state.proposal.tile];
     return `<div class="ar-preview"><div class="ar-scene ${state.proposal.tile==='sabbia'?'warm-floor':''}" id="ar-scene" role="region" aria-label="Bathroom preview with ${material.name} floor tiles"><img class="bathroom-photo" src="/assets/bathroom.webp" alt="Realistic bathroom with a floating toilet, walnut cabinet and stone floor"><img class="floor-overlay colour" src="/assets/materials/sabbia-colour.svg" alt=""><img class="floor-overlay warmth" src="/assets/materials/sabbia-warmth.svg" alt=""><div class="ar-scene-top"><span class="ar-tag">${icon('camera')} Bathroom preview</span><span class="ar-demo">Simulated AR</span></div><div class="floor-area ${showFloorGuide?'':'is-hidden'}" id="floor-guide"><svg viewBox="0 0 390 540" preserveAspectRatio="none"><path d="M0 362 80 346 214 330 308 334 390 312"/><circle cx="80" cy="346" r="4"/><circle cx="214" cy="330" r="4"/><circle cx="308" cy="334" r="4"/></svg><span>Floor area · 4.5 m²</span></div><button class="floor-guide-button" data-action="toggle-floor" aria-pressed="${showFloorGuide}" aria-label="Show floor boundary">${icon('rooms')}</button><span class="preview-sample-label">Illustrative view · not a live camera</span></div><div class="ar-controls"><p class="eyebrow">Preview the floor finish</p><div class="tile-options" aria-label="Bathroom floor tile options">${Object.entries(materials).map(([key,m])=>`<button data-action="select-tile" data-tile="${key}" aria-pressed="${state.proposal.tile===key}" ${state.proposal.status==='approved'?'disabled':''}><img src="/assets/materials/${key}.webp" alt=""><span><small>${m.label}</small><strong>${m.name}</strong></span><i>${state.proposal.tile===key?'✓':''}</i></button>`).join('')}</div><div id="material-summary" aria-live="polite"><h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span></div><div class="ar-specs"><div><small>Extra cost</small><strong>+S$250</strong></div><div><small>Ready by</small><strong>14 Jul</strong></div><div><small>Finish</small><strong>Matte</strong></div></div>${state.proposal.status==='approved'?notice('This is your approved tile. Withdraw the approval first to select a different option.'):''}${link(state.proposal.status==='approved'?'View approved change':'Use this tile · review change','change/VO-015','primary')}<p class="help">Colour and lighting are illustrative. Confirm a physical sample with your designer.</p></div></div>`;
   }
@@ -224,21 +286,22 @@
       document.getElementById('material-summary').innerHTML=`<h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span>`;
     } else render();
     document.getElementById('header-context').textContent=content.querySelector('.ar-preview')?'AR Room Preview':document.getElementById('screen-title')?.textContent;
-    document.title=`${document.getElementById('screen-title')?.textContent || 'Project'} · RenoGuard Mobile`;
+    document.title = 'RenoGuard · Mobile';
     announce(`${tileName()} selected. Additional cost S$250. Not approved yet.`);
   }
 
   function roomScreen(slug) {
     const room = roomFromSlug(slug);
     if (!room) return missing('Room not found', 'rooms');
-    const records=state.defects.filter(d=>d.room===room);
-    return heading(room,'Room records','Finishes, changes and repairs, kept together.') + `<a class="room-preview-link" href="#preview/${slug}">${room==='Bathroom'?'<img src="/assets/bathroom.webp" alt="Bathroom design preview">':window.RenoGuardRooms.scene({only:slug})}<span>${icon('camera')}${room==='Bathroom'?'Explore tile options':'Enter 3D room view'}${icon('arrow')}</span></a>` + section('Defect records',`<div class="stack">${records.map(defectRow).join('')||'<div class="empty-state"><h3>No records yet</h3><p>Found an issue? Add a report below.</p></div>'}</div>`) + `<div class="action-stack">${link('Report an issue in this room',`report/room/${slug}`,'primary')}${link('All rooms','rooms')}</div>`;
+    const records=projectDefects().filter(d=>d.room===room);
+    return heading(room,'Room records') + `<a class="room-preview-link" href="#${room==='Bathroom'&&!proposalReady()?'report/room/bathroom':`preview/${slug}`}">${room==='Bathroom'?'<img src="/assets/bathroom.webp" alt="Bathroom design preview">':window.RenoGuardRooms.scene({only:slug})}<span>${icon('camera')}${room==='Bathroom'&&!proposalReady()?'Report the bathroom tiles':room==='Bathroom'?'Explore tile options':'Enter 3D room view'}${icon('arrow')}</span></a>` + section('Defect records',`<div class="stack">${records.map(defectRow).join('')||'<div class="empty-state"><h3>No records yet</h3><p>Found an issue? Add a report below.</p></div>'}</div>`) + `<div class="action-stack">${link('Report an issue in this room',`report/room/${slug}`,'primary')}${link('All rooms','rooms')}</div>`;
   }
 
   function changesScreen() {
+    if (!proposalReady()) return heading('Approvals') + `<div class="empty-state">${icon('changes')}<h2>No proposals to review yet</h2><p>Start the walkthrough by reporting the cracked bathroom tiles.</p>${link('Report the bathroom tiles', 'report/room/bathroom', 'primary')}</div>`;
     const pending = state.proposal.status === 'pending';
     const matching = filters.changes === (pending ? 'pending' : 'approved');
-    return heading('Approvals', 'Review before work proceeds', 'Know what will change, what it costs, and what you have agreed to.') +
+    return heading('Approvals') +
       `<div class="segmented" aria-label="Change request status">${['pending', 'approved'].map(value => `<button type="button" data-action="filter-changes" data-status="${value}" aria-pressed="${filters.changes === value}">${value === 'pending' ? 'Awaiting approval' : 'Approved'}</button>`).join('')}</div>` +
       (matching ? pending ? proposalCard() : `<a class="record-row" href="#change/VO-015"><div>${badge('Approved', 'green')}<h3>Bathroom tile replacement</h3><p>${tileName()} · +${money(PROPOSAL_COST)}</p><div class="record-meta">VO-015 · ${esc(state.proposal.approvedAt)}</div></div>${icon('right')}</a>` : `<div class="empty-state">${icon('changes')}<h2>${pending ? 'No approved changes yet' : 'No decisions waiting'}</h2><p>${pending ? 'Approved changes will appear here with their cost and decision record.' : 'Your tile replacement approval is recorded under Approved.'}</p>${action(pending ? 'View pending proposal' : 'View approved change', 'switch-change-filter')}</div>`);
   }
@@ -257,80 +320,95 @@
       section('Check before deciding',`<div class="stack">${documentLink('AR room preview','See both floor finishes in the bathroom','preview/bathroom')}${documentLink('Read the quotation','Breakdown of the additional S$250','document/quotation')}${documentLink('Check my budget',`${money(totals().available)} left${approved?'':` · ${money(totals().available-PROPOSAL_COST)} after approval`}`,'budget')}</div>`) +
       (state.proposal.revisionRequest?section('Your saved revision request',`<div class="card"><p>${esc(state.proposal.revisionRequest.text)}</p><p class="help">Saved locally. No additional cost approved.</p></div>`):'') +
       (state.proposal.lastApprovedAt?notice(`Previous approval withdrawn on ${esc(state.proposal.withdrawnAt)}. The decision history is retained.`):'') +
-      `<div class="action-stack">${approved?link('View approval receipt','approval-receipt','primary')+link('Withdraw this approval','withdraw-approval','danger'):link('Review & approve','approve/VO-015','primary')+link('Request changes','revision')}</div>` + localNote();
+      `<div class="action-stack">${approved?link('View approval receipt','approval-receipt','primary')+link('Withdraw this approval','withdraw-approval','danger'):link('Review & approve','approve/VO-015','primary')+link('Request changes','revision')}</div>`;
   }
 
   function materialScreen() { return previewScreen('bathroom'); }
 
   function approvalScreen() {
     if(state.proposal.status==='approved') return approvalReceipt();
-    return heading('Review & approve','Final confirmation · VO-015','Confirm your chosen tile, additional cost and revised completion date.') + section('1 · Your chosen tile',`<div class="material-choices">${materialCard('grigio')}${materialCard('sabbia')}</div>`) + section('2 · Check the details',`<div class="card"><dl class="details">${row('Tile',tileName())}${row('Additional cost','<strong>+S$250</strong>')}${row('Remaining budget',`${money(totals().available)} → <strong>${money(totals().available-PROPOSAL_COST)}</strong>`)}${row('Completion','1 Jul → 14 Jul 2026')}${row('Payment milestone','S$250 due 14 Jul 2026')}</dl></div>`) + `<label class="approval-check"><input type="checkbox" id="approval-acknowledgement" ${approvalAcknowledged?'checked':''}><span>I have reviewed the tile, S$250 additional cost and revised completion date.</span></label><p class="help" id="approval-help">${approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'}</p><div class="action-stack">${action('Approve change · S$250','approve-confirm','primary',approvalAcknowledged?'':'disabled')}${link('Back to variation order','change/VO-015')}</div>` + notice('Approval updates this local prototype. It does not apply a legal signature, send a message or take payment. You can withdraw while the repair is still scheduled.');
+    return heading('Review & approve','Final confirmation · VO-015') + section('1 · Your chosen tile',`<div class="material-choices">${materialCard('grigio')}${materialCard('sabbia')}</div>`) + section('2 · Check the details',`<div class="card"><dl class="details">${row('Tile',tileName())}${row('Additional cost','<strong>+S$250</strong>')}${row('Remaining budget',`${money(totals().available)} → <strong>${money(totals().available-PROPOSAL_COST)}</strong>`)}${row('Completion','1 Jul → 14 Jul 2026')}${row('Payment milestone','S$250 due 14 Jul 2026')}</dl></div>`) + `<label class="approval-check"><input type="checkbox" id="approval-acknowledgement" ${approvalAcknowledged?'checked':''}><span>I have reviewed the tile, S$250 additional cost and revised completion date.</span></label><p class="help" id="approval-help">${approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'}</p><div class="action-stack">${action('Approve change · S$250','approve-confirm','primary',approvalAcknowledged?'':'disabled')}</div>` + notice('Your decision updates the prototype budget and payment timeline. You can withdraw approval while the repair is still scheduled.');
   }
 
   function approvalReceipt() {
     if(state.proposal.status!=='approved')return missing('Approval is not recorded','change/VO-015');
-    return `<div class="success-icon">${icon('check')}</div>`+heading('A clear decision. A step forward.','Change approved · VO-015',`${tileName()} has been recorded as your chosen bathroom tile.`)+`<div class="card"><dl class="details">${row('Approved by','Thomas Eng')}${row('Recorded',esc(state.proposal.approvedAt))}${row('Additional cost','S$250')}${row('Remaining budget',`<strong>${money(totals().available)}</strong>`)}${row('New completion','14 Jul 2026')}${row('New payment milestone','New bathroom tiles · S$250 · 14 Jul')}</dl></div><div class="action-stack">${link('View updated budget','budget','primary')}${link('View payment timeline','timeline')}${link('Back to home','overview','quiet')}</div>`+localNote();
+    return `<div class="success-icon">${icon('check')}</div>`+heading('Change approved','VO-015',`${tileName()} · Bathroom floor`)+`<div class="card"><dl class="details">${row('Approved by','Thomas Eng')}${row('Recorded',esc(state.proposal.approvedAt))}${row('Additional cost','S$250')}${row('Remaining budget',`<strong>${money(totals().available)}</strong>`)}${row('New completion','14 Jul 2026')}${row('New payment milestone','New bathroom tiles · S$250 · 14 Jul')}</dl></div><div class="action-stack">${link('View updated budget','budget','primary')}${link('View payment timeline','timeline')}</div>`;
   }
 
   function withdrawApprovalScreen() {
     if (state.proposal.status !== 'approved' || findDefect('DEF-021').status !== 'scheduled') return missing('Approval cannot be withdrawn', 'change/VO-015', 'You can withdraw only an approved change whose repair has not progressed beyond scheduled.');
-    return heading('Withdraw this approval?', 'Correct a local decision', 'The proposal will return to awaiting approval. The earlier approval remains in the record.') + `<div class="card"><dl class="details">${row('Allowance now', money(totals().available))}${row('Allowance after withdrawal', `<span class="emphasis">${money(totals().available + PROPOSAL_COST)}</span>`)}${row('Cost removed from commitments', money(PROPOSAL_COST))}</dl></div>` + notice('The linked repair will wait for a new decision. No payment or refund occurs; this changes your local demo record.', true) + `<div class="action-stack">${action('Confirm approval withdrawal', 'withdraw-approval-confirm', 'danger')}${link('Keep approval', 'change/VO-015')}</div>`;
+    return heading('Withdraw this approval?', 'VO-015 · Bathroom tiles', 'The proposal will return to awaiting approval. The earlier approval remains in the record.') + `<div class="card"><dl class="details">${row('Remaining budget', money(totals().available))}${row('After withdrawal', `<span class="emphasis">${money(totals().available + PROPOSAL_COST)}</span>`)}${row('Cost removed from commitments', money(PROPOSAL_COST))}</dl></div>` + notice('The linked repair will wait for a new decision. No payment or refund occurs; this changes your local demo record.', true) + `<div class="action-stack">${action('Confirm approval withdrawal', 'withdraw-approval-confirm', 'danger')}${link('Keep approval', 'change/VO-015')}</div>`;
+  }
+
+  function budgetNavigation(current) {
+    return `<nav class="budget-nav" aria-label="Budget sections">${[['Overview', 'budget'], ['Quotes', 'documents'], ['Payments', 'timeline']].map(([label, target]) => `<a href="#${target}" ${target === current ? 'aria-current="page"' : ''}>${label}</a>`).join('')}</nav>`;
   }
 
   function budgetScreen() {
     const metrics=totals(),approved=state.proposal.status==='approved';
-    return heading('Your project budget','Live cost tracker','A clear view of what’s committed and what’s left.')+`<div class="money-card"><span class="money-label">Remaining budget${icon('budget')}</span><span class="money-value">${money(metrics.available)}</span><div class="budget-bar"><span style="width:${metrics.approved/PROJECT_BUDGET*100}%"></span></div><div class="money-footer"><small>${money(metrics.approved)} approved</small><small>${money(PROJECT_BUDGET)} total</small></div></div>`+
-      (approved?`<a class="approved-banner" href="#approval-receipt">${icon('check')}<span><strong>New bathroom tiles approved</strong><small>${tileName()} · VO-015 · −S$250</small></span>${icon('right')}</a>`:`<section class="card budget-impact"><div class="heading-row"><h3>If you approve VO-015</h3>${badge('Within budget','green')}</div><div class="budget-before-after"><span><small>Now</small><strong>${money(metrics.available)}</strong></span>${icon('arrow')}<span><small>After</small><strong>${money(metrics.available-PROPOSAL_COST)}</strong></span></div><p>Uses less than 1% of your remaining budget.</p>${link('Review proposed change','change/VO-015','quiet')}</section>`)+
-      section('Approved so far, by trade',`<div class="trade-list">${[['Carpentry',7200],['Tiling',3600+(approved?250:0)],['Electrical',3100],['Others',1100]].map(([name,amount])=>`<div><div class="heading-row"><strong>${name}</strong><span>${money(amount)}${name==='Tiling'&&!approved?'<small class="pending-cost"> +250 pending</small>':''}</span></div><div class="trade-bar"><span style="width:${amount/15000*100}%"></span></div></div>`).join('')}</div>`)+`<div class="action-stack">${link('Payment timeline','timeline','primary')}${link('Variations & quotes','documents')}</div><p class="demo-note">Approved costs are commitments, not payments. Pending changes are excluded until you approve.</p>`;
+    return heading('Budget')+budgetNavigation('budget')+`<div class="money-card"><span class="money-label">Remaining budget${icon('budget')}</span><span class="money-value">${money(metrics.available)}</span><div class="budget-bar"><span style="width:${metrics.approved/PROJECT_BUDGET*100}%"></span></div><div class="money-footer"><small>${money(metrics.approved)} approved</small><small>${money(PROJECT_BUDGET)} total</small></div></div>`+
+      (approved?`<a class="approved-banner" href="#approval-receipt">${icon('check')}<span><strong>New bathroom tiles approved</strong><small>${tileName()} · VO-015 · −S$250</small></span>${icon('right')}</a>`:proposalReady()?`<section class="card budget-impact"><div class="budget-impact-body"><div class="heading-row"><h2>If you approve <span class="record-ref">VO-015</span></h2>${badge('Within budget','green')}</div><div class="budget-before-after"><span><small>Now</small><strong>${money(metrics.available)}</strong></span>${icon('arrow')}<span><small>After</small><strong>${money(metrics.available-PROPOSAL_COST)}</strong></span></div><p>Uses less than 1% of your remaining budget.</p></div><a class="card-action" href="#change/VO-015"><span>Review proposed change</span>${icon('arrow')}</a></section>`:'')+
+      section('Approved so far, by trade',`<div class="trade-list">${[['Carpentry',7200],['Tiling',3600+(approved?250:0)],['Electrical',3100],['Others',1100]].map(([name,amount])=>`<div><div class="heading-row"><strong>${name}</strong><span>${money(amount)}${name==='Tiling'&&!approved&&proposalReady()?'<small class="pending-cost"> +250 pending</small>':''}</span></div><div class="trade-bar"><span style="width:${amount/15000*100}%"></span></div></div>`).join('')}</div>`)+`<p class="demo-note">Approved costs are commitments, not payments. Pending changes are excluded until you approve.</p>`;
   }
 
   function defectScreen(id) {
     const defect = findDefect(id);
     if (!defect) return missing('Defect record not found', 'defects');
     const flash = flashes.get(`defect/${id}`);
+    flashes.delete(`defect/${id}`);
     let next = '';
     if (defect.status === 'approval') next = notice('<strong>Your next step</strong>Review the replacement tile quotation before this repair can proceed.', true) + link('Review tile replacement', 'change/VO-015', 'primary');
     if (defect.status === 'verification') next = notice('<strong>Inspect before you verify</strong>Check the cabinet alignment and operation at your home. Record a follow-up if the issue remains.') + `<div class="action-stack">${link('Inspect the repair', `inspect/${id}`, 'primary')}${link('Issue still needs work', `followup/${id}`)}</div>`;
     if (defect.status === 'verified') next = notice('<strong>Repair verified</strong>Your record can be reopened if you find a remaining problem.') + `<div class="action-stack">${link('Reopen for follow-up', `followup/${id}`)}</div>`;
     if (defect.status === 'scheduled') next = notice(`<strong>Repair planned · see record</strong>${id === 'DEF-021' ? 'The replacement tile change is approved. Completion is planned for 14 Jul 2026.' : 'The paint touch-up is scheduled for 26 Jun.'} Verify the result once it is ready for inspection.`);
     if (defect.status === 'followup') next = notice('<strong>Follow-up recorded</strong>The issue remains open. Discuss the remaining work with John using your usual contact channel.', true) + `<div class="action-stack">${link('View project contact', 'contact')}${id === 'DEF-003' ? action('Return to ready for inspection', 'restore-inspection', 'secondary', `data-id="${id}"`) : ''}</div>`;
-    if (defect.status === 'reported') next = notice('<strong>Report saved locally</strong>No report has been sent. Contact John separately to report a real issue.') + `<div class="action-stack">${defect.changeRequest ? link('View change request',`request-receipt/${id}`,'primary') : link('Request a change',`request/${id}`,'primary')}${link('Edit report', `report/edit/${id}`)}${link('Withdraw report', `withdraw-report/${id}`, 'danger')}${link('View project contact', 'contact', 'quiet')}</div>`;
+    if (defect.status === 'reported') next = defect.changeRequest
+      ? section('Next step', `<p>Review the quotation and replacement options when they are ready.</p><div class="action-stack">${link('Track quotation request', `request-receipt/${id}`, 'primary')}</div>`)
+      : section('Need a replacement?', `<p>Request a quotation to review the options and cost before approving work.</p><div class="action-stack">${link('Request a quotation', `request/${id}`)}</div>`);
     if (defect.status === 'withdrawn') next = notice('<strong>Report withdrawn</strong>The record is retained and excluded from open defects. You can restore it if needed.') + `<div class="action-stack">${action('Restore report', 'restore-report', 'primary', `data-id="${id}"`)}</div>`;
-    return heading(defect.title, `${defect.id} · ${defect.room}`) + statusBadge(defect.status) + (flash ? notice(esc(flash)) : '') + section('Issue details', `<p>${esc(defect.description)}</p><dl class="details">${row('Room', esc(defect.room))}${row('Category', esc(defect.category))}${row('Reported', esc(defect.reported))}${row('Responsible person', 'John Tan · Northline Interiors')}</dl>`) +
+    return heading(defect.title, `${defect.id} · ${defect.room}`) + (defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)) + (flash ? notice(esc(flash)) : '') + section('Issue details', `<div class="card issue-card"><p>${esc(defect.description)}</p><details class="record-information"><summary>Report details</summary><dl class="details">${row('Room', esc(defect.room))}${row('Category', esc(defect.category))}${row('Reported', esc(defect.reported.replace(' · local demo', '')))}${row('Responsible person', 'John Tan · Northline Interiors')}</dl></details></div>`) +
       (sessionPhotos.has(id) ? `<img class="photo-preview" src="${sessionPhotos.get(id)}" alt="Your attached defect photograph">` : defect.photoName ? notice(`Photo filename: ${esc(defect.photoName)}.<br>The preview is unavailable after reload or in another interface. Photos are not uploaded or shared.`) : '') +
       (defect.followupNote ? section('Your follow-up note', `<div class="card"><p>${esc(defect.followupNote)}</p></div>`) : '') + next +
-      (id === 'DEF-021' && state.proposal.status === 'approved' ? `<a class="linked-row" href="#change/VO-015">${icon('changes')}View approved VO-015${icon('right')}</a>` : '') + `<div class="action-stack">${link('All defect records', 'defects', 'quiet')}</div>` + localNote();
+      (id === 'DEF-021' && state.proposal.status === 'approved' ? `<a class="linked-row" href="#change/VO-015">${icon('changes')}View approved VO-015${icon('right')}</a>` : '') +
+      (defect.status === 'reported' ? `<details class="manage-report"><summary>Manage report</summary><div class="action-stack">${link('Edit report', `report/edit/${id}`)}${link('Withdraw report', `withdraw-report/${id}`, 'danger')}</div></details>` : '');
   }
 
   function requestScreen(id) {
     const defect=findDefect(id);
     if(!defect||defect.status!=='reported')return missing('Request unavailable',`defect/${id}`);
     if(defect.changeRequest)return requestReceipt(id);
-    return heading('Request a change',`${id} · ${defect.room}`,'Your defect details are filled in. Check them before requesting a quotation.')+`<div class="card"><dl class="details">${row('Linked defect',esc(defect.id))}${row('Room',esc(defect.room))}${row('Type',esc(defect.category))}</dl><p>${esc(defect.description)}</p></div><a class="text-link" href="#report/edit/${id}">Edit the defect details${icon('arrow')}</a>`+notice('<strong>Request only. No cost approved.</strong>John will need to review the issue and prepare a quotation. You will review the cost, options and timing separately.',true)+`<div class="action-stack">${action('Save change request','request-confirm','primary',`data-id="${id}"`)}${link('Not now',`defect/${id}`)}</div>`+localNote();
+    return heading('Request a quotation',`${id} · ${defect.room}`,'Check the report details.')+`<div class="card"><p class="eyebrow">${esc(defect.room)} · ${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p><a class="text-link" href="#report/edit/${id}">Edit report${icon('arrow')}</a></div>`+notice('<strong>No spending approved yet.</strong>You will review the quotation, options and completion date before deciding.',true)+`<div class="action-stack">${action('Save quotation request','request-confirm','primary',`data-id="${id}"`)}</div><p class="demo-note">Prototype request · saved on this device.</p>`;
   }
 
   function requestReceipt(id) {
     const defect = findDefect(id);
-    if (!defect?.changeRequest) return missing('No change request saved', `defect/${id}`);
+    if (!defect?.changeRequest) return missing('No quotation request saved', `defect/${id}`);
     const saved = new Date(defect.changeRequest.savedAt);
     const savedTime = Number.isNaN(saved.valueOf()) ? 'Saved on this device' : saved.toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
     const steps = [
-      { title: 'Defect logged', detail: `${defect.id} · ${defect.reported}`, state: 'complete' },
-      { title: 'Change request saved', detail: savedTime, state: 'complete' },
+      { title: 'Defect logged', detail: `${defect.id} · ${defect.reported.replace(' · local demo', '')}`, state: 'complete' },
+      { title: 'Quotation request saved', detail: savedTime, state: 'complete' },
       { title: 'Pending quotation', detail: 'Next: John checks replacement options and costs.', state: 'current' },
       { title: 'Review & approve the variation', detail: 'You review the cost and timing before deciding.', state: 'upcoming' },
       { title: 'Repair scheduled', detail: 'Work can proceed after your approval.', state: 'upcoming' }
     ];
-    return `<div class="request-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('send')}</div><h1 id="screen-title" tabindex="-1">Change request saved</h1><p>No additional spending approved.</p>${badge('Pending quotation', 'amber')}</header><section class="request-progress card" aria-labelledby="request-progress-title"><h2 id="request-progress-title" class="eyebrow">What happens next</h2><ol class="request-timeline">${steps.map(step => `<li class="${step.state}" ${step.state === 'current' ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.state === 'complete' ? icon('check') : ''}</span><div class="request-step-copy"><h3>${esc(step.title)}</h3><p>${esc(step.detail)}</p><span class="sr-only">${step.state === 'complete' ? 'Completed' : step.state === 'current' ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol></section><div class="action-stack">${link('Back to home', 'overview', 'primary')}${link(`View defect ${id}`, `defect/${id}`)}</div><p class="demo-note">Saved on this device. No request has been sent to John.</p></div>`;
+    return `<div class="request-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('send')}</div><h1 id="screen-title" tabindex="-1">Quotation request saved</h1><p>No additional spending approved.</p>${badge('Pending quotation', 'amber')}</header><section class="request-progress card" aria-labelledby="request-progress-title"><h2 id="request-progress-title" class="eyebrow">What happens next</h2><ol class="request-timeline">${steps.map(step => `<li class="${step.state}" ${step.state === 'current' ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.state === 'complete' ? icon('check') : ''}</span><div class="request-step-copy"><h3>${esc(step.title)}</h3><p>${esc(step.detail)}</p><span class="sr-only">${step.state === 'complete' ? 'Completed' : step.state === 'current' ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol></section><div class="action-stack">${link('Back to home', 'overview', 'primary')}${link(`View defect ${id}`, `defect/${id}`)}</div><p class="demo-note">Saved on this device. No request has been sent to John.</p></div>`;
   }
 
   function getReportDraft() {
     if (reportDrafts.has(route)) return reportDrafts.get(route);
     const [, mode, value] = route.split('/');
     const record = mode === 'edit' ? findDefect(value) : null;
-    const draft = { room: record?.room || (mode === 'room' ? roomFromSlug(value) || '' : ''), category: record?.category || '', description: record?.description || '', photoName: record?.photoName || '', photo: record ? sessionPhotos.get(record.id) || '' : '', loading: false, token: 0 };
+    const guided = firstScenarioReport() && mode !== 'edit';
+    const draft = { scenarioStart: guided, room: guided ? 'Bathroom' : record?.room || (mode === 'room' ? roomFromSlug(value) || '' : ''), category: guided ? 'Flooring' : record?.category || '', description: guided ? 'Hairline cracks across three newly installed bathroom floor tiles beside the shower.' : record?.description || '', photoName: record?.photoName || '', photo: record ? sessionPhotos.get(record.id) || '' : '', loading: false, token: 0 };
     reportDrafts.set(route, draft);
     return draft;
+  }
+
+  function reportReceipt(id) {
+    const defect = findDefect(id);
+    if (!defect) return missing('Defect record not found', 'defects');
+    return `<div class="report-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('check')}</div><h1 id="screen-title" tabindex="-1">Defect report saved</h1><p>${esc(id)} · ${esc(defect.room)}</p></header><div class="card"><p class="eyebrow">${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p></div>${isWalkthrough() && id === 'DEF-021' ? notice('<strong>Demo update: quotation ready</strong>John has proposed two replacement tiles. Review the sample proposal on your dashboard.') : ''}<div class="action-stack">${link(isWalkthrough() && id === 'DEF-021' ? 'Continue to dashboard' : 'Done', isWalkthrough() && id === 'DEF-021' ? 'overview' : 'defects', 'primary')}${link('View report', `defect/${id}`)}</div><p class="demo-note">Saved on this device.</p></div>`;
   }
 
   function reportScreen() {
@@ -339,8 +417,8 @@
     if (editing && findDefect(id)?.status !== 'reported') return missing('This report cannot be edited', `defect/${id}`, 'Only reports that have not progressed can be edited.');
     const draft = getReportDraft();
     const options = (values, selected) => values.map(value => `<option value="${esc(value)}" ${value === selected ? 'selected' : ''}>${esc(value)}</option>`).join('');
-    return heading(editing ? 'Edit defect report' : 'Report a defect', editing ? `Local record · ${id}` : 'Add a project record', 'Describe the issue and its location. Required fields are marked with an asterisk.') +
-      `<form id="report-form" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="field"><label for="report-room">Room *</label><select id="report-room" name="room" required aria-describedby="room-error"><option value="">Choose a room</option>${options(ROOMS, draft.room)}</select><p class="error" id="room-error"></p></div><div class="field"><label for="report-category">Category *</label><select id="report-category" name="category" required aria-describedby="category-error"><option value="">Choose a category</option>${options(DEFECT_CATEGORIES, draft.category)}</select><p class="error" id="category-error"></p></div><div class="field"><label for="report-description">What needs fixing? *</label><textarea id="report-description" name="description" minlength="10" maxlength="800" required aria-describedby="description-help description-error" placeholder="For example, the lower cabinet door rubs against its frame.">${esc(draft.description)}</textarea><p class="help" id="description-help">Include where it is and what you noticed. 10–800 characters.</p><p class="error" id="description-error"></p></div><div class="field"><label for="report-photo">Add a photo (optional)</label><input type="file" id="report-photo" name="photo" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error"><p class="help" id="photo-help">JPG, PNG, or WebP · up to 5 MB. Preview stays in this mobile session; no upload.</p><p class="error" id="photo-error"></p><div id="photo-preview">${photoPreview(draft)}</div></div><div class="action-stack"><button class="button primary" type="submit" ${draft.loading ? 'disabled' : ''}>${draft.loading ? 'Reading photo…' : editing ? 'Save report changes' : 'Save defect report'}</button>${link('Keep draft & go back', editing ? `defect/${id}` : 'defects', 'quiet')}</div></form>` + localNote();
+    return heading(editing ? 'Edit defect report' : 'Report a defect', editing ? `Report · ${id}` : firstScenarioReport() ? 'Scenario walkthrough · Step 1' : '', firstScenarioReport() ? 'Report the cracked bathroom floor tiles to begin. * Required' : '* Required') +
+      `<form id="report-form" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="field"><label for="report-room">Room *</label><select id="report-room" name="room" ${firstScenarioReport()?'disabled':''} required aria-describedby="room-error"><option value="">Choose a room</option>${options(ROOMS, draft.room)}</select><p class="error" id="room-error"></p></div><div class="field"><label for="report-category">Category *</label><select id="report-category" name="category" ${firstScenarioReport()?'disabled':''} required aria-describedby="category-error"><option value="">Choose a category</option>${options(DEFECT_CATEGORIES, draft.category)}</select><p class="error" id="category-error"></p></div><div class="field"><label for="report-description">What needs fixing? *</label><textarea id="report-description" name="description" minlength="10" maxlength="800" required aria-describedby="description-help description-error" placeholder="For example, the lower cabinet door rubs against its frame.">${esc(draft.description)}</textarea><p class="help" id="description-help">Include where it is and what you noticed. 10–800 characters.</p><p class="error" id="description-error"></p></div><div class="field"><label for="report-photo">Add a photo (optional)</label><input type="file" id="report-photo" name="photo" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help photo-error"><p class="help" id="photo-help">JPG, PNG or WebP · up to 5 MB.</p><p class="error" id="photo-error"></p><div id="photo-preview">${photoPreview(draft)}</div></div><div class="action-stack"><button class="button primary" type="submit" ${draft.loading ? 'disabled' : ''}>${draft.loading ? 'Reading photo…' : editing ? 'Save report changes' : 'Save defect report'}</button></div></form>`;
   }
 
   function photoPreview(draft) {
@@ -367,6 +445,7 @@
     state = Store.getState();
     const form = event.target;
     const draft = getReportDraft();
+    if (draft.scenarioStart && isWalkthrough() && state.walkthrough.reported) { navigate('defect/DEF-021', true); announce('This walkthrough report is already saved.'); return; }
     const errors = { room: ROOMS.includes(draft.room) ? '' : 'Choose the room where the issue is located.', category: DEFECT_CATEGORIES.includes(draft.category) ? '' : 'Choose a category.', description: draft.description.trim().length >= 10 && draft.description.trim().length <= 800 ? '' : 'Describe the issue in 10–800 characters.' };
     Object.entries(errors).forEach(([name, message]) => setError(form, name, message));
     const first = Object.keys(errors).find(name => errors[name]);
@@ -380,9 +459,9 @@
       const id = mode === 'edit' ? editId : state.defects[0].id;
       if (draft.photo) sessionPhotos.set(id, draft.photo);
       else if (!draft.photoName) sessionPhotos.delete(id);
-      flashes.set(`defect/${id}`, mode === 'edit' ? 'Report updated on this device. No message was sent.' : 'Report saved on this device. No message was sent.');
+      if (mode === 'edit') flashes.set(`defect/${id}`, 'Report updated.');
       const savedRoute = route;
-      navigate(`defect/${id}`);
+      navigate(mode === 'edit' ? `defect/${id}` : `report-saved/${id}`, true);
       reportDrafts.delete(savedRoute);
       announce(mode === 'edit' ? 'Defect report updated.' : 'Defect report saved locally.');
     } catch (error) { formFailure(error.message); }
@@ -429,7 +508,7 @@
   function withdrawReportScreen(id) {
     const defect = findDefect(id);
     if (!defect || defect.status !== 'reported') return missing('This report cannot be withdrawn', `defect/${id}`);
-    return heading('Withdraw this report?', `${id} · ${defect.room}`, 'It will no longer count as an open defect. The record remains available and can be restored.') + notice('No message is sent to the contractor. This only changes your local demo record.') + `<div class="action-stack">${action('Confirm report withdrawal', 'withdraw-report-confirm', 'danger', `data-id="${id}"`)}${link('Keep report', `defect/${id}`)}</div>`;
+    return heading('Withdraw this report?', `${id} · ${defect.room}`, 'It will no longer count as an open defect. The record remains available and can be restored.') + `<div class="action-stack">${action('Confirm report withdrawal', 'withdraw-report-confirm', 'danger', `data-id="${id}"`)}${link('Keep report', `defect/${id}`)}</div>`;
   }
 
   function inspectionScreen(id) {
@@ -438,14 +517,14 @@
     const checks = inspections.get(id) || [false, false, false];
     inspections.set(id, checks);
     const labels = ['The cabinet doors align with even gaps.', 'Each door opens and closes smoothly, without rubbing.', 'The hinges feel secure and the original issue is resolved.'];
-    return heading('Inspect the cabinet repair', `${id} · Kitchen`, 'Check the work at your home before verifying. Select each item only after inspecting it yourself.') + `<form id="inspection-form" data-id="${id}" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="card"><ul class="checklist">${labels.map((label, index) => `<li><span>${index + 1}</span><label for="inspection-${index}"><input id="inspection-${index}" type="checkbox" name="check${index}" data-check-index="${index}" ${checks[index] ? 'checked' : ''}> ${label}</label></li>`).join('')}</ul></div><div class="action-stack"><button type="submit" class="button primary">Review verification</button>${link('Issue still needs work', `followup/${id}`)}${link('Back to repair', `defect/${id}`, 'quiet')}</div></form>` + localNote();
+    return heading('Inspect the cabinet repair', `${id} · Kitchen`, 'Check each item at your home before verifying.') + `<form id="inspection-form" data-id="${id}" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="card"><ul class="checklist">${labels.map((label, index) => `<li><span>${index + 1}</span><label for="inspection-${index}"><input id="inspection-${index}" type="checkbox" name="check${index}" data-check-index="${index}" ${checks[index] ? 'checked' : ''}> ${label}</label></li>`).join('')}</ul></div><div class="action-stack"><button type="submit" class="button primary">Review verification</button>${link('Issue still needs work', `followup/${id}`)}</div></form>`;
   }
 
   function verificationScreen(id) {
     const defect = findDefect(id);
     if (id !== 'DEF-003' || !defect || defect.status !== 'verification') return missing('Repair status has changed', `defect/${id}`, 'Open the repair record to see its current status.');
     if (!inspections.get(id)?.every(Boolean)) return heading('Inspect before you verify', `${id} · Kitchen`, 'Complete the inspection checklist before confirming the repair.') + `<div class="action-stack">${link('Go to inspection checklist', `inspect/${id}`, 'primary')}</div>`;
-    return heading('Mark this repair verified?', `${id} · Kitchen`, 'You have checked the alignment, door operation, and hinges. Confirm the repair passed your inspection.') + notice('The issue will move to verified repairs. You can reopen it if you find a remaining problem.') + `<div class="action-stack">${action('Confirm repair verified', 'verify-confirm', 'primary', `data-id="${id}"`)}${link('Back to inspection', `inspect/${id}`)}</div>` + localNote();
+    return heading('Mark this repair verified?', `${id} · Kitchen`, 'Moves this repair to Verified. You can reopen it later.') + `<div class="action-stack">${action('Confirm repair verified', 'verify-confirm', 'primary', `data-id="${id}"`)}${link('Back to inspection', `inspect/${id}`)}</div>`;
   }
 
   function textFormScreen(type, id) {
@@ -453,9 +532,9 @@
     const defect = type === 'followup' ? findDefect(id) : null;
     if (type === 'followup' && (!defect || !['verification', 'verified'].includes(defect.status))) return missing('This repair cannot be reopened now', `defect/${id}`);
     const value = textDrafts.get(route) ?? (type === 'revision' ? state.proposal.revisionRequest?.text || '' : '');
-    return heading(type === 'revision' ? 'Request a proposal change' : 'Record a repair follow-up', type === 'revision' ? 'VO-015 · Bathroom · DEF-021' : `${id} · ${defect.room}`, type === 'revision' ? 'Describe what you would like John to revise before you approve.' : 'Keep the issue open and note what still needs attention.') +
+    return heading(type === 'revision' ? 'Request a proposal change' : 'Record a repair follow-up', type === 'revision' ? 'VO-015 · Bathroom · DEF-021' : `${id} · ${defect.room}`, '') +
       notice(type === 'revision' ? `Ask about a closer colour match, a physical sample, or the additional ${money(PROPOSAL_COST)}. Saving this request does not approve spending.` : 'No message is sent. Discuss the remaining issue with John using your usual contact channel.') +
-      `<form id="text-form" data-kind="${type}" data-id="${esc(id || '')}" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="field"><label for="text-description">${type === 'revision' ? 'What would you like changed? *' : 'What still needs work? (optional)'}</label><textarea id="text-description" name="description" maxlength="800" ${type === 'revision' ? 'required minlength="10"' : ''} aria-describedby="text-help description-error">${esc(value)}</textarea><p class="help" id="text-help">${type === 'revision' ? '10–800 characters.' : 'Maximum 800 characters.'}</p><p class="error" id="description-error"></p></div><div class="action-stack"><button class="button primary" type="submit">${type === 'revision' ? 'Save revision request' : 'Save follow-up'}</button>${link('Keep draft & go back', type === 'revision' ? 'change/VO-015' : `defect/${id}`, 'quiet')}</div></form>` + localNote();
+      `<form id="text-form" data-kind="${type}" data-id="${esc(id || '')}" novalidate><div class="form-summary" id="form-summary" role="alert" hidden></div><div class="field"><label for="text-description">${type === 'revision' ? 'What would you like changed? *' : 'What still needs work? (optional)'}</label><textarea id="text-description" name="description" maxlength="800" ${type === 'revision' ? 'required minlength="10"' : ''} aria-describedby="text-help description-error">${esc(value)}</textarea><p class="help" id="text-help">${type === 'revision' ? '10–800 characters.' : 'Maximum 800 characters.'}</p><p class="error" id="description-error"></p></div><div class="action-stack"><button class="button primary" type="submit">${type === 'revision' ? 'Save revision request' : 'Save follow-up'}</button></div></form>`;
   }
 
   function saveTextForm(event) {
@@ -492,14 +571,16 @@
   }
 
   function documentsScreen() {
-    return heading('Variations & quotes','Your project documents','The agreed scope and each change, in one place.')+`<div class="stack">${documentLink('VO-015 · Bathroom floor tiles',`John Tan · 18 Jun · ${state.proposal.status==='approved'?'Approved':'Pending approval'}`,'document/quotation')}${documentLink('Main renovation quotation','2 Apr 2026 · Original scope','document/scope')}</div>`+notice('Readable sample documents for this prototype. No PDF upload or external document service is connected.');
+    return heading('Quotes & variations') + budgetNavigation('documents') +
+      section('Variation orders', proposalReady() ? `<div class="menu-group">${menuRow('Bathroom tile replacement', 'VO-015 · +S$250 · 18 Jun 2026', 'document/quotation', 'file', state.proposal.status === 'approved' ? 'Approved' : 'Awaiting your approval')}</div>` : '<p>No variation orders have been proposed yet.</p>') +
+      section('Original scope', `<div class="menu-group">${menuRow('Main renovation quotation', 'Agreed scope · 2 Apr 2026', 'document/scope', 'file')}</div>`);
   }
 
   function documentScreen(type) {
     if(!['quotation','scope'].includes(type))return missing('Document not found','documents');
     const quote=type==='quotation';
-    return heading(quote?'Bathroom tile variation':'Main renovation quotation',quote?'Sample document · VO-015':'Sample original scope',quote?'Prepared by John Tan · 18 Jun 2026':'Agreed scope · 2 Apr 2026')+`<a class="linked-row" href="#defect/DEF-021">${icon('defects')}Bathroom cracked tiles · DEF-021${icon('right')}</a>`+section(quote?'Revised tile work':'Original bathroom flooring',`<p>${quote?'Remove the cracked tiles, prepare the 4.5 m² bathroom floor, supply the selected replacement finish and lay and grout the new tiles.':'Supply and install Bianco Matte porcelain floor tiles, 600 × 600 mm, matte finish, as part of the agreed bathroom renovation.'}</p>`)+
-      (quote?`<div class="card quote-breakdown"><dl class="details">${row('Remove tiles & prepare floor','S$80')}${row('Replacement tile price difference','S$120')}${row('Laying & grouting','S$50')}${row('Total additional cost','<strong>S$250</strong>')}${row('Options','Grigio Matte or Sabbia Matte')}${row('Proposed completion','14 Jul 2026 · was 1 Jul')}${row('Payment due','14 Jul 2026 · after approval')}</dl></div>`:'')+section('In plain English',`<div class="stack"><div><h3>Variation order</h3><p>A written change to your original scope and quotation. Review the added cost before approving.</p></div><div><h3>Lead time</h3><p>The time needed to source replacement tiles and arrange the work. The proposed finish date is about two weeks later.</p></div></div>`)+`<div class="action-stack">${link('View linked variation order','change/VO-015','primary')}${link('Check my budget','budget')}${link('All documents','documents','quiet')}</div>`;
+    return heading(quote?'Bathroom tile variation':'Main renovation quotation',quote?'Sample document · VO-015':'Sample original scope',quote?'Prepared by John Tan · 18 Jun 2026':'Agreed scope · 2 Apr 2026')+(proposalReady()?`<a class="linked-row" href="#defect/DEF-021">${icon('defects')}Bathroom cracked tiles · DEF-021${icon('right')}</a>`:'')+section(quote?'Revised tile work':'Original bathroom flooring',`<p>${quote?'Remove the cracked tiles, prepare the 4.5 m² bathroom floor, supply the selected replacement finish and lay and grout the new tiles.':'Supply and install Bianco Matte porcelain floor tiles, 600 × 600 mm, matte finish, as part of the agreed bathroom renovation.'}</p>`)+
+      (quote?`<div class="card quote-breakdown"><dl class="details">${row('Remove tiles & prepare floor','S$80')}${row('Replacement tile price difference','S$120')}${row('Laying & grouting','S$50')}${row('Total additional cost','<strong>S$250</strong>')}${row('Options','Grigio Matte or Sabbia Matte')}${row('Proposed completion','14 Jul 2026 · was 1 Jul')}${row('Payment due','14 Jul 2026 · after approval')}</dl></div>`:'')+`<details class="record-information terms-explained"><summary>Terms explained</summary><div class="stack"><div><h3>Variation order</h3><p>A written change to your original scope and quotation. Review the added cost before approving.</p></div><div><h3>Lead time</h3><p>The time needed to source replacement tiles and arrange the work. The proposed finish date is about two weeks later.</p></div></div></details>`+`<div class="action-stack">${proposalReady()?link('View linked variation order','change/VO-015','primary'):link('All documents','documents','primary')}${link('Check my budget','budget')}${proposalReady()?link('All documents','documents','quiet'):''}</div>`;
   }
 
   function timelineScreen() {
@@ -507,35 +588,44 @@
     const items=[['Deposit','Paid · 2 Apr','S$1,500',true],['Hacking & masonry','Paid · 29 May','S$2,300',true],['Electrical works','Paid · 15 Jun','S$3,100',true],['Carpentry installation','Next · due 26 Jun','S$7,200',false]];
     if(approved)items.push(['New bathroom tiles','VO-015 · due 14 Jul 2026','S$250',false]);
     items.push(['Handover & final payment',approved?'14 Jul 2026 · was 1 Jul':'1 Jul 2026','S$900',false]);
-    return heading('Payment timeline','Project milestones','Planned payments alongside your renovation progress.')+`<div class="two-up timeline-stats"><div class="stat-card"><small>Paid milestones</small><strong>3 of ${items.length}</strong></div><div class="stat-card"><small>Target handover</small><strong>${handover()}</strong></div></div><ol class="payment-timeline">${items.map(([title,date,amount,paid])=>`<li class="${title==='New bathroom tiles'?'new-milestone':''}"><span class="timeline-node">${icon(paid?'check':title==='New bathroom tiles'?'plus':'clock')}</span><div><div class="heading-row"><h3>${title}</h3><strong>${amount}</strong></div><p>${date}</p>${title==='New bathroom tiles'?badge('New · approved change','green'):''}</div></li>`).join('')}</ol>`+notice('Base payment milestones total S$15,000. Approving the bathroom variation adds S$250. Paid and due amounts are tracked separately from your remaining budget; no payment is processed here.')+`<div class="action-stack">${link('View budget','budget','primary')}${!approved?link('Review pending tile change','change/VO-015'):''}</div>`;
+    return heading('Payment timeline')+budgetNavigation('timeline')+`<div class="two-up timeline-stats"><div class="stat-card"><small>Paid milestones</small><strong>3 of ${items.length}</strong></div><div class="stat-card"><small>Target handover</small><strong>${handover()}</strong></div></div><ol class="payment-timeline">${items.map(([title,date,amount,paid])=>`<li class="${title==='New bathroom tiles'?'new-milestone':''}"><span class="timeline-node">${icon(paid?'check':title==='New bathroom tiles'?'plus':'clock')}</span><div><div class="heading-row"><h3>${title}</h3><strong>${amount}</strong></div><p>${date}</p>${title==='New bathroom tiles'?badge('New · approved change','green'):''}</div></li>`).join('')}</ol>`+notice('Base payment milestones total S$15,000. Approving the bathroom variation adds S$250. Paid and due amounts are tracked separately from your remaining budget; no payment is processed here.')+`<div class="action-stack">${!approved&&proposalReady()?link('Review pending tile change','change/VO-015'):''}</div>`;
   }
 
   function helperScreen(topic) {
     const metrics = totals();
     const answers = {
-      change: `<p>The original tile is unavailable until <strong>September 2026</strong>. Choose between cool-grey Grigio Matte and warm-sand Sabbia Matte, both the same size and finish.</p><p>Additional cost: <strong>${money(PROPOSAL_COST)}</strong>. Proposed completion: 14 Jul 2026, about two weeks later than 1 Jul.</p>${link('Read source · VO-015', 'change/VO-015')}`,
-      budget: `<p>Committed costs are <strong>${money(metrics.approved)}</strong>, leaving <strong>${money(metrics.available)}</strong> of the ${money(PROJECT_BUDGET)} budget.</p><p>${state.proposal.status === 'approved' ? 'The approved tile change is included.' : `The pending ${money(PROPOSAL_COST)} change is excluded. Approval would leave ${money(metrics.available - PROPOSAL_COST)}.`}</p>${link('Read source · Budget', 'budget')}`,
+      change: !proposalReady() ? `<p>Start by reporting the cracked bathroom tiles. The sample replacement proposal will then appear for review.</p>${link('Report the bathroom tiles', 'report/room/bathroom')}` : `<p>The original tile is unavailable until <strong>September 2026</strong>. Choose between cool-grey Grigio Matte and warm-sand Sabbia Matte, both the same size and finish.</p><p>Additional cost: <strong>${money(PROPOSAL_COST)}</strong>. Proposed completion: 14 Jul 2026, about two weeks later than 1 Jul.</p>${link('Read source · VO-015', 'change/VO-015')}`,
+      budget: `<p>Committed costs are <strong>${money(metrics.approved)}</strong>, leaving <strong>${money(metrics.available)}</strong> of the ${money(PROJECT_BUDGET)} budget.</p><p>${!proposalReady() ? 'No additional costs have been proposed yet.' : state.proposal.status === 'approved' ? 'The approved tile change is included.' : `The pending ${money(PROPOSAL_COST)} change is excluded. Approval would leave ${money(metrics.available - PROPOSAL_COST)}.`}</p>${link('Read source · Budget', 'budget')}`,
       next: `<p>${metrics.actions ? `${metrics.actions} ${metrics.actions === 1 ? 'action needs' : 'actions need'} your attention.` : 'No homeowner decisions are currently waiting.'}</p><p>Review pending changes, inspect repairs marked ready, and discuss issues marked for follow-up.</p>${link('Read source · Defect records', 'defects')}`
     };
-    return heading('A little clarity', 'Project helper · scripted demo', 'Quick explanations from the sample records, with links to their source.') + (answers[topic] ? `<div class="card stack" aria-live="polite">${answers[topic]}</div>` : '') + `<div class="action-stack">${link('What is changing?', 'helper/change')}${link('How much budget is left?', 'helper/budget')}${link('What needs my attention?', 'helper/next')}</div><p class="demo-note">Answers are prewritten for this prototype. No live AI or document analysis is connected.</p>`;
+    return heading('Project helper') + (answers[topic] ? `<div class="card stack" aria-live="polite">${answers[topic]}</div>` : '') + `<div class="action-stack">${link('What is changing?', 'helper/change')}${link('How much budget is left?', 'helper/budget')}${link('What needs my attention?', 'helper/next')}</div><p class="demo-note">Prewritten demo answers.</p>`;
   }
 
   function contactScreen() {
-    return heading('Your project contact', 'Fictional demo contact') + `<div class="card contact-card"><span class="avatar">JT</span><div><h2>John Tan</h2><small>Northline Interiors · Project lead</small></div></div>` + section('Before you contact John', `<p>Include the record number, room, and your question. For the tile replacement, refer to VO-015 / DEF-021 · Bathroom.</p>`) + notice('No real phone, email, or messaging service is connected. Use your actual contractor’s usual contact channel.') + `<div class="action-stack">${link('View related proposal', 'change/VO-015')}${link('View defect records', 'defects')}</div>`;
+    return heading('Your project contact') + `<div class="card contact-card"><span class="avatar">JT</span><div><h2>John Tan</h2><small>Northline Interiors · Project lead</small></div></div>` + section('Before you contact John', `<p>For bathroom tile questions, refer to VO-015 / DEF-021.</p>`) + notice('No real phone, email, or messaging service is connected. Use your actual contractor’s usual contact channel.') + `<div class="action-stack">${link('View related proposal', 'change/VO-015')}${link('View defect records', 'defects')}</div>`;
   }
 
   function projectScreen() {
-    return heading('Your renovation', 'Homeowner demo') + `<div class="card"><dl class="details">${row('Homeowner', 'Thomas Eng')}${row('Home', 'Punggol · 4-room BTO')}${row('Project lead', 'John Tan · Northline Interiors')}${row('Demo reference date', '18 Jun 2026')}${row('Target handover', handover()+' 2026')}${row('Storage', Store.storageAvailable ? 'This browser on this device' : 'Session only')}</dl></div>` + notice('No real sign-in is needed. Desktop and mobile share local records when opened from the same web address in this browser. There is no account sync across devices.') + section('Start the demo again', `<p>Restore the original sample project. Your local reports and decisions will be removed.</p><div class="action-stack">${link('Reset demo', 'reset', 'danger')}</div>`) + `<div class="action-stack"><a class="button secondary" href="/web/">Open web dashboard${icon('arrow')}</a>${link('View project contact', 'contact')}</div>`;
+    return heading('Project details', 'Punggol · 4-room BTO') + `<div class="card"><dl class="details">${row('Homeowner', 'Thomas Eng')}${row('Project lead', 'John Tan · Northline Interiors')}${row('Current stage', 'Tiling & carpentry · Stage 3 of 5')}${row('Target handover', handover()+' 2026')}${row('Project budget', money(PROJECT_BUDGET))}</dl></div><div class="action-stack">${link('Project contact', 'contact')}${link('Rooms & previews', 'rooms')}</div>`;
+  }
+
+  function profileScreen() {
+    return heading('Your profile') + `<div class="card profile-identity"><span class="profile-avatar" aria-hidden="true">TE</span><div><h2>Thomas Eng</h2><p>Homeowner</p></div></div>` +
+      section('Your project', `<div class="menu-group">${menuRow('Punggol · 4-room BTO', 'View renovation details', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`);
   }
 
   function missing(title, target = 'overview', explanation = 'Open the connected record or return to your project overview.') {
-    return heading(title, 'Project record') + `<div class="empty-state">${icon('info')}<p>${esc(explanation)}</p>${link('Back to project records', target)}</div>`;
+    return heading(title, 'Project record') + `<div class="empty-state">${icon('info')}<p>${esc(explanation)}</p>${link('Back', target)}</div>`;
   }
 
   function screenHTML() {
     const [name, value] = route.split('/');
+    if (!proposalReady() && (['change', 'approve', 'revision', 'material'].includes(name) || (name === 'document' && value === 'quotation') || (name === 'preview' && value === 'bathroom'))) return missing('Report the defect first', 'report/room/bathroom', 'The walkthrough starts with the cracked bathroom tiles. A sample replacement proposal becomes available after you save the report.');
     switch (name) {
       case 'overview': return overview();
+      case 'more': return moreScreen();
+      case 'profile': return profileScreen();
+      case 'walkthrough': return walkthroughScreen();
       case 'rooms': return roomsScreen();
       case 'preview': return previewScreen(value);
       case 'room': return roomScreen(value);
@@ -549,6 +639,7 @@
       case 'withdraw-approval': return withdrawApprovalScreen();
       case 'budget': return budgetScreen();
       case 'report': return reportScreen();
+      case 'report-saved': return reportReceipt(value);
       case 'request': return requestScreen(value);
       case 'request-receipt': return requestReceipt(value);
       case 'withdraw-report': return withdrawReportScreen(value);
@@ -559,11 +650,11 @@
       case 'documents': return documentsScreen();
       case 'document': return documentScreen(value);
       case 'timeline': return timelineScreen();
-      case 'updates': return heading('Project updates', 'You’re up to date', 'Sample updates and your activity on this device.') + `<div class="card">${activityList(state.activity)}</div>` + localNote();
+      case 'updates': return heading('Project updates') + (state.activity.length ? `<div class="card">${activityList(state.activity)}</div>` : `<div class="empty-state"><h2>No updates yet</h2><p>Project activity appears here as you work through the demo.</p></div>`);
       case 'helper': return helperScreen(value);
       case 'contact': return contactScreen();
       case 'project': return projectScreen();
-      case 'reset': return heading('Reset the demo?', 'Restore sample project', 'Your local reports, decisions, and photo previews will be removed. The original sample project will be restored.') + `<div class="action-stack">${action('Confirm demo reset', 'reset-confirm', 'danger')}${link('Keep my changes', 'project')}</div>`;
+      case 'reset': return heading('Reset this demo?', demoName(), 'This mode’s reports, decisions and walkthrough progress will return to their starting point. Progress in the other mode is kept.') + `<div class="action-stack">${action('Confirm demo reset', 'reset-confirm', 'danger')}${link('Keep my changes', 'more')}</div>`;
       default: return missing('Screen not found');
     }
   }
@@ -574,10 +665,11 @@
     document.querySelector('.mobile-app').classList.toggle('home-screen', route === 'overview');
     document.querySelector('.mobile-app').classList.toggle('request-confirmation-mode', Boolean(content.querySelector('.request-confirmation')));
     document.querySelector('.mobile-app').classList.toggle('preview-mode', Boolean(content.querySelector('.ar-preview')));
+    document.querySelector('.mobile-app').classList.toggle('focused-mode', ['report', 'report-saved', 'request', 'revision', 'followup', 'inspect', 'verify-confirm', 'approve', 'withdraw-report', 'withdraw-approval'].includes(route.split('/')[0]));
     document.querySelector('.header-home').hidden = primaryRoutes.includes(route);
     const title = document.getElementById('screen-title');
     document.getElementById('header-context').textContent = content.querySelector('.ar-preview')?'AR Room Preview':title?.textContent || 'Your project';
-    document.title = `${title?.textContent || 'Project'} · RenoGuard Mobile`;
+    document.title = 'RenoGuard · Mobile';
     if (focus) title?.focus({ preventScroll: true });
     if (restore) screenScroller().scrollTo({ top: scrollPositions.get(route) || 0, behavior: 'instant' });
   }
@@ -587,16 +679,19 @@
     state = Store.getState();
     try {
       switch (button.dataset.action) {
+        case 'switch-demo':
+          if (button.dataset.mode !== state.demoMode) { mutate(() => Store.switchDemo(button.dataset.mode)); clearTransientState(); }
+          navigate('overview', true); announce(`${demoName()} opened. Saved progress is kept separately.`); break;
         case 'open-room': openRoom(button.dataset.room); break;
         case 'request-confirm':
           if(findDefect(id)?.status!=='reported') { navigate(`defect/${id}`); break; }
-          mutate(()=>Store.requestDefectChange(id)); navigate(`request-receipt/${id}`); announce('Change request saved locally. No spending approved.'); break;
+          mutate(()=>Store.requestDefectChange(id)); navigate(`request-receipt/${id}`, true); announce('Quotation request saved locally. No spending approved.'); break;
         case 'close-room': document.getElementById('room-dialog').close(); break;
         case 'select-tile': updateTile(button.dataset.tile); break;
         case 'toggle-floor':
           showFloorGuide=!showFloorGuide; document.getElementById('floor-guide').classList.toggle('is-hidden',!showFloorGuide); button.setAttribute('aria-pressed',String(showFloorGuide)); break;
         case 'rotate-plan':
-          mirrorPlan=!mirrorPlan; document.getElementById('room-scene').innerHTML=window.RenoGuardRooms.scene({defects:state.defects,mirror:mirrorPlan,tile:state.proposal.tile,only:route.startsWith('preview/')?route.split('/')[1]:''}); break;
+          mirrorPlan=!mirrorPlan; document.getElementById('room-scene').innerHTML=window.RenoGuardRooms.scene({defects:projectDefects(),mirror:mirrorPlan,tile:state.proposal.tile,only:route.startsWith('preview/')?route.split('/')[1]:''}); break;
         case 'back':
           if (history.state?.renoMobile && history.state.depth > 0) { saveScreen(); history.back(); }
           else navigate(fallbackBack(route), true);
@@ -610,9 +705,8 @@
           filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending'; render();
           document.querySelector(`[data-action="filter-changes"][data-status="${filters.changes}"]`)?.focus({ preventScroll: true });
           break;
-        case 'clear-filters':
-          filters.room = ''; filters.search = '';
-          document.getElementById('room-filter').value = '';
+        case 'clear-search':
+          filters.search = '';
           document.getElementById('defect-search').value = '';
           refreshDefectResults(); document.getElementById('defect-search').focus();
           break;
@@ -657,13 +751,18 @@
           break;
         }
         case 'reset-confirm':
-          mutate(() => Store.reset()); reportDrafts.clear(); textDrafts.clear(); inspections.clear(); sessionPhotos.clear(); flashes.clear();
-          filters.status = 'open'; filters.room = ''; filters.search = ''; filters.changes = 'pending';
-          mirrorPlan=false; showFloorGuide=true; approvalAcknowledged=false;
-          scrollPositions.clear(); navigate('overview', true); announce('Demo reset. Original project records restored.');
+          mutate(() => Store.reset()); clearTransientState();
+          navigate('overview', true); announce(`${demoName()} reset. The other demo was kept.`);
           break;
       }
     } catch (error) { announce(error.message); content.insertAdjacentHTML('afterbegin', notice(esc(error.message), true)); }
+  }
+
+  function clearTransientState() {
+    reportDrafts.clear(); textDrafts.clear(); inspections.clear(); sessionPhotos.clear(); flashes.clear(); scrollPositions.clear();
+    filters.status = 'open'; filters.search = ''; filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending';
+    mirrorPlan = false; showFloorGuide = true; approvalAcknowledged = false;
+    document.getElementById('room-dialog').close();
   }
 
   function init() {
@@ -704,7 +803,6 @@
     });
     document.addEventListener('change', event => {
       if(event.target.id==='approval-acknowledgement') { approvalAcknowledged=event.target.checked; document.querySelector('[data-action="approve-confirm"]').disabled=!approvalAcknowledged; document.getElementById('approval-help').textContent=approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'; }
-      if (event.target.id === 'room-filter') { filters.room = event.target.value; refreshDefectResults(); }
       if (event.target.id === 'report-photo') readPhoto(event.target);
       if (event.target.closest?.('#report-form')) saveScreen();
       if (event.target.dataset.checkIndex !== undefined) {
@@ -733,6 +831,7 @@
     window.addEventListener('popstate', historyChanged);
     window.addEventListener('hashchange', historyChanged);
     Store.subscribe((next, metadata) => {
+      const modeChanged = next.demoMode !== state.demoMode;
       if(next.proposal.tile!==state.proposal.tile || next.proposal.status!==state.proposal.status) approvalAcknowledged=false;
       sessionPhotos.forEach((photo, id) => {
         const previous = state.defects.find(defect => defect.id === id);
@@ -742,6 +841,7 @@
       state = next;
       updateChrome();
       if (mutating) return;
+      if (modeChanged) { clearTransientState(); navigate('overview', true); announce(`${demoName()} opened in this tab.`); return; }
       saveScreen();
       if (!['report', 'revision', 'followup', 'inspect'].includes(route.split('/')[0])) render();
       if (metadata.source === 'storage') announce('Project records updated from the other interface.');

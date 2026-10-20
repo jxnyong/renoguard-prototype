@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#174d43">
-  <meta name="description" content="Your renovation, clearly organised. Review changes, follow repairs, and keep track of your project with RenoGuard.">
-  <title>Project overview · RenoGuard</title>
+  <meta name="description" content="Review renovation changes, follow repairs, and track project costs with RenoGuard.">
+  <title>RenoGuard · Web</title>
   <link rel="stylesheet" href="styles.css">
   <script src="../shared/project-store.js" defer></script>
   <script src="app.js" defer></script>
@@ -52,8 +52,8 @@
         <button class="nav-link" data-open="proposal"><svg><use href="#icon-changes"/></svg><span>Changes</span><span class="nav-count muted-count" data-value="pending-count">1</span></button>
         <button class="nav-link" data-open="budget"><svg><use href="#icon-wallet"/></svg><span>Budget</span></button>
       </nav>
-      <div class="sidebar-secondary"><button class="nav-link" data-open="documents"><svg><use href="#icon-file"/></svg><span>Documents</span></button><button class="nav-link" data-open="assistant"><svg><use href="#icon-sparkles"/></svg><span>Project assistant</span></button></div>
-      <div class="sidebar-bottom"><div class="reassurance"><span class="reassurance-icon"><svg><use href="#icon-shield"/></svg></span><p>Your home.<br><strong>Your peace of mind.</strong></p></div><button class="profile" data-open="project"><span class="avatar">TE</span><span><strong>Thomas Eng</strong><small>Homeowner</small></span><svg class="small-icon"><use href="#icon-dots"/></svg></button></div>
+      <div class="sidebar-secondary"><button class="nav-link" data-open="documents"><svg><use href="#icon-file"/></svg><span>Documents</span></button><button class="nav-link" data-open="assistant"><svg><use href="#icon-sparkles"/></svg><span>Project helper</span></button></div>
+      <div class="sidebar-bottom"><div class="reassurance"><span class="reassurance-icon"><svg><use href="#icon-shield"/></svg></span><p>Punggol BTO<br><strong>Renovation project</strong></p></div><button class="profile" data-open="project"><span class="avatar">TE</span><span><strong>Thomas Eng</strong><small>Homeowner</small></span><svg class="small-icon"><use href="#icon-dots"/></svg></button></div>
     </aside>
 
     <div class="workspace">
@@ -64,10 +64,10 @@
       </header>
 
       <main id="main" class="dashboard" tabindex="-1">
-        <section class="page-heading"><div><p class="eyebrow">PUNGGOL · 4-ROOM BTO</p><h1>Welcome back, Thomas<span class="heading-period">.</span></h1><p class="page-intro">A little closer to the home you imagined.</p></div><button class="button secondary report-button" data-open="report"><svg><use href="#icon-plus"/></svg>Report a defect</button></section>
+        <section class="page-heading"><div><p class="eyebrow">PUNGGOL · 4-ROOM BTO</p><h1>Welcome back, Thomas<span class="heading-period">.</span></h1><p class="page-intro">Stage 3 of 5 · Tiling &amp; carpentry</p></div><button class="button secondary report-button" data-open="report"><svg><use href="#icon-plus"/></svg>Report a defect</button></section>
 
         <section class="attention-section" aria-labelledby="attention-heading">
-          <div class="section-heading"><h2 id="attention-heading">Needs your attention <span class="section-count" data-value="action-count">2</span></h2><span class="section-hint">Your next steps, all in one place</span></div>
+          <div class="section-heading"><h2 id="attention-heading">Needs your attention <span class="section-count" data-value="action-count">2</span></h2></div>
           <div class="attention-grid">
             <article class="decision-card" id="proposal-card">
               <div class="decision-body"><div class="decision-top"><span class="status-badge amber" data-proposal-status><span class="status-dot"></span>Pending approval</span><span class="record-label">VO-015</span></div><div class="proposal-summary"><div class="material-swatch" aria-hidden="true"><span></span></div><div><p class="card-eyebrow">BATHROOM</p><h3>Bathroom tile replacement</h3><p data-proposal-note>Your original tile is out of stock. Review the replacement proposed by your interior designer.</p></div></div><div class="proposal-impact"><div><span>Additional cost</span><strong>+S$250</strong></div><div><span>Handover impact</span><strong>1 → 14 Jul <svg><use href="#icon-check"/></svg></strong></div></div><button class="button primary" data-open="proposal"><span data-proposal-cta>Review proposed change</span><svg><use href="#icon-arrow-right"/></svg></button></div>
@@ -81,7 +81,7 @@
         </section>
 
         <section class="project-section" aria-labelledby="project-heading">
-          <div class="section-heading"><h2 id="project-heading">Your project at a glance</h2><button class="text-button" data-open="timeline">View timeline<svg><use href="#icon-arrow-up-right"/></svg></button></div>
+          <div class="section-heading"><h2 id="project-heading">Project summary</h2><button class="text-button" data-open="timeline">View timeline<svg><use href="#icon-arrow-up-right"/></svg></button></div>
           <div class="metrics-grid">
             <button class="metric-card progress-metric" data-open="timeline"><span class="metric-icon"><svg><use href="#icon-home"/></svg></span><span class="metric-label">Renovation progress</span><span class="metric-value">60<span>%</span><span class="progress-ring" aria-hidden="true"><svg viewBox="0 0 42 42"><circle cx="21" cy="21" r="16"/><circle class="ring-fill" cx="21" cy="21" r="16"/></svg></span></span><span class="metric-caption">Stage 3 of 5</span></button>
             <button class="metric-card" data-open="budget"><span class="metric-icon"><svg><use href="#icon-wallet"/></svg></span><span class="metric-label">Remaining allowance</span><span class="metric-value" data-value="available">S$30,000</span><span class="metric-caption">After approved costs</span></button>
@@ -91,13 +91,13 @@
         </section>
 
         <div class="lower-grid">
-          <section class="rooms-section" aria-labelledby="rooms-heading"><div class="section-heading"><h2 id="rooms-heading">Picture your progress</h2><button class="text-button" data-open="rooms">My rooms<svg><use href="#icon-arrow-up-right"/></svg></button></div><article class="room-card"><button class="room-image-button" data-open="rooms" aria-label="Explore your rooms and illustrative living room preview"><img src="../assets/living-room.png" alt="Illustrative renovated living room with warm oak finishes, a taupe sofa, and soft daylight" width="1536" height="1024"><span class="image-label"><span class="status-dot"></span>Living &amp; dining</span><span class="image-expand"><svg><use href="#icon-arrow-up-right"/></svg></span></button><div class="room-card-bottom"><div><h3>A space taking shape.</h3><p>Illustrative preview · Explore your rooms and linked defects.</p></div><button class="button secondary compact" data-open="rooms"><svg><use href="#icon-plan"/></svg>Explore rooms</button></div></article></section>
+          <section class="rooms-section" aria-labelledby="rooms-heading"><div class="section-heading"><h2 id="rooms-heading">Rooms &amp; previews</h2><button class="text-button" data-open="rooms">My rooms<svg><use href="#icon-arrow-up-right"/></svg></button></div><article class="room-card"><button class="room-image-button" data-open="rooms" aria-label="Explore your rooms and illustrative living room preview"><img src="../assets/living-room.png" alt="Illustrative renovated living room with warm oak finishes, a taupe sofa, and soft daylight" width="1536" height="1024"><span class="image-label"><span class="status-dot"></span>Living &amp; dining</span><span class="image-expand"><svg><use href="#icon-arrow-up-right"/></svg></span></button><div class="room-card-bottom"><div><h3>Living &amp; dining</h3><p>Illustrative room preview</p></div><button class="button secondary compact" data-open="rooms"><svg><use href="#icon-plan"/></svg>Explore rooms</button></div></article></section>
 
           <section class="activity-section" aria-labelledby="activity-heading"><div class="section-heading"><h2 id="activity-heading">Recent updates</h2><button class="text-button" data-open="notifications">View all<svg><use href="#icon-arrow-up-right"/></svg></button></div><div class="activity-card"><div class="activity-list" id="activity-list" aria-live="polite"><div class="activity-item"><span class="activity-marker amber"><svg><use href="#icon-changes"/></svg></span><div class="activity-copy"><strong>Tile replacement proposed</strong><p>Bathroom · +S$250, proposed completion 14 Jul</p><small>18 Jun · John Tan</small></div></div><div class="activity-item"><span class="activity-marker green"><svg><use href="#icon-check"/></svg></span><div class="activity-copy"><strong>Cabinet alignment completed</strong><p>Kitchen · Ready for your inspection</p><small>17 Jun · John Tan</small></div></div><div class="activity-item"><span class="activity-marker"><svg><use href="#icon-defect"/></svg></span><div class="activity-copy"><strong>Bathroom defect acknowledged</strong><p>Your tile report is linked to a repair.</p><small>14 Jun · John Tan</small></div></div></div><button class="contact-link" data-open="contact"><span class="mini-avatar">JT</span><span><strong>Your interior designer</strong><small>John Tan · Northline Interiors</small></span><svg><use href="#icon-chevron-right"/></svg></button></div></section>
         </div>
 
-        <section class="utility-strip" aria-label="Project tools"><button data-open="documents"><svg><use href="#icon-file"/></svg><span><strong>Your documents</strong><small>Quotations &amp; project records</small></span><svg class="small-icon"><use href="#icon-chevron-right"/></svg></button><button data-open="assistant"><svg><use href="#icon-sparkles"/></svg><span><strong>A little clarity</strong><small>Understand your scope &amp; costs</small></span><svg class="small-icon"><use href="#icon-chevron-right"/></svg></button></section>
-        <footer class="dashboard-footer"><span>Renovate with proof, not promises.</span><span>Sample project · 18 Jun 2026</span></footer>
+        <section class="utility-strip" aria-label="Project tools"><button data-open="documents"><svg><use href="#icon-file"/></svg><span><strong>Your documents</strong><small>Quotations &amp; project records</small></span><svg class="small-icon"><use href="#icon-chevron-right"/></svg></button><button data-open="assistant"><svg><use href="#icon-sparkles"/></svg><span><strong>Project helper</strong><small>Understand your scope &amp; costs</small></span><svg class="small-icon"><use href="#icon-chevron-right"/></svg></button></section>
+        <footer class="dashboard-footer"><span>RenoGuard · Project workspace</span><span>Sample project · 18 Jun 2026</span></footer>
       </main>
     </div>
 

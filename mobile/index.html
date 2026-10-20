@@ -13,7 +13,7 @@
   <script src="/mobile/app.js" defer></script>
 </head>
 <body>
-  <div class="startup" id="startup" aria-label="Preparing your project"><span class="startup-logo"><svg aria-hidden="true"><use href="#i-shield"/></svg></span><strong>RenoGuard</strong><p>Your home. A little clearer.</p><span class="startup-track"><i></i></span></div>
+  <div class="startup" id="startup" aria-label="Preparing your project"><span class="startup-logo"><svg aria-hidden="true"><use href="#i-shield"/></svg></span><strong>RenoGuard</strong><p>Loading project…</p><span class="startup-track"><i></i></span></div>
   <a class="skip-link" href="#content">Skip to screen content</a>
   <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
     <symbol id="i-shield" viewBox="0 0 24 24"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/></symbol>
@@ -37,6 +37,7 @@
     <symbol id="i-sparkles" viewBox="0 0 24 24"><path d="m10 3 2.5 6.5L19 12l-6.5 2.5L10 21l-2.5-6.5L1 12l6.5-2.5zM19 2v5m-2.5-2.5h5"/></symbol>
     <symbol id="i-send" viewBox="0 0 24 24"><path d="m21 3-7 18-4-10-7-4zM10 11 21 3"/></symbol>
     <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5 8a8 8 0 0 1 13-3l2 2M4 17l2 2a8 8 0 0 0 13-3"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
   </svg>
   <div class="mobile-app">
     <div class="app-viewport">
@@ -44,17 +45,17 @@
       <button class="icon-button back-button" data-action="back" aria-label="Back to previous screen" hidden><svg><use href="#i-back"/></svg></button>
       <a class="brand" href="#overview" aria-label="RenoGuard overview"><span class="brand-mark"><svg><use href="#i-shield"/></svg></span>renoguard<span class="brand-dot">.</span></a>
       <span class="header-context" id="header-context" hidden></span>
-      <div class="header-actions"><a class="icon-button header-home" href="#overview" aria-label="Back to home" hidden><svg><use href="#i-home"/></svg></a><a class="icon-button notification-button" href="#updates" aria-label="Project updates"><svg><use href="#i-bell"/></svg><span class="notification-dot" id="notification-dot"></span></a><a class="avatar" href="#project" aria-label="Project and demo settings">TE</a></div>
+      <div class="header-actions"><a class="icon-button header-home" href="#overview" aria-label="Back to home" hidden><svg><use href="#i-home"/></svg></a><a class="icon-button notification-button" href="#updates" aria-label="Project updates"><svg><use href="#i-bell"/></svg><span class="notification-dot" id="notification-dot"></span></a><a class="avatar" href="#profile" aria-label="Your profile">TE</a></div>
     </header>
     <div id="storage-notice" class="storage-notice" hidden>Saving is unavailable in this browser. Your changes may disappear after a reload.</div>
     <main id="content" tabindex="-1"></main>
     </div>
     <nav class="bottom-nav" aria-label="Main navigation">
       <a href="#overview" data-tab="overview" aria-current="page"><svg><use href="#i-home"/></svg><span>Home</span></a>
-      <a href="#rooms" data-tab="rooms"><svg><use href="#i-rooms"/></svg><span>Rooms</span></a>
       <a href="#defects" data-tab="defects"><svg><use href="#i-defects"/></svg><span>Defects</span><span class="nav-dot" id="defect-nav-dot" hidden></span></a>
       <a href="#changes" data-tab="changes"><svg><use href="#i-changes"/></svg><span>Approvals</span><span class="nav-dot" id="change-nav-dot"></span></a>
       <a href="#budget" data-tab="budget"><svg><use href="#i-budget"/></svg><span>Budget</span></a>
+      <a href="#more" data-tab="more"><svg><use href="#i-more"/></svg><span>Tools</span></a>
     </nav>
   </div>
   <dialog id="room-dialog" class="room-dialog" aria-labelledby="room-dialog-title"><div id="room-dialog-content"></div></dialog>
