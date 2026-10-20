@@ -16,7 +16,7 @@
   const inspections = new Map();
   const sessionPhotos = new Map();
   const flashes = new Map();
-  const filters = { status: 'open', search: '', changes: 'pending' };
+  const filters = { status: 'open', room: '', search: '', changes: 'pending' };
   let state = Store.getState();
   let route = '';
   let mutating = false;
@@ -26,6 +26,15 @@
   let showFloorGuide = true;
   let approvalAcknowledged = false;
   const materials = { grigio: { name: 'Grigio Matte', label: 'Option A', tone: 'Cool grey', note: 'Closest match to your wall tiles' }, sabbia: { name: 'Sabbia Matte', label: 'Option B', tone: 'Warm sand', note: 'A warmer tone with subtle stone texture' } };
+  const demoDefectPhotos = {
+    'DEF-021': [
+      { src: '/assets/defects/cracked-tile-detail.webp', title: 'Cracked tile close-up', alt: 'A hairline crack running diagonally across a pale bathroom floor tile', closeup: true, sample: true },
+      { src: '/assets/defects/cracked-bathroom-floor.webp', title: 'Tiles beside the shower', alt: 'Cracks across bathroom floor tiles beside the glass shower screen', sample: true }
+    ],
+    'DEF-003': [{ src: '/assets/defects/kitchen-cabinet-repair.webp', title: 'Cabinet doors after adjustment', alt: 'Kitchen cabinet doors with even gaps and a secure hinge after adjustment', sample: true }],
+    'DEF-004': [{ src: '/assets/defects/bedroom-paint-issue.webp', title: 'Paint beside the door frame', alt: 'Uneven patches of white paint beside a timber bedroom door frame', sample: true }],
+    'DEF-001': [{ src: '/assets/defects/secured-outlet.webp', title: 'Outlet after repair', alt: 'A white three-pin wall socket secured flush against the wall', sample: true }]
+  };
   const tileName = () => materials[state.proposal.tile].name;
   const handover = () => state.proposal.status === 'approved' ? '14 Jul' : '1 Jul';
 
@@ -70,6 +79,23 @@
     const hash = location.hash.replace(/^#\/?/, '');
     try { return decodeURIComponent(hash) || 'overview'; }
     catch { return 'overview'; }
+  }
+
+  function headerTitle() {
+    const [screen, detail] = route.split('/');
+    const titles = {
+      profile: 'Your profile', walkthrough: 'Walkthrough', rooms: 'Rooms & previews', room: 'Room details',
+      preview: detail === 'bathroom' ? 'AR room preview' : '3D room view', material: 'Tile details',
+      defect: 'Defect details', report: detail === 'edit' ? 'Edit report' : 'Report defect',
+      'report-saved': 'Report saved', request: 'Request quotation', 'request-receipt': 'Request saved',
+      'withdraw-report': 'Withdraw report', inspect: 'Inspect repair', 'verify-confirm': 'Verify repair',
+      followup: 'Repair follow-up', change: 'Change details', approve: 'Review approval',
+      'approval-receipt': 'Change approved', 'withdraw-approval': 'Withdraw approval', revision: 'Request changes',
+      documents: 'Quotes & variations', document: detail === 'scope' ? 'Original quotation' : 'Tile quotation',
+      timeline: 'Payments', updates: 'Updates', helper: 'Project helper', contact: 'Project contact',
+      project: 'Project details', reset: 'Reset demo'
+    };
+    return titles[screen] || 'RenoGuard';
   }
 
   function parentTab(path) {
@@ -222,7 +248,40 @@
 
   function defectRow(defect) {
     const next = { approval: 'Review linked proposal', verification: 'Inspect before you verify', followup: 'Discuss remaining work', reported: defect.changeRequest ? 'Track quotation request' : 'View report', scheduled: 'Repair planned · see record', withdrawn: 'Restore if needed', verified: 'Reopen if the issue returns' }[defect.status];
-    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div class="record-content">${defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)}<h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported.replace(' · local demo', ''))}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
+    const photos = defectPhotos(defect);
+    return `<a class="record-row" href="#defect/${esc(defect.id)}"><div class="record-content"><div class="record-topline">${defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)}</div><div class="record-summary${photos.length ? ' has-photo' : ''}"><div><h3>${esc(defect.title)}</h3><p>${esc(defect.room)} · ${esc(defect.category)}</p></div>${photos.length ? `<span class="record-thumbnail">${photoImage(photos[0], true)}<span class="record-photo-count" aria-label="${photos.length} ${photos.length === 1 ? 'photo' : 'photos'}">${icon('camera')}${photos.length}</span></span>` : ''}</div><div class="record-meta"><span>${esc(defect.id)}</span><span>· ${esc(defect.reported.replace(' · local demo', ''))}</span></div><span class="next-label">${esc(next)}</span></div>${icon('right')}</a>`;
+  }
+
+  function defectPhotos(defect) {
+    if (sessionPhotos.has(defect.id)) return [{ src: sessionPhotos.get(defect.id), title: 'Your attached photo', alt: 'Your attached defect photograph', sample: false }];
+    if (defect.photoName) return [];
+    return demoDefectPhotos[defect.id] || [];
+  }
+
+  function photoImage(photo, thumbnail = false) {
+    return `<img src="${esc(photo.src)}" alt="${thumbnail ? '' : esc(photo.alt)}" ${thumbnail ? 'loading="lazy" decoding="async"' : ''} class="${thumbnail && photo.closeup ? 'photo-image-closeup' : ''}">`;
+  }
+
+  function photoGallery(id, photos, source = 'record') {
+    if (!photos.length) return '';
+    return `<section class="defect-photos" aria-label="Defect photos"><div class="photo-heading"><h3>Photos <span>${photos.length}</span></h3>${photos.every(photo => photo.sample) ? '<small>Sample photos</small>' : ''}</div><div class="photo-thumbnails">${photos.map((photo, index) => `<button type="button" class="photo-thumbnail" data-action="open-defect-photo" data-id="${esc(id)}" data-index="${index}" data-source="${source}" aria-label="Open photo ${index + 1} of ${photos.length}: ${esc(photo.title)}">${photoImage(photo, true)}<span class="photo-zoom" aria-hidden="true">${icon('search')}</span></button>`).join('')}</div><p class="help">Tap a photo to enlarge.</p></section>`;
+  }
+
+  function reportPhotos(draft) {
+    if (draft.photo) return [{ src: draft.photo, title: 'Your selected photo', alt: 'Your selected defect photograph', sample: false }];
+    return firstScenarioReport() && !draft.photoName ? demoDefectPhotos['DEF-021'] : [];
+  }
+
+  function openDefectPhoto(id, index, source = 'record') {
+    const defect = findDefect(id);
+    const photos = source === 'report' ? reportPhotos(getReportDraft()) : defect ? defectPhotos(defect) : [];
+    const photo = photos[index];
+    if (!photo) return;
+    const dialog = document.getElementById('room-dialog');
+    dialog.classList.add('photo-viewer');
+    document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><div><p class="eyebrow">${esc(id)}${photo.sample ? ' · Sample photo' : ''}</p><h2 id="room-dialog-title">${esc(photo.title)}</h2></div><button type="button" class="icon-button" data-action="close-room" aria-label="Close photo">${icon('close')}</button></div><img class="defect-photo-full" src="${esc(photo.src)}" alt="${esc(photo.alt)}">${photos.length > 1 ? `<div class="photo-viewer-controls">${action('Previous', 'open-defect-photo', 'secondary compact', `data-id="${esc(id)}" data-index="${index - 1}" data-source="${source}" ${index === 0 ? 'disabled' : ''}`)}<span aria-live="polite">${index + 1} of ${photos.length}</span>${action('Next', 'open-defect-photo', 'secondary compact', `data-id="${esc(id)}" data-index="${index + 1}" data-source="${source}" ${index === photos.length - 1 ? 'disabled' : ''}`)}</div>` : ''}`;
+    if (!dialog.open) dialog.showModal();
+    else dialog.querySelector('[data-action="close-room"]').focus({ preventScroll: true });
   }
 
   function filteredDefects() {
@@ -230,24 +289,26 @@
     return projectDefects().filter(defect => {
       const matchesStatus = filters.status === 'open' ? !['verified', 'withdrawn'].includes(defect.status) : defect.status === filters.status;
       const searchable = `${defect.title} ${defect.id} ${defect.room} ${defect.category} ${defect.description}`.toLowerCase();
-      return matchesStatus && (!search || search.split(/\s+/).every(term => searchable.includes(term)));
+      return matchesStatus && (!filters.room || defect.room === filters.room) && (!search || search.split(/\s+/).every(term => searchable.includes(term)));
     });
   }
 
   function defectResults() {
     const records = filteredDefects();
-    return `<p class="result-count" role="status">${records.length} ${records.length === 1 ? 'record' : 'records'}</p><div class="stack">${records.map(defectRow).join('') || `<div class="empty-state">${icon('search')}<h2>No matching records</h2><p>${filters.search ? 'Try another room or issue.' : filters.status === 'withdrawn' ? 'Withdrawn reports will stay here so they can be restored.' : filters.status === 'verified' ? 'Repairs will appear here after your inspection.' : 'No open defects are recorded.'}</p>${filters.search ? action('Clear search', 'clear-search') : link('Report a defect', 'report')}</div>`}</div>`;
+    const hasFilters = Boolean(filters.room || filters.search.trim());
+    return `<p class="result-count" role="status">${records.length} ${records.length === 1 ? 'record' : 'records'}</p><div class="stack">${records.map(defectRow).join('') || `<div class="empty-state">${icon('search')}<h2>No matching records</h2><p>${hasFilters ? 'Try another room or search term.' : filters.status === 'withdrawn' ? 'Withdrawn reports will stay here so they can be restored.' : filters.status === 'verified' ? 'Repairs will appear here after your inspection.' : 'No open defects are recorded.'}</p>${hasFilters ? action('Clear filters', 'clear-defect-filters') : link('Report a defect', 'report')}</div>`}</div>`;
   }
 
   function defectsScreen() {
     return heading('Defects & repairs') + link('Report a defect', 'report', 'primary') +
       `<div class="segmented" aria-label="Defect record status">${['open', 'verified', 'withdrawn'].map(value => `<button type="button" data-action="filter-status" data-status="${value}" aria-pressed="${filters.status === value}">${value[0].toUpperCase() + value.slice(1)}</button>`).join('')}</div>
-      <label class="search-field">${icon('search')}<span class="sr-only">Search defect records</span><input id="defect-search" type="search" placeholder="Search by room or issue" value="${esc(filters.search)}"></label><div id="defect-results">${defectResults()}</div>`;
+      <div class="defect-filters"><label class="search-field">${icon('search')}<span class="sr-only">Search defect records</span><input id="defect-search" type="search" placeholder="Search by room or issue" value="${esc(filters.search)}"></label><div class="filter-row"><label for="defect-room">Filter by room</label><div class="room-filter-select"><select id="defect-room"><option value="">All rooms</option>${ROOMS.map(room => `<option value="${esc(room)}" ${filters.room === room ? 'selected' : ''}>${esc(room)}</option>`).join('')}</select><span id="defect-room-value" aria-hidden="true">${esc(filters.room || 'All rooms')}</span><svg aria-hidden="true"><use href="#i-right"></use></svg></div></div></div><div id="defect-results">${defectResults()}</div>`;
   }
 
   function refreshDefectResults() {
     const results = document.getElementById('defect-results');
     if (!results) return;
+    document.getElementById('defect-room-value').textContent = filters.room || 'All rooms';
     results.innerHTML = defectResults();
     document.querySelectorAll('[data-action="filter-status"]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.status === filters.status)));
   }
@@ -260,6 +321,7 @@
     const room = roomFromSlug(slug);
     if (!room) return;
     const dialog = document.getElementById('room-dialog');
+    dialog.classList.remove('photo-viewer');
     const records = openDefects().filter(d => d.room === room);
     const metadata = window.RenoGuardRooms.rooms.find(r => r.name === room);
     document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><p class="eyebrow">Room overview · ${metadata.area}</p>${action('Close', 'close-room', 'quiet compact')}</div><h2 id="room-dialog-title">${esc(room)}</h2><p class="intro">${records.length ? `${records.length} open ${records.length===1?'issue':'issues'} in this room` : 'No open issues in this room'}</p>${room==='Bathroom'&&proposalReady()?`<a class="room-change-summary" href="#change/VO-015">${icon('changes')}<span><strong>Bathroom floor tile replacement</strong><small>${state.proposal.status==='approved'?'Approved · '+tileName():'Approval needed · two tile options'} · +S$250</small></span>${icon('right')}</a>`:''}${records.map(d=>`<a class="sheet-record" href="#defect/${d.id}">${statusBadge(d.status)}<strong>${esc(d.title)}</strong>${icon('right')}</a>`).join('')}<div class="action-stack">${link(room==='Bathroom'&&!proposalReady()?'Report the bathroom tiles':room==='Bathroom'?'Open AR room preview':'Enter 3D room view',room==='Bathroom'&&!proposalReady()?'report/room/bathroom':`preview/${slug}`,'primary')}${link('Room details & records',`room/${slug}`)}</div>`;
@@ -285,7 +347,7 @@
       document.querySelectorAll('[data-action="select-tile"]').forEach(button=>{const selected=button.dataset.tile===tile; button.setAttribute('aria-pressed',String(selected));button.querySelector('i').textContent=selected?'✓':'';});
       document.getElementById('material-summary').innerHTML=`<h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span>`;
     } else render();
-    document.getElementById('header-context').textContent=content.querySelector('.ar-preview')?'AR Room Preview':document.getElementById('screen-title')?.textContent;
+    document.getElementById('header-context').textContent = headerTitle();
     document.title = 'RenoGuard · Mobile';
     announce(`${tileName()} selected. Additional cost S$250. Not approved yet.`);
   }
@@ -366,8 +428,8 @@
       ? section('Next step', `<p>Review the quotation and replacement options when they are ready.</p><div class="action-stack">${link('Track quotation request', `request-receipt/${id}`, 'primary')}</div>`)
       : section('Need a replacement?', `<p>Request a quotation to review the options and cost before approving work.</p><div class="action-stack">${link('Request a quotation', `request/${id}`)}</div>`);
     if (defect.status === 'withdrawn') next = notice('<strong>Report withdrawn</strong>The record is retained and excluded from open defects. You can restore it if needed.') + `<div class="action-stack">${action('Restore report', 'restore-report', 'primary', `data-id="${id}"`)}</div>`;
-    return heading(defect.title, `${defect.id} · ${defect.room}`) + (defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)) + (flash ? notice(esc(flash)) : '') + section('Issue details', `<div class="card issue-card"><p>${esc(defect.description)}</p><details class="record-information"><summary>Report details</summary><dl class="details">${row('Room', esc(defect.room))}${row('Category', esc(defect.category))}${row('Reported', esc(defect.reported.replace(' · local demo', '')))}${row('Responsible person', 'John Tan · Northline Interiors')}</dl></details></div>`) +
-      (sessionPhotos.has(id) ? `<img class="photo-preview" src="${sessionPhotos.get(id)}" alt="Your attached defect photograph">` : defect.photoName ? notice(`Photo filename: ${esc(defect.photoName)}.<br>The preview is unavailable after reload or in another interface. Photos are not uploaded or shared.`) : '') +
+    return heading(defect.title, `${defect.id} · ${defect.room}`) + (defect.status === 'reported' && defect.changeRequest ? badge('Pending quotation', 'amber') : statusBadge(defect.status)) + (flash ? notice(esc(flash)) : '') + section('Issue details', `<div class="card issue-card"><p>${esc(defect.description)}</p>${photoGallery(id, defectPhotos(defect))}<details class="record-information"><summary>Report details</summary><dl class="details">${row('Room', esc(defect.room))}${row('Category', esc(defect.category))}${row('Reported', esc(defect.reported.replace(' · local demo', '')))}${row('Responsible person', 'John Tan · Northline Interiors')}</dl></details></div>`) +
+      (defect.photoName && !sessionPhotos.has(id) ? notice(`Photo filename: ${esc(defect.photoName)}.<br>The preview is unavailable after reload or in another interface. Photos are not uploaded or shared.`) : '') +
       (defect.followupNote ? section('Your follow-up note', `<div class="card"><p>${esc(defect.followupNote)}</p></div>`) : '') + next +
       (id === 'DEF-021' && state.proposal.status === 'approved' ? `<a class="linked-row" href="#change/VO-015">${icon('changes')}View approved VO-015${icon('right')}</a>` : '') +
       (defect.status === 'reported' ? `<details class="manage-report"><summary>Manage report</summary><div class="action-stack">${link('Edit report', `report/edit/${id}`)}${link('Withdraw report', `withdraw-report/${id}`, 'danger')}</div></details>` : '');
@@ -377,7 +439,7 @@
     const defect=findDefect(id);
     if(!defect||defect.status!=='reported')return missing('Request unavailable',`defect/${id}`);
     if(defect.changeRequest)return requestReceipt(id);
-    return heading('Request a quotation',`${id} · ${defect.room}`,'Check the report details.')+`<div class="card"><p class="eyebrow">${esc(defect.room)} · ${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p><a class="text-link" href="#report/edit/${id}">Edit report${icon('arrow')}</a></div>`+notice('<strong>No spending approved yet.</strong>You will review the quotation, options and completion date before deciding.',true)+`<div class="action-stack">${action('Save quotation request','request-confirm','primary',`data-id="${id}"`)}</div><p class="demo-note">Prototype request · saved on this device.</p>`;
+    return heading('Request a quotation',`${id} · ${defect.room}`,'Check the report details.')+`<div class="card"><p class="eyebrow">${esc(defect.room)} · ${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p>${photoGallery(id, defectPhotos(defect))}<a class="text-link" href="#report/edit/${id}">Edit report${icon('arrow')}</a></div>`+notice('<strong>No spending approved yet.</strong>You will review the quotation, options and completion date before deciding.',true)+`<div class="action-stack">${action('Save quotation request','request-confirm','primary',`data-id="${id}"`)}</div><p class="demo-note">Prototype request · saved on this device.</p>`;
   }
 
   function requestReceipt(id) {
@@ -422,7 +484,9 @@
   }
 
   function photoPreview(draft) {
-    return `${draft.photo ? `<img class="photo-preview" src="${draft.photo}" alt="Selected defect photograph">` : draft.photoName ? '<p class="help">Existing photo preview is unavailable in this session.</p>' : ''}${draft.photoName ? `<p class="help">${esc(draft.photoName)}</p>${action('Remove photo', 'remove-photo', 'quiet')}` : ''}`;
+    const id = firstScenarioReport() ? 'DEF-021' : route.startsWith('report/edit/') ? route.split('/')[2] : 'New report';
+    const photos = reportPhotos(draft);
+    return `${photoGallery(id, photos, 'report')}${!photos.length && draft.photoName ? '<p class="help">Existing photo preview is unavailable in this session.</p>' : ''}${draft.photoName ? `<p class="help">${esc(draft.photoName)}</p>${action('Remove photo', 'remove-photo', 'quiet')}` : ''}`;
   }
 
   function setError(form, fieldName, message) {
@@ -668,7 +732,7 @@
     document.querySelector('.mobile-app').classList.toggle('focused-mode', ['report', 'report-saved', 'request', 'revision', 'followup', 'inspect', 'verify-confirm', 'approve', 'withdraw-report', 'withdraw-approval'].includes(route.split('/')[0]));
     document.querySelector('.header-home').hidden = primaryRoutes.includes(route);
     const title = document.getElementById('screen-title');
-    document.getElementById('header-context').textContent = content.querySelector('.ar-preview')?'AR Room Preview':title?.textContent || 'Your project';
+    document.getElementById('header-context').textContent = headerTitle();
     document.title = 'RenoGuard · Mobile';
     if (focus) title?.focus({ preventScroll: true });
     if (restore) screenScroller().scrollTo({ top: scrollPositions.get(route) || 0, behavior: 'instant' });
@@ -683,6 +747,7 @@
           if (button.dataset.mode !== state.demoMode) { mutate(() => Store.switchDemo(button.dataset.mode)); clearTransientState(); }
           navigate('overview', true); announce(`${demoName()} opened. Saved progress is kept separately.`); break;
         case 'open-room': openRoom(button.dataset.room); break;
+        case 'open-defect-photo': openDefectPhoto(id, Number(button.dataset.index), button.dataset.source); break;
         case 'request-confirm':
           if(findDefect(id)?.status!=='reported') { navigate(`defect/${id}`); break; }
           mutate(()=>Store.requestDefectChange(id)); navigate(`request-receipt/${id}`, true); announce('Quotation request saved locally. No spending approved.'); break;
@@ -705,10 +770,11 @@
           filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending'; render();
           document.querySelector(`[data-action="filter-changes"][data-status="${filters.changes}"]`)?.focus({ preventScroll: true });
           break;
-        case 'clear-search':
-          filters.search = '';
+        case 'clear-defect-filters':
+          filters.room = ''; filters.search = '';
+          document.getElementById('defect-room').value = '';
           document.getElementById('defect-search').value = '';
-          refreshDefectResults(); document.getElementById('defect-search').focus();
+          refreshDefectResults(); document.getElementById('defect-room').focus();
           break;
         case 'approve-confirm':
           if(!route.startsWith('approve/') || !approvalAcknowledged || !document.getElementById('approval-acknowledgement')?.checked) { announce('Review the details and select the confirmation checkbox.'); break; }
@@ -745,7 +811,7 @@
           break;
         case 'remove-photo': {
           const draft = getReportDraft(); draft.token++; draft.loading = false; draft.photo = ''; draft.photoName = '';
-          document.getElementById('photo-preview').innerHTML = '';
+          document.getElementById('photo-preview').innerHTML = photoPreview(draft);
           const input = document.getElementById('report-photo'); input.value = ''; input.focus();
           const submit = document.querySelector('#report-form [type="submit"]'); submit.disabled = false; submit.textContent = route.includes('/edit/') ? 'Save report changes' : 'Save defect report';
           break;
@@ -760,7 +826,7 @@
 
   function clearTransientState() {
     reportDrafts.clear(); textDrafts.clear(); inspections.clear(); sessionPhotos.clear(); flashes.clear(); scrollPositions.clear();
-    filters.status = 'open'; filters.search = ''; filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending';
+    filters.status = 'open'; filters.room = ''; filters.search = ''; filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending';
     mirrorPlan = false; showFloorGuide = true; approvalAcknowledged = false;
     document.getElementById('room-dialog').close();
   }
@@ -802,6 +868,7 @@
       if (event.target.closest?.('#report-form, #text-form')) saveScreen();
     });
     document.addEventListener('change', event => {
+      if (event.target.id === 'defect-room') { filters.room = event.target.value; refreshDefectResults(); }
       if(event.target.id==='approval-acknowledgement') { approvalAcknowledged=event.target.checked; document.querySelector('[data-action="approve-confirm"]').disabled=!approvalAcknowledged; document.getElementById('approval-help').textContent=approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'; }
       if (event.target.id === 'report-photo') readPhoto(event.target);
       if (event.target.closest?.('#report-form')) saveScreen();
@@ -826,6 +893,7 @@
     const historyChanged = () => {
       const target = currentHash();
       if (target === route) return;
+      document.getElementById('room-dialog').close();
       saveScreen(); route = target; enterScreen(); render({ focus: true, restore: true });
     };
     window.addEventListener('popstate', historyChanged);
