@@ -6,11 +6,12 @@
   <meta name="theme-color" content="#174d43">
   <meta name="description" content="RenoGuard for mobile. Review renovation changes, track defects, and stay in control of your project budget.">
   <title>RenoGuard · Mobile</title>
-  <link rel="preload" href="/assets/bathroom.webp" as="image">
-  <link rel="stylesheet" href="/mobile/styles.css">
-  <script src="/shared/project-store.js" defer></script>
-  <script src="/mobile/room-model.js" defer></script>
-  <script src="/mobile/app.js" defer></script>
+  <link rel="preload" href="assets/bathroom.webp" as="image">
+  <link rel="stylesheet" href="mobile/styles.css">
+  <script src="shared/project-store.js" defer></script>
+  <script src="mobile/room-model.js" defer></script>
+  <script src="mobile/comparison.js" defer></script>
+  <script src="mobile/app.js" defer></script>
 </head>
 <body>
   <div class="startup" id="startup" aria-label="Preparing your project"><span class="startup-logo"><svg aria-hidden="true"><use href="#i-shield"/></svg></span><strong>RenoGuard</strong><p>Loading project…</p><span class="startup-track"><i></i></span></div>
@@ -50,6 +51,7 @@
     <div id="storage-notice" class="storage-notice" hidden>Saving is unavailable in this browser. Your changes may disappear after a reload.</div>
     <main id="content" tabindex="-1"></main>
     </div>
+    <div class="variation-actions" id="variation-actions" aria-label="Variation actions" hidden></div>
     <nav class="bottom-nav" aria-label="Main navigation">
       <a href="#overview" data-tab="overview" aria-current="page"><svg><use href="#i-home"/></svg><span>Home</span></a>
       <a href="#defects" data-tab="defects"><svg><use href="#i-defects"/></svg><span>Defects</span><span class="nav-dot" id="defect-nav-dot" hidden></span></a>

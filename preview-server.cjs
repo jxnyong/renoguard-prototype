@@ -2,18 +2,17 @@ const http = require('node:http');
 const fs = require('node:fs');
 const path = require('node:path');
 const files = {
-  '/': 'mobile/index.html',
-  '/index.html': 'mobile/index.html',
+  '/': 'index.html',
+  '/index.html': 'index.html',
   '/web/': 'web/index.html',
   '/web/index.html': 'web/index.html',
   '/web/styles.css': 'web/styles.css',
   '/web/app.js': 'web/app.js',
   '/shared/project-store.js': 'shared/project-store.js',
-  '/mobile/': 'mobile/index.html',
-  '/mobile/index.html': 'mobile/index.html',
   '/mobile/styles.css': 'mobile/styles.css',
   '/mobile/app.js': 'mobile/app.js',
   '/mobile/room-model.js': 'mobile/room-model.js',
+  '/mobile/comparison.js': 'mobile/comparison.js',
   '/assets/bathroom.webp': 'assets/bathroom.webp',
   '/assets/defects/cracked-tile-detail.webp': 'assets/defects/cracked-tile-detail.webp',
   '/assets/defects/cracked-bathroom-floor.webp': 'assets/defects/cracked-bathroom-floor.webp',
@@ -32,9 +31,10 @@ const files = {
 };
 const types = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.png': 'image/png', '.webp': 'image/webp', '.svg': 'image/svg+xml'};
 const server = http.createServer((req, res) => {
-  const pathname = new URL(req.url, 'http://localhost').pathname;
-  if (['/mobile','/web','/drafts'].includes(pathname) && ['GET', 'HEAD'].includes(req.method)) {
-    res.writeHead(308, {'Location': pathname + '/'});
+  const requested = new URL(req.url, 'http://localhost');
+  const pathname = requested.pathname;
+  if (['/mobile','/mobile/','/mobile/index.html','/web','/drafts'].includes(pathname) && ['GET', 'HEAD'].includes(req.method)) {
+    res.writeHead(308, {'Location': pathname.startsWith('/mobile') ? '/' + requested.search : pathname + '/' + requested.search});
     res.end();
     return;
   }

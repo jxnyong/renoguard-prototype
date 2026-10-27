@@ -1,6 +1,8 @@
 # Setup guide
 
-Install Git and Node.js, download RenoGuard, and start the local preview. Follow the section for your operating system, then continue to **Run the app**.
+To develop locally, install Git and Node.js, download RenoGuard, and start the preview. Follow the section for your operating system, then continue to **Run the app**.
+
+To share the app online, see [Publish online with GitHub Pages](#publish-online-with-github-pages). Participants opening the published link only need a browser.
 
 You need **Git**, **Node.js LTS**, and a browser. No additional packages or build steps are required.
 
@@ -137,6 +139,123 @@ node preview-server.cjs
 ```
 
 Refresh the browser. If Git reports local edits or diverging commits, review your changes before updating.
+
+## Publish online with GitHub Pages
+
+RenoGuard is a static HTML, CSS and JavaScript app. GitHub Pages can host it from this repository; your computer and local preview server can be off while people visit it.
+
+1. Commit and push the latest project files to `main`, including the root `index.html` and `.nojekyll` file.
+2. Open the [GitHub repository](https://github.com/jxnyong/renoguard-prototype).
+3. Choose **Settings → Pages**.
+4. Under **Build and deployment**, select **Deploy from a branch**.
+5. Choose **main** and **/(root)**, then **Save**.
+6. Wait for publishing to finish. The **Actions** tab shows deployment progress; **Pages → Visit site** opens the result.
+
+These steps follow [GitHub's publishing instructions](https://docs.github.com/en/pages/getting-started-with-github-pages/configuring-a-publishing-source-for-your-github-pages-site). The `.nojekyll` file disables the default Jekyll processing for this static site; see [GitHub's entry-file and static-site guidance](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site).
+
+Once enabled, the expected public address is:
+
+```text
+https://jxnyong.github.io/renoguard-prototype/
+```
+
+Future pushes to `main` update the published site automatically. Cloning the repository and running Node.js are only needed for local development.
+
+### A/B links
+
+Use the saved full-app previews for development, reviewing the scenario or recording a walkthrough:
+
+```text
+https://jxnyong.github.io/renoguard-prototype/?variant=a
+https://jxnyong.github.io/renoguard-prototype/?variant=b
+```
+
+Both support the complete easy scenario: report the defect, review the proposal, preview tiles, check the quotation and budget, approve, then view the updated budget and payment timeline. **Walkthrough steps** and **Reset demo** remain available from Project tools, Profile and the approval receipt even when hints are off.
+
+For a fresh participant session covering the **complete easy scenario**, use:
+
+```text
+https://jxnyong.github.io/renoguard-prototype/?variant=a&study=scenario
+https://jxnyong.github.io/renoguard-prototype/?variant=b&study=scenario
+```
+
+These start at Home before the first defect report, with hints off. Progress is kept in memory; **Reset demo** and page reload both start the scenario again, including the report. Saved full-app progress is unaffected.
+
+For the **focused approval review experiment**, use:
+
+```text
+https://jxnyong.github.io/renoguard-prototype/?variant=a&study=quotation
+https://jxnyong.github.io/renoguard-prototype/?variant=b&study=quotation
+```
+
+These start after the defect has been reported, with the same pending quotation, hints off and fresh progress. Progress is kept in memory, resets on reload and does not change the full app's saved demos.
+
+In this focused mode, **Reset approval demo** resets the quotation task. **Start full walkthrough** leaves focused mode and opens a **Restart scenario** confirmation before restarting the reporting-to-approval scenario. Restarting affects only the walkthrough; Explore progress, the current A/B version and your guidance preference are kept.
+
+Choose the full-scenario links when participants should report the defect and complete the entire easy journey. Choose the quotation links when testing the approval review structure in isolation with the task and measures below. Use the same scope for both versions.
+
+**Profile → Prototype setup** provides **Full scenario experiment** and **Focused approval experiment** links for both versions. Walkthrough guidance and mode controls lead to the saved full app, where those settings apply.
+
+Both versions are served by the same static site. The query parameters select the version and experiment scope; in-app screens use URL fragments. GitHub Pages needs no build command or separate deployment for A and B. Publishing remains a manual repository setup step.
+
+The independent variable is the **approval review structure**:
+
+| Version | Review structure |
+| --- | --- |
+| A | Consolidated review: tile choice, cost and timing, and confirmation together on one page. |
+| B | Guided review: Tile → Cost & timing → Confirm, with a three-step progress indicator. |
+
+Both use the same tile cards, original-scope details, quotation facts, source links, AR preview, confirmation checkbox, approval action and receipt. Neither starts with a tile selected. Grigio Matte and Sabbia Matte each add **S$250**, leaving **S$29,750**, with proposed completion on **14 Jul 2026**. The information is grouped together in A and sequenced across steps in B.
+
+In every mode, tapping a tile in the AR preview saves it as the pending choice. **Back** or **Review selected tile** returns with that choice retained. It remains unapproved: the budget and payments change only after final confirmation.
+
+The consolidated page supports scanning and cross-checking, with more content to scroll through. The guided review provides focus and visible progress, with more transitions when revisiting details. Neither design is assumed to perform better.
+
+In A, **Review approval** moves to the summary on the same page. In B, it opens the final step. Both require the same confirmation checkbox before **Approve · S$250** becomes available. Full specifications remain available in both versions.
+
+## Use the hosted app with Loop11
+
+Loop11 supports live websites as well as design prototypes. Start from the [course UX tools page](https://sites.google.com/view/is211smu/resources/ux-tools), which provides the academic signup link using an SMU email address. Check that your account covers the required participants and result exports before recruitment.
+
+1. Publish the app and check that both A/B starting URLs for your chosen scope open from another browser or device. Test reset and reload so each participant gets the same initial state.
+2. Create the study's tasks and questions in Loop11. Set the task's starting URL to the appropriate A or B address above, using `study=scenario` for the whole journey or `study=quotation` for approval review only. See [Loop11's task setup](https://www.loop11.com/setting-up-tasks/).
+3. Keep the task, target tile, post-task questions and source access the same for both conditions. Use the two primary measures below. Agree on one task time limit after piloting and apply it to everyone.
+4. Assign participants one condition using your agreed experiment procedure. Keep the profile's version selector as a team preview tool rather than asking participants to choose their condition. If using two separate Loop11 projects, keep their settings identical except for the starting URL.
+5. Choose an integration method. With **JavaScript**, add the exact snippet supplied by your Loop11 project to the root `index.html`, then commit and push. With **No-Code**, participants use Loop11's desktop extension or mobile app. The current Loop11 recruiting guide specifies No-Code for video/audio recording. See [integration and recruitment](https://www.loop11.com/recruiting-participants/) and [supported devices](https://www.loop11.com/devices/).
+6. Run pilot sessions through the generated **Loop11 study links**. Check the recorded tile, approval outcome, detail-question answers, satisfaction answers and exports before recruiting real participants. The app changes screens using URL fragments, including the guided review steps. Verify that navigation and success matching work in the actual study rather than assuming every screen is counted as a separate page. Reaching a generic receipt URL alone does not prove that the correct tile was approved.
+7. Distribute the Loop11 participant links. Loop11 collects the study results; the app's local demo storage does not collect participants' survey answers.
+
+The team's narrated walkthrough video can be recorded separately from the quantitative A/B sessions.
+
+For the full scenario, run the report-to-payment journey as one continuous task. Opening its starting URL again or refreshing creates a fresh session. If you split the journey into several Loop11 tasks, pilot whether navigation preserves the same app session before recruiting participants.
+
+### Task and measures
+
+The task below is for the focused quotation study. For a full-scenario study, also ask participants to report the cracked bathroom tiles with photos before reviewing the proposal, then check the updated budget and payment timeline after approval. Keep those additions identical in A and B.
+
+Use this focused task in both versions:
+
+> Your designer has proposed two replacement bathroom tiles. Review how the change affects your costs and completion date, choose Sabbia Matte, and approve the change. Finish when you see confirmation that the change has been approved.
+
+Keep **Sabbia Matte** as the target for every participant. Do not give instructions about which control to use.
+
+Use these two primary dependent variables:
+
+1. **Critical-detail accuracy (0–3):** after the attempt, ask the three questions below. Award one point per correct answer. Allow the same access to the app and its source documents in both conditions, and do not reveal the answers before recording responses.
+
+   | Question | Correct answer |
+   | --- | --- |
+   | How much additional cost does the proposed change add? | S$250 |
+   | How much budget would remain after approval? | S$29,750 |
+   | What revised completion date is proposed? | 14 Jul 2026 |
+
+   Accept equivalent number and date formats. Ask after unsuccessful attempts as well as successful ones. This measures the ability to find and report critical details; it does not establish overall understanding of the quotation.
+
+2. **Post-task satisfaction:** ask, “Overall, how satisfied are you with the process of reviewing and approving the change?” Use a 1–7 scale, anchored **1 — Very dissatisfied** and **7 — Very satisfied**. Ask after unsuccessful and timed-out attempts as well as successful ones.
+
+Also record task completion as context: a correct completion reaches an approved receipt showing Sabbia Matte, without additional help and within the common pilot-established time limit. Record a wrong tile, unapproved selection, abandoned attempt or exceeded limit separately. Do not score a completed approval as proof that the participant understood its consequences.
+
+If Loop11 uses a success URL, pilot whether it distinguishes the approved target tile as well as the receipt screen. Check the actual approved tile before scoring success; do not infer it from a generic confirmation page. Loop11 or the selected research tool must collect these measures; the app does not collect study responses itself.
 
 ## Optional: Visual Studio Code
 
