@@ -425,14 +425,14 @@ body:has(.room-dialog[open]) { overflow:hidden; }
 .ar-specs small { display:block; font-size:var(--text-caption); color:var(--muted); }
 .ar-specs strong { display:block; font-size:14px; margin-top:5px; }
 .comparison-table-wrap { overflow:hidden; border:1px solid var(--line); border-radius:15px; background:#fff; }
-.comparison-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:var(--text-small); line-height:1.5; }
+.comparison-table { width:100%; border-collapse:collapse; table-layout:fixed; font-size:var(--comparison-detail-size); line-height:1.5; }
 .comparison-table th,.comparison-table td { padding:12px 5px; border-bottom:1px solid var(--line); text-align:center; vertical-align:middle; overflow-wrap:normal; }
 .comparison-table tr:last-child td,.comparison-table tr:last-child th { border-bottom:0; }
 .comparison-table th:first-child { width:28%; text-align:left; color:var(--muted); padding-left:10px; }
-.comparison-table thead th:first-child { font-size:var(--text-caption); }
-.comparison-table th { font-weight:650; }
+.comparison-table thead th:first-child { font-size:var(--comparison-label-size); }
+.comparison-table th { font-weight:500; }
 .comparison-table td:nth-child(n+3),.comparison-table thead th:nth-child(n+3) { background:#e6eee8; }
-.comparison-table thead img { display:block; width:32px; height:39px; border-radius:6px; object-fit:cover; margin:0 auto 7px; }
+.comparison-table thead img { display:block; width:48px; height:48px; border-radius:8px; object-fit:cover; margin:0 auto 8px; }
 .stock-alert { color:#8a5a0b; font-weight:650; }
 .change-impact { display:grid; grid-template-columns:1fr 1fr; gap:15px; padding:18px 0 6px; }
 .change-impact small,.change-impact span { display:block; font-size:11px; color:var(--muted); }
@@ -649,7 +649,7 @@ body:has(.room-dialog[open]) { overflow:hidden; }
 .profile-identity p { margin-top:5px; font-size:var(--text-small); color:var(--muted); }
 
 /* Team preview controls and shared comparison details. */
-.comparison-original-target { display:block; margin-top:4px; font-size:var(--text-small); line-height:1.45; color:var(--muted); }
+.comparison-original-target { display:block; margin-top:4px; font-size:var(--comparison-label-size); font-weight:400; line-height:1.5; color:var(--muted); }
 .demo-mode[aria-current="page"] { border:2px solid var(--green); padding:calc(var(--card-inset) - 1px); background:#edf4ef; }
 .setting-toggle { display:flex; align-items:center; gap:16px; min-height:44px; cursor:pointer; }
 .setting-toggle > span { flex:1; min-width:0; }
@@ -683,13 +683,12 @@ body:has(.room-dialog[open]) { overflow:hidden; }
 .review-section-heading { margin:0 var(--heading-inset) 12px; }
 .review-section-heading h2,h2.review-section-heading { font-size:20px; line-height:1.4; }
 .review-section-heading > p { margin-top:5px; font-size:13px; color:var(--muted); }
-.comparison-options { min-width:0; margin:0; padding:0; border:0; }
+.comparison-options { --comparison-name-size:14px; --comparison-detail-size:13px; --comparison-label-size:12px; min-width:0; margin:0; padding:0; border:0; }
+.comparison-option-label { display:block; margin:0; color:var(--muted); font-size:var(--comparison-label-size); font-weight:500; line-height:1.5; letter-spacing:0; }
+.comparison-tile-name { display:block; margin:3px 0 0; font-family:inherit; font-size:var(--comparison-name-size); font-weight:650; line-height:1.5; letter-spacing:0; overflow-wrap:normal; }
 .comparison-note { padding-inline:var(--heading-inset); }
-.comparison-table th:first-child { width:26%; }
-.comparison-table thead img { width:36px; height:36px; }
-.comparison-table .comparison-original-target { font-size:11px; }
 .comparison-table .comparison-selection td { padding:0; }
-.comparison-choice { display:flex; align-items:center; justify-content:center; gap:6px; min-height:48px; margin:0; padding:10px 4px; font-size:12px; font-weight:650; line-height:1.4; color:var(--green); cursor:pointer; }
+.comparison-choice { display:flex; align-items:center; justify-content:center; gap:6px; min-height:48px; margin:0; padding:10px 4px; font-size:var(--comparison-label-size); font-weight:650; line-height:1.5; color:var(--green); cursor:pointer; }
 .comparison-choice input[type="radio"] { flex:none; width:18px; height:18px; min-width:18px; min-height:18px; margin:0; padding:0; accent-color:var(--green); }
 .comparison-choice:has(input:focus-visible) { outline:2px solid #b98731; outline-offset:-3px; border-radius:6px; }
 .comparison-choice:has(input:disabled) { cursor:default; }
@@ -698,17 +697,14 @@ body:has(.room-dialog[open]) { overflow:hidden; }
 .comparison-card.is-selected { border-color:var(--green); box-shadow:inset 0 0 0 1px var(--green); background:#edf4ef; }
 .comparison-card-heading { display:flex; align-items:center; gap:12px; padding:var(--card-inset); border-bottom:1px solid var(--line); }
 .comparison-card-heading > img { flex:none; width:48px; height:48px; object-fit:cover; border-radius:8px; }
-.comparison-card-heading > div { min-width:0; }
-.comparison-card-heading small { display:block; font-size:12px; line-height:1.5; color:var(--muted); }
-.comparison-card-heading h3 { margin:3px 0 0; font-size:16px; line-height:1.45; }
+.comparison-card-heading > .comparison-identity { flex:1; min-width:0; }
+.comparison-card-heading > .comparison-choice { flex:none; flex-direction:column; gap:4px; width:60px; min-height:48px; padding:4px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+.comparison-card.is-selected .comparison-card-heading > .comparison-choice { border-color:var(--green); background:var(--green-soft); }
 .comparison-card dl { margin:0; padding:0 var(--card-inset); }
-.comparison-card dl > div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); align-items:baseline; gap:12px; padding:11px 0; font-size:13px; line-height:1.5; }
+.comparison-card dl > div { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1.3fr); align-items:baseline; gap:12px; padding:11px 0; font-size:var(--comparison-detail-size); line-height:1.5; }
 .comparison-card dl > div + div { border-top:1px solid var(--line); }
-.comparison-card dt { color:var(--muted); }
+.comparison-card dt { color:var(--muted); font-weight:500; }
 .comparison-card dd { margin:0; text-align:right; overflow-wrap:anywhere; }
-.comparison-card .comparison-choice { border-top:1px solid var(--line); font-size:13px; }
-.comparison-card.is-selected .comparison-choice { background:#dce9e4; }
-.comparison-unavailable { margin:0; padding:14px var(--card-inset); border-top:1px solid var(--line); font-size:12px; line-height:1.5; color:var(--muted); background:#f8f8f4; }
 .review-resources { display:grid; margin-top:12px; border:1px solid var(--line); border-radius:16px; overflow:hidden; background:#fff; }
 .review-resource { display:flex; align-items:center; gap:12px; min-height:58px; padding:12px var(--card-inset); color:var(--green); font-size:14px; font-weight:600; line-height:1.45; }
 .review-resource + .review-resource { border-top:1px solid var(--line); }

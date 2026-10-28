@@ -71,18 +71,22 @@
     return `<label class="comparison-choice"><input type="radio" name="replacement-tile" data-review-tile="${option.selectionKey}" value="${option.selectionKey}" aria-label="Choose ${escapeHTML(option.tile)}"${selectedTile === option.selectionKey ? ' checked' : ''}${disabled ? ' disabled' : ''}><span>${selectedTile === option.selectionKey ? 'Selected' : 'Select'}</span></label>`;
   }
 
+  function tileIdentity(option, titleTag = 'strong') {
+    return `<img src="${option.image}" alt="${escapeHTML(option.tile)} tile sample"><div class="comparison-identity"><small class="comparison-option-label">${escapeHTML(option.label)}</small><${titleTag} class="comparison-tile-name">${escapeHTML(option.tile)}</${titleTag}></div>`;
+  }
+
   function table(selectedTile, disabled) {
     return `<div class="quotation-comparison comparison-table-wrap" data-comparison-variant="a">
       <table class="comparison-table">
         <caption class="sr-only">Original bathroom tile specification and two replacement options</caption>
-        <thead><tr><th scope="col">Specification</th>${DATA.map(option => `<th scope="col"${columnAttributes(option, '', selectedTile)}><img src="${option.image}" alt="${escapeHTML(option.tile)} tile sample">${escapeHTML(option.label)}</th>`).join('')}</tr></thead>
-        <tbody>${ROW_ORDER.map(field => `<tr data-specification="${field}"><th scope="row">${escapeHTML(LABELS[field])}</th>${DATA.map(option => `<td${columnAttributes(option, field, selectedTile)}>${valueHTML(option, field)}</td>`).join('')}</tr>`).join('')}<tr class="comparison-selection"><th scope="row">Your choice</th><td><span class="sr-only">Original tile cannot be selected.</span><span aria-hidden="true">—</span></td>${proposedTiles().map(option => `<td${columnAttributes(option, '', selectedTile)}>${choice(option, selectedTile, disabled)}</td>`).join('')}</tr></tbody>
+        <thead><tr><th scope="col">Details</th>${DATA.map(option => `<th scope="col"${columnAttributes(option, '', selectedTile)}>${tileIdentity(option)}</th>`).join('')}</tr></thead>
+        <tbody>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<tr data-specification="${field}"><th scope="row">${escapeHTML(LABELS[field])}</th>${DATA.map(option => `<td${columnAttributes(option, field, selectedTile)}>${valueHTML(option, field)}</td>`).join('')}</tr>`).join('')}<tr class="comparison-selection"><th scope="row">Your choice</th><td><span class="sr-only">Original tile cannot be selected.</span><span aria-hidden="true">—</span></td>${proposedTiles().map(option => `<td${columnAttributes(option, '', selectedTile)}>${choice(option, selectedTile, disabled)}</td>`).join('')}</tr></tbody>
       </table>
     </div>`;
   }
 
   function cards(selectedTile, disabled) {
-    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading"><img src="${option.image}" alt="${escapeHTML(option.tile)} tile sample"><div><small>${escapeHTML(option.label)}</small><h3>${escapeHTML(option.tile)}</h3></div></header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl>${option.selectionKey ? choice(option, selectedTile, disabled) : '<p class="comparison-unavailable">Original tile · unavailable for replacement</p>'}</article>`).join('')}</div>`;
+    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}${option.selectionKey ? choice(option, selectedTile, disabled) : ''}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>`).join('')}</div>`;
   }
 
   function originalBrief() {
