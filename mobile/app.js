@@ -27,10 +27,7 @@
   let showFloorGuide = true;
   let approvalAcknowledged = false;
   let previewTile = null;
-  let reviewImpactSeen = false;
   let reviewReturnRoute = null;
-  let reviewSpecsExpanded = false;
-  let reviewAtConfirmation = false;
   const materials = { grigio: { name: 'Grigio Matte', label: 'Option A', tone: 'Cool grey', note: 'Closest match to your wall tiles' }, sabbia: { name: 'Sabbia Matte', label: 'Option B', tone: 'Warm sand', note: 'A warmer tone with subtle stone texture' } };
   const demoDefectPhotos = {
     'DEF-021': [
@@ -187,14 +184,11 @@
     const approved = state.proposal.status === 'approved';
     if (isReviewRoute(route)) {
       let canonical = route;
-      if (!guidedReview() || approved) canonical = route === 'approve/VO-015' && approved ? route : 'change/VO-015';
-      else if (!selectedTile()) canonical = 'change/VO-015';
-      else if (route === 'approve/VO-015' && !reviewImpactSeen) canonical = 'change/VO-015/impact';
+      if (route === 'change/VO-015/impact' || (route === 'approve/VO-015' && !approved && !selectedTile())) canonical = 'change/VO-015';
       if (canonical !== route) {
         route = canonical;
         history.replaceState({ ...history.state, renoMobile: true }, '', `#${route}`);
       }
-      if (route === 'change/VO-015/impact') reviewImpactSeen = true;
     }
     const step = route === 'change/VO-015' ? 'reviewed' : route === 'document/quotation' ? 'quoteRead' : route === 'budget' ? approved ? 'updatedBudgetViewed' : 'budgetChecked' : route === 'timeline' && approved ? 'paymentViewed' : '';
     if (step && isWalkthrough() && state.walkthrough.reported && !state.walkthrough[step]) mutate(() => Store.markWalkthroughStep(step));
@@ -390,8 +384,6 @@
     const scene = document.getElementById('ar-scene');
     if (scene) {
       previewTile = tile;
-      const changed = !state.proposal.selectionMade || state.proposal.tile !== tile;
-      if (changed) { reviewImpactSeen = false; reviewAtConfirmation = false; }
       mutate(() => Store.selectTile(tile));
       if (isWalkthrough() && state.walkthrough.reported) mutate(() => Store.recordTilePreview(tile));
       const material = materials[tile];
@@ -407,8 +399,6 @@
       document.querySelector('[data-action="use-preview-tile"]').textContent = 'Review selected tile';
       announce(`${material.name} selected for review. Your budget is unchanged until approval.`);
     } else {
-      reviewImpactSeen = false;
-      reviewAtConfirmation = false;
       mutate(() => Store.selectTile(tile));
       render();
       document.querySelector(`[data-review-tile="${tile}"]`)?.focus({ preventScroll: true });
@@ -434,16 +424,14 @@
       (matching ? pending ? proposalCard() : `<a class="record-row" href="#change/VO-015"><div>${badge('Approved', 'green')}<h3>Bathroom tile replacement</h3><p>${tileName()} · +${money(PROPOSAL_COST)}</p><div class="record-meta">VO-015 · ${esc(state.proposal.approvedAt)}</div></div>${icon('right')}</a>` : `<div class="empty-state">${icon('changes')}<h2>${pending ? 'No approved changes yet' : 'No decisions waiting'}</h2><p>${pending ? 'Approved changes will appear here with their cost and decision record.' : 'Your tile replacement approval is recorded under Approved.'}</p>${action(pending ? 'View pending proposal' : 'View approved change', 'switch-change-filter')}</div>`);
   }
 
-  const guidedReview = () => UI_VARIANT === 'b';
   const selectedTile = () => state.proposal.selectionMade ? state.proposal.tile : null;
   const isReviewRoute = path => ['change/VO-015', 'change/VO-015/impact', 'approve/VO-015'].includes(path);
   const reviewReturnTarget = () => reviewReturnRoute && isReviewRoute(reviewReturnRoute) ? reviewReturnRoute : 'change/VO-015';
-  const decisionRoute = () => guidedReview() ? route === 'approve/VO-015' : route === 'change/VO-015';
+  const decisionRoute = () => route === 'approve/VO-015';
 
-  function reviewTop(title, step) {
+  function reviewTop(title) {
     return heading(title, 'Bathroom · VO-015') +
-      `<div class="review-meta">${badge(state.proposal.status === 'approved' ? 'Approved' : state.proposal.revisionRequest ? 'Changes requested' : 'Pending your approval', state.proposal.status === 'approved' ? 'green' : 'amber')}<span>John Tan · 18 Jun 2026</span></div>` +
-      (guidedReview() && state.proposal.status !== 'approved' ? window.RenoGuardComparison.progress(step, { canContinue: Boolean(selectedTile()), canConfirm: Boolean(selectedTile()) && reviewImpactSeen }) : '');
+      `<div class="review-meta">${badge(state.proposal.status === 'approved' ? 'Approved' : state.proposal.revisionRequest ? 'Changes requested' : 'Pending your approval', state.proposal.status === 'approved' ? 'green' : 'amber')}<span>John Tan · 18 Jun 2026</span></div>`;
   }
 
   function reviewContext() {
@@ -455,8 +443,8 @@
   }
 
   function reviewTileSection() {
-    return reviewSection('Replacement options', window.RenoGuardComparison.choices({ selectedTile: selectedTile(), disabled: state.proposal.status === 'approved' }) +
-      `<details class="review-specifications" ${reviewSpecsExpanded ? 'open' : ''}><summary>Compare full specifications</summary>${window.RenoGuardComparison.render('a', { selectedTile: selectedTile() })}<p class="help">Availability from the sample quotation dated 18 Jun 2026.</p></details>`);
+    return reviewSection('Original & replacement options', window.RenoGuardComparison.render(UI_VARIANT || 'a', { selectedTile: selectedTile(), disabled: state.proposal.status === 'approved' }) +
+      '<p class="help comparison-note">*Availability from the sample quotation dated 18 Jun 2026.</p>');
   }
 
   function reviewSources() {
@@ -479,28 +467,24 @@
   function variationActions() {
     if (state.proposal.status === 'approved') return `<a class="button danger" href="#withdraw-approval">Withdraw approval</a>${link('View receipt', `approval-receipt/${state.proposal.tile}`, 'primary')}`;
     const request = '<a class="button secondary" href="#revision">Request changes</a>';
-    if (!guidedReview() && !reviewAtConfirmation && !approvalAcknowledged) return request + action('Review approval', 'review-summary', 'primary', selectedTile() ? '' : 'disabled aria-describedby="tile-choice-help"');
     if (decisionRoute()) return request + action('Approve · S$250', 'approve-confirm', 'primary', approvalAcknowledged && selectedTile() ? '' : 'disabled aria-describedby="approval-help"');
-    const impact = route === 'change/VO-015/impact';
-    return request + action(impact ? 'Review approval' : 'Continue', impact ? 'review-approval' : 'review-impact', 'primary', selectedTile() ? '' : 'disabled aria-describedby="tile-choice-help"');
+    return request + action('Review approval', 'review-approval', 'primary', selectedTile() ? '' : 'disabled aria-describedby="tile-choice-help"');
   }
 
   function changeScreen() {
     const approved = state.proposal.status === 'approved';
-    const impact = guidedReview() && route === 'change/VO-015/impact';
-    const top = reviewTop(impact ? 'Cost & timing' : guidedReview() && !approved ? 'Choose your tile' : 'Review tile change', impact ? 2 : 1);
+    const top = reviewTop('Review tile change');
     const revision = state.proposal.revisionRequest ? reviewSection('Your revision request', `<div class="card"><p>${esc(state.proposal.revisionRequest.text)}</p><p class="help">Saved locally. No additional cost approved.</p></div>`) : '';
     const history = state.proposal.lastApprovedAt ? notice(`Previous approval withdrawn on ${esc(state.proposal.withdrawnAt)}. The decision history is retained.`) : '';
     if (approved) return `<div class="review-approval-page">${top}${window.RenoGuardComparison.selectionSummary({ selectedTile: selectedTile() })}${reviewImpactSection()}${reviewSources()}${revision}${history}</div>`;
-    if (impact) return `<div class="review-approval-page">${top}${window.RenoGuardComparison.selectionSummary({ selectedTile: selectedTile(), editTarget: 'change/VO-015' })}<div class="review-section">${window.RenoGuardComparison.impact({ availableBudget: totals().available })}</div>${reviewSources()}${revision}${history}</div>`;
-    return `<div class="review-approval-page">${top}${reviewContext()}${reviewTileSection()}<p class="help" id="tile-choice-help">${selectedTile() ? `${esc(tileName())} selected. No change approved yet.` : 'Choose a replacement tile.'}</p>${guidedReview() ? '' : reviewImpactSection()}${reviewSources()}${guidedReview() ? '' : approvalConfirmation()}${revision}${history}</div>`;
+    return `<div class="review-approval-page">${top}${reviewContext()}${reviewTileSection()}<p class="help" id="tile-choice-help">${selectedTile() ? `${esc(tileName())} selected. No change approved yet.` : 'Choose a replacement tile.'}</p>${reviewImpactSection()}${reviewSources()}${revision}${history}</div>`;
   }
 
   function materialScreen() { return previewScreen('bathroom'); }
 
   function approvalScreen() {
     if (state.proposal.status === 'approved') return approvalReceipt();
-    return `<div class="review-approval-page">${reviewTop('Review & approve', 3)}${approvalConfirmation()}${reviewSources()}</div>`;
+    return `<div class="review-approval-page">${reviewTop('Review & approve')}${approvalConfirmation()}${reviewSources()}</div>`;
   }
 
   function approvalReceipt(expectedTile) {
@@ -797,7 +781,7 @@
   }
 
   function prototypeSetupScreen() {
-    const versions = [['a', 'Version A', 'Review the tile, cost and timing together'], ['b', 'Version B', 'Review the change in three guided steps']];
+    const versions = [['a', 'Version A', 'Compare the original and replacements in a table'], ['b', 'Version B', 'Review a detailed card for each tile option']];
     return heading('Prototype setup') +
       section('Compare versions', `<p>Both versions use the same scenario and actions, with separate saved progress.</p><div class="demo-modes">${versions.map(([value, title, description]) => `<a class="demo-mode" href="${esc(variantURL(value))}" ${VARIANT_CONTEXT && UI_VARIANT === value ? 'aria-current="page"' : ''}><span><strong>${title}</strong><small>${description}</small></span>${VARIANT_CONTEXT && UI_VARIANT === value ? badge('Active', 'green') : icon('right')}</a>`).join('')}</div>`) +
       section('Full scenario experiment', `<p>Start from defect reporting, with hints off and fresh progress on every reload.</p><div class="study-preview-links">${versions.map(([value, title]) => `<a class="button secondary" href="${esc(variantURL(value, 'scenario'))}">${title}${icon('arrow')}</a>`).join('')}</div>`) +
@@ -888,23 +872,11 @@
           mutate(()=>Store.requestDefectChange(id)); navigate(`request-receipt/${id}`, true); announce('Quotation request saved locally. No spending approved.'); break;
         case 'close-room': document.getElementById('room-dialog').close(); break;
         case 'select-tile': updateTile(button.dataset.tile); break;
-        case 'review-impact':
-          if (selectedTile()) navigate('change/VO-015/impact');
-          break;
         case 'review-approval':
-          if (selectedTile() && reviewImpactSeen) navigate('approve/VO-015');
+          if (selectedTile()) navigate('approve/VO-015');
           break;
-        case 'review-summary': {
-          if (!selectedTile()) break;
-          reviewAtConfirmation = true;
-          document.getElementById('variation-actions').innerHTML = variationActions();
-          document.getElementById('approval-summary').scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
-          document.getElementById('approval-summary-title').focus({ preventScroll: true });
-          break;
-        }
         case 'use-preview-tile':
           if (state.proposal.status !== 'pending') break;
-          if (!state.proposal.selectionMade || state.proposal.tile !== (previewTile || state.proposal.tile)) { reviewImpactSeen = false; reviewAtConfirmation = false; }
           mutate(() => Store.selectTile(previewTile || state.proposal.tile)); approvalAcknowledged = false;
           navigate(reviewReturnTarget());
           break;
@@ -913,7 +885,7 @@
         case 'rotate-plan':
           mirrorPlan=!mirrorPlan; document.getElementById('room-scene').innerHTML=window.RenoGuardRooms.scene({defects:projectDefects(),mirror:mirrorPlan,tile:state.proposal.tile,only:route.startsWith('preview/')?route.split('/')[1]:''}); break;
         case 'back':
-          if (isReviewRoute(route)) { navigate(guidedReview() && route === 'approve/VO-015' ? 'change/VO-015/impact' : guidedReview() && route === 'change/VO-015/impact' ? 'change/VO-015' : 'changes'); break; }
+          if (isReviewRoute(route)) { navigate(route === 'approve/VO-015' ? 'change/VO-015' : 'changes'); break; }
           if (reviewReturnRoute && ['preview/bathroom', 'document/quotation', 'budget'].includes(route)) { navigate(reviewReturnTarget()); break; }
           if (history.state?.renoMobile && history.state.depth > 0) { saveScreen(); history.back(); }
           else navigate(fallbackBack(route), true);
@@ -935,7 +907,6 @@
           break;
         case 'approve-confirm':
           if (!state.proposal.selectionMade) { announce('Choose a replacement tile before approving.'); break; }
-          if (guidedReview() && !reviewImpactSeen) { navigate('change/VO-015/impact'); announce('The proposal changed. Review the cost and timing before approving.'); break; }
           if(!decisionRoute() || !approvalAcknowledged || !document.getElementById('approval-acknowledgement')?.checked) { announce('Review the details and select the confirmation checkbox.'); break; }
           if(content.querySelector('[data-review-selection]')?.dataset.reviewSelection!==state.proposal.tile){ approvalAcknowledged=false; render(); announce('The selected tile changed. Review the details again.'); break; }
           if (state.proposal.status !== 'pending') { navigate('change/VO-015'); announce('This approval is already recorded.'); break; }
@@ -992,7 +963,7 @@
   function clearTransientState() {
     reportDrafts.clear(); textDrafts.clear(); inspections.clear(); sessionPhotos.clear(); flashes.clear(); scrollPositions.clear();
     filters.status = 'open'; filters.room = ''; filters.search = ''; filters.changes = state.proposal.status === 'approved' ? 'approved' : 'pending';
-    mirrorPlan = false; showFloorGuide = true; approvalAcknowledged = false; previewTile = null; reviewImpactSeen = false; reviewReturnRoute = null; reviewSpecsExpanded = false; reviewAtConfirmation = false;
+    mirrorPlan = false; showFloorGuide = true; approvalAcknowledged = false; previewTile = null; reviewReturnRoute = null;
     document.getElementById('room-dialog').close();
   }
 
@@ -1032,9 +1003,6 @@
       if (event.target.id === 'defect-search') { filters.search = event.target.value; refreshDefectResults(); }
       if (event.target.closest?.('#report-form, #text-form')) saveScreen();
     });
-    document.addEventListener('toggle', event => {
-      if (event.target.matches?.('.review-specifications') && event.target.isConnected) reviewSpecsExpanded = event.target.open;
-    }, true);
     document.addEventListener('change', event => {
       if (event.target.dataset.reviewTile) updateTile(event.target.dataset.reviewTile);
       if (event.target.id === 'walkthrough-guidance') {
@@ -1043,7 +1011,7 @@
         announce(`Walkthrough hints ${showWalkthroughHints() ? 'on' : 'off'}. Reset the demo to start a fresh session.`);
       }
       if (event.target.id === 'defect-room') { filters.room = event.target.value; refreshDefectResults(); }
-      if(event.target.id==='approval-acknowledgement') { approvalAcknowledged=event.target.checked; reviewAtConfirmation=true; document.getElementById('variation-actions').innerHTML=variationActions(); document.getElementById('approval-help').textContent=approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'; }
+      if(event.target.id==='approval-acknowledgement') { approvalAcknowledged=event.target.checked; document.getElementById('variation-actions').innerHTML=variationActions(); document.getElementById('approval-help').textContent=approvalAcknowledged?'Ready to record your decision.':'Select the checkbox to enable approval.'; }
       if (event.target.id === 'report-photo') readPhoto(event.target);
       if (event.target.closest?.('#report-form')) saveScreen();
       if (event.target.dataset.checkIndex !== undefined) {
@@ -1074,7 +1042,7 @@
     window.addEventListener('hashchange', historyChanged);
     Store.subscribe((next, metadata) => {
       const modeChanged = next.demoMode !== state.demoMode;
-      if(next.proposal.tile!==state.proposal.tile || next.proposal.status!==state.proposal.status || next.proposal.selectionMade!==state.proposal.selectionMade) { approvalAcknowledged=false; reviewImpactSeen=false; reviewAtConfirmation=false; }
+      if(next.proposal.tile!==state.proposal.tile || next.proposal.status!==state.proposal.status || next.proposal.selectionMade!==state.proposal.selectionMade) approvalAcknowledged=false;
       sessionPhotos.forEach((photo, id) => {
         const previous = state.defects.find(defect => defect.id === id);
         const updated = next.defects.find(defect => defect.id === id);

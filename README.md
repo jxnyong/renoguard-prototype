@@ -17,7 +17,7 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Change approvals** — compare materials, review quotations and confirm variations.
 - **Budget and payments** — track approved costs and upcoming payment milestones.
 - **Demo modes** — follow the bathroom walkthrough or explore project issues, with separate saved progress.
-- **Review variants** — compare a consolidated approval page with a guided review.
+- **Review variants** — compare a side-by-side tile table with individual option cards.
 
 <br>
 
@@ -135,12 +135,12 @@ Open **Profile → Prototype setup** to switch versions or configure walkthrough
 
 | Version | Approval review | Local preview |
 | --- | --- | --- |
-| A | Tile choice, cost and timing, and confirmation together | [Open version A](http://127.0.0.1:8765/?variant=a) |
-| B | Guided steps: Tile → Cost & timing → Confirm | [Open version B](http://127.0.0.1:8765/?variant=b) |
+| A | Side-by-side table of the original and replacement tiles | [Open version A](http://127.0.0.1:8765/?variant=a) |
+| B | Individual cards for the original and replacement tiles | [Open version B](http://127.0.0.1:8765/?variant=b) |
 
 Saved progress is separate for each version. Fresh A/B previews start the bathroom scenario with hints off. For filming, turn hints on and reset the demo.
 
-Both use the same tile choices, quotation facts, sources and approval safeguards. Each tile adds S$250, leaving S$29,750, with completion proposed for 14 Jul 2026. The comparison tests how the review is organised.
+Both use the same tile choices, quotation facts, sources and approval safeguards. Each tile adds S$250, leaving S$29,750, with completion proposed for 14 Jul 2026. The comparison tests the table and card layouts; both lead to the same approval confirmation.
 
 Use the previews above for development and filming. For participants, choose the same experiment scope for A and B:
 

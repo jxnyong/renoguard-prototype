@@ -192,26 +192,26 @@ These start after the defect has been reported, with the same pending quotation,
 
 In this focused mode, **Reset approval demo** resets the quotation task. **Start full walkthrough** leaves focused mode and opens a **Restart scenario** confirmation before restarting the reporting-to-approval scenario. Restarting affects only the walkthrough; Explore progress, the current A/B version and your guidance preference are kept.
 
-Choose the full-scenario links when participants should report the defect and complete the entire easy journey. Choose the quotation links when testing the approval review structure in isolation with the task and measures below. Use the same scope for both versions.
+Choose the full-scenario links when participants should report the defect and complete the entire easy journey. Choose the quotation links when testing the tile comparison layout in isolation with the task and measures below. Use the same scope for both versions.
 
 **Profile → Prototype setup** provides **Full scenario experiment** and **Focused approval experiment** links for both versions. Walkthrough guidance and mode controls lead to the saved full app, where those settings apply.
 
 Both versions are served by the same static site. The query parameters select the version and experiment scope; in-app screens use URL fragments. GitHub Pages needs no build command or separate deployment for A and B. Publishing remains a manual repository setup step.
 
-The independent variable is the **approval review structure**:
+The independent variable is the **tile comparison layout**:
 
-| Version | Review structure |
+| Version | Comparison layout |
 | --- | --- |
-| A | Consolidated review: tile choice, cost and timing, and confirmation together on one page. |
-| B | Guided review: Tile → Cost & timing → Confirm, with a three-step progress indicator. |
+| A | Table: compare the original tile and both replacements side by side, then select a replacement in its column. |
+| B | Cards: review the original tile and each replacement in a separate card, then select a replacement in its card. |
 
-Both use the same tile cards, original-scope details, quotation facts, source links, AR preview, confirmation checkbox, approval action and receipt. Neither starts with a tile selected. Grigio Matte and Sabbia Matte each add **S$250**, leaving **S$29,750**, with proposed completion on **14 Jul 2026**. The information is grouped together in A and sequenced across steps in B.
+Both show the same tile specifications, original scope, quotation facts, source links and AR preview. They use the same selection labels, confirmation page, checkbox, approval action and receipt. Neither starts with a tile selected. Grigio Matte and Sabbia Matte each add **S$250**, leaving **S$29,750**, with proposed completion on **14 Jul 2026**. Only the comparison presentation changes; cost and timing details and the approval steps stay the same.
 
 In every mode, tapping a tile in the AR preview saves it as the pending choice. **Back** or **Review selected tile** returns with that choice retained. It remains unapproved: the budget and payments change only after final confirmation.
 
-The consolidated page supports scanning and cross-checking, with more content to scroll through. The guided review provides focus and visible progress, with more transitions when revisiting details. Neither design is assumed to perform better.
+The table supports comparing a specification across options at a glance, with compact columns on mobile. Cards keep each option’s details together, with more vertical scrolling. Neither design is assumed to perform better.
 
-In A, **Review approval** moves to the summary on the same page. In B, it opens the final step. Both require the same confirmation checkbox before **Approve · S$250** becomes available. Full specifications remain available in both versions.
+In both versions, **Review approval** opens the same confirmation page. The same checkbox must be selected before **Approve · S$250** becomes available. Full specifications are visible in both layouts; no replacement is preselected.
 
 ## Use the hosted app with Loop11
 
@@ -222,7 +222,7 @@ Loop11 supports live websites as well as design prototypes. Start from the [cour
 3. Keep the task, target tile, post-task questions and source access the same for both conditions. Use the two primary measures below. Agree on one task time limit after piloting and apply it to everyone.
 4. Assign participants one condition using your agreed experiment procedure. Keep the profile's version selector as a team preview tool rather than asking participants to choose their condition. If using two separate Loop11 projects, keep their settings identical except for the starting URL.
 5. Choose an integration method. With **JavaScript**, add the exact snippet supplied by your Loop11 project to the root `index.html`, then commit and push. With **No-Code**, participants use Loop11's desktop extension or mobile app. The current Loop11 recruiting guide specifies No-Code for video/audio recording. See [integration and recruitment](https://www.loop11.com/recruiting-participants/) and [supported devices](https://www.loop11.com/devices/).
-6. Run pilot sessions through the generated **Loop11 study links**. Check the recorded tile, approval outcome, detail-question answers, satisfaction answers and exports before recruiting real participants. The app changes screens using URL fragments, including the guided review steps. Verify that navigation and success matching work in the actual study rather than assuming every screen is counted as a separate page. Reaching a generic receipt URL alone does not prove that the correct tile was approved.
+6. Run pilot sessions through the generated **Loop11 study links**. Check the recorded tile, approval outcome, detail-question answers, satisfaction answers and exports before recruiting real participants. The app changes screens using URL fragments, including the shared approval confirmation. Verify that navigation and success matching work in the actual study rather than assuming every screen is counted as a separate page. Reaching a generic receipt URL alone does not prove that the correct tile was approved.
 7. Distribute the Loop11 participant links. Loop11 collects the study results; the app's local demo storage does not collect participants' survey answers.
 
 The team's narrated walkthrough video can be recorded separately from the quantitative A/B sessions.
