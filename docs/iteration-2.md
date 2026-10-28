@@ -95,7 +95,7 @@ Decide between-subjects or within-subjects in the experiment design. Assign cond
 
 ## Maze readiness and remaining setup
 
-One published copy of this static app can serve both query-string variants. There is no need to copy the app into two folders. Deployment instructions are intentionally kept out of the local setup guide for now.
+Both variants share one Vercel deployment: [Version A](https://renoguard-prototype.vercel.app/?variant=a&study=quotation) and [Version B](https://renoguard-prototype.vercel.app/?variant=b&study=quotation). Deployment instructions are kept separate from the local setup guide.
 
 The app mirrors its current study screen in a **screen query parameter**, alongside its in-app fragment. The approved receipt also includes **approved_tile=sabbia** for the target outcome. The starting screen is `screen=overview`; this gives the hosted experiment distinct Home, review, confirmation and outcome addresses while preserving the app session. Set the Maze task start at Home so navigation is included in the recorded time.
 
@@ -105,7 +105,7 @@ Before recruitment:
 
 - Confirm the team's account includes **Website Test**. Maze currently documents this as a paid-plan feature; a Figma Prototype Test and a hosted HTML Website Test are different blocks. See [the website-test requirements](https://help.maze.co/articles/2471284614-website-test-run-usability-tests-on-your-live-websites).
 - Use publicly reachable A/B links from the same deployment, not localhost addresses.
-- If quantitative paths are needed, install the exact tracking snippet supplied by the team's Maze project. No project-specific snippet has been supplied or added here.
+- The team's Maze snippet is installed in the shared app entry page, covering both variants. After the updated deployment is ready, verify the base domain in Maze's Connected websites settings and verify each Website Test block.
 - Pilot the actual Maze participant links, timing, recordings, satisfaction question and export. Snippet-less and snippet-based modes expose different data.
 - Check that the receipt shows **Sabbia Matte** and that the recorded outcome address includes the target material. A generic receipt page alone is insufficient evidence of correct completion.
 - Keep each task in one continuous app session. Refreshing intentionally resets the test; the app does not store research answers.

@@ -4,6 +4,8 @@ A mobile renovation prototype that helps homeowners report defects, compare prop
 
 Created for **SMU IS211 — Interaction Design and Prototyping**.
 
+**[Open RenoGuard →](https://renoguard-prototype.vercel.app/)**
+
 <br>
 
 ## ✨ Features
@@ -70,12 +72,12 @@ Open **Profile → Prototype controls**, choose A or B, then select **Start full
 
 ## 🧪 A/B study previews
 
-Start the preview server, then choose a focused experiment or the complete scenario:
+Open a hosted approval experiment or the complete scenario. No local setup is needed:
 
 | Version | Comparison layout | Focused approval task | Full scenario |
 | --- | --- | --- | --- |
-| **A** | Swipeable table with arrows and position indicators | [Open A](http://127.0.0.1:8765/?variant=a&study=quotation) | [Walkthrough A](http://127.0.0.1:8765/?variant=a&walkthrough=1) |
-| **B** | Full-width cards with a centred radio inside each card | [Open B](http://127.0.0.1:8765/?variant=b&study=quotation) | [Walkthrough B](http://127.0.0.1:8765/?variant=b&walkthrough=1) |
+| **A** | Swipeable table with arrows and position indicators | [Open A](https://renoguard-prototype.vercel.app/?variant=a&study=quotation) | [Walkthrough A](https://renoguard-prototype.vercel.app/?variant=a&walkthrough=1) |
+| **B** | Full-width cards with a centred radio inside each card | [Open B](https://renoguard-prototype.vercel.app/?variant=b&study=quotation) | [Walkthrough B](https://renoguard-prototype.vercel.app/?variant=b&walkthrough=1) |
 
 The experiment links start at **Home with a pending bathroom tile proposal** and reset on refresh. Participants find the approval themselves before comparing and choosing a tile. Use these for the Maze comparison; use the full scenario for walkthrough filming.
 
