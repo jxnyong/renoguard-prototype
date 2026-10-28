@@ -101,7 +101,7 @@
     if (!defaults.defects.every(defect => seen.has(defect.id))) throw new TypeError('The sample project records must be retained.');
     const proposal = {
       status: value.proposal.status,
-      tile: ['grigio', 'sabbia'].includes(value.proposal.tile) ? value.proposal.tile : 'grigio',
+      tile: ['grigio', 'sabbia', 'avorio'].includes(value.proposal.tile) ? value.proposal.tile : 'grigio',
       selectionMade: value.proposal.status === 'approved' || value.proposal.selectionMade === true,
       approvedAt: value.proposal.approvedAt == null ? null : requireText(value.proposal.approvedAt, 'Approval date', 120)
     };
@@ -131,9 +131,9 @@
       validated.walkthrough.guidance = STUDY_CONTEXT ? false : typeof previous.guidance === 'boolean' ? previous.guidance : !VARIANT_CONTEXT;
       // Preserve a completed preview step from older saves that did not track each tile.
       validated.walkthrough.previewedTiles = Array.isArray(previous.previewedTiles)
-        ? [...new Set(previous.previewedTiles.filter(tile => ['grigio', 'sabbia'].includes(tile)))]
+        ? [...new Set(previous.previewedTiles.filter(tile => ['grigio', 'sabbia', 'avorio'].includes(tile)))]
         : previous.previewed ? ['grigio', 'sabbia'] : [];
-      validated.walkthrough.previewed = validated.walkthrough.reported && validated.walkthrough.previewedTiles.length === 2;
+    validated.walkthrough.previewed = validated.walkthrough.reported && validated.walkthrough.previewedTiles.length === 3;
       ['updatedBudgetViewed', 'paymentViewed'].forEach(key => {
         validated.walkthrough[key] = proposal.status === 'approved' && Boolean(previous[key]);
       });
@@ -248,7 +248,7 @@
   }
 
   function selectTile(tile) {
-    if (!['grigio', 'sabbia'].includes(tile)) throw new TypeError('Choose one of the two proposed tiles.');
+    if (!['grigio', 'sabbia', 'avorio'].includes(tile)) throw new TypeError('Choose a proposed tile.');
     if (!hasProposal()) throw new Error('Report the bathroom defect to receive the sample proposal.');
     if (state.proposal.status === 'approved' || (state.proposal.tile === tile && state.proposal.selectionMade)) return getState();
     const next = getState();
@@ -280,7 +280,7 @@
     clearPostApprovalProgress(next);
     const defect = next.defects.find(item => item.id === 'DEF-021');
     defect.status = 'scheduled';
-    defect.description = `Hairline cracks across three bathroom floor tiles. You approved ${next.proposal.tile === 'sabbia' ? 'Sabbia Matte' : 'Grigio Matte'} replacement tiles. Completion and payment are planned for 14 Jul 2026.`;
+    defect.description = `Hairline cracks across three bathroom floor tiles. You approved ${{ grigio: 'Grigio Matte', sabbia: 'Sabbia Matte', avorio: 'Avorio Matte' }[next.proposal.tile]} replacement tiles. Completion and payment are planned for 14 Jul 2026.`;
     addActivity(next, `You approved VO-015 (+${money(PROPOSAL_COST)}). Bathroom tile replacement is scheduled for completion on 14 Jul 2026.`);
     return saveState(next);
   }
@@ -362,7 +362,7 @@
       next.defects = [defect, ...next.defects.filter(item => item.id !== defect.id)];
       next.walkthrough.reported = true;
       addActivity(next, 'You reported cracked bathroom tiles (DEF-021).', 'defect');
-      addActivity(next, 'Demo update: John proposed two replacement tiles in VO-015 (+S$250, completion 14 Jul).', 'file');
+      addActivity(next, 'Demo update: John proposed three replacement tiles in VO-015 (+S$250, completion 14 Jul).', 'file');
       return saveState(next);
     }
     const nextId = Math.max(4, ...next.defects.map(defect => Number(defect.id.replace('DEF-', '')) || 0)) + 1;
@@ -475,11 +475,11 @@
   }
 
   function recordTilePreview(tile) {
-    if (!['grigio', 'sabbia'].includes(tile)) throw new TypeError('Preview one of the two proposed tiles.');
+    if (!['grigio', 'sabbia', 'avorio'].includes(tile)) throw new TypeError('Preview a proposed tile.');
     if (state.demoMode !== 'walkthrough' || !state.walkthrough.reported || state.walkthrough.previewedTiles.includes(tile)) return getState();
     const next = getState();
     next.walkthrough.previewedTiles.push(tile);
-    next.walkthrough.previewed = next.walkthrough.previewedTiles.length === 2;
+    next.walkthrough.previewed = next.walkthrough.previewedTiles.length === 3;
     return saveState(next);
   }
 

@@ -27,7 +27,7 @@
     output += box(-.1,-.1,extent+.2,extent+.2,.13,'#f3f0e9','#d7d5ca','#c5c8bd');
     for (const r of list) {
       const {x,y,w,d}=r;
-      const floor=r.name==='Bathroom'?(tile==='sabbia'?'#d3bb94':'#b9bfba'):r.colour;
+      const floor=r.name==='Bathroom'?({sabbia:'#d3bb94',avorio:'#e7dfcc'}[tile]||'#b9bfba'):r.colour;
       output += poly([[x,y,.15],[x+w,y,.15],[x+w,y+d,.15],[x,y+d,.15]],floor,'stroke="#f9f7ef" stroke-width="2"');
       for(let a=.5;a<w;a+=.5) output += poly([[x+a,y,.16],[x+a,y+d,.16]],'none','stroke="#686d5b" stroke-opacity=".12" stroke-width=".6"');
       if(r.name==='Bathroom'||r.name==='Kitchen') for(let a=.6;a<d;a+=.6)output+=poly([[x,y+a,.16],[x+w,y+a,.16]],'none','stroke="#686d5b" stroke-opacity=".17" stroke-width=".7"');

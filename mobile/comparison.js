@@ -39,6 +39,18 @@
       stock: 'Available',
       extraCost: '+S$250',
       completion: '14 Jul 2026'
+    }),
+    Object.freeze({
+      key: 'option-c',
+      selectionKey: 'avorio',
+      label: 'Option C',
+      tile: 'Avorio Matte',
+      image: 'assets/materials/avorio.svg',
+      size: '600 × 600 mm',
+      finish: 'Matte porcelain',
+      stock: 'Available',
+      extraCost: '+S$250',
+      completion: '14 Jul 2026'
     })
   ]);
 
@@ -67,8 +79,8 @@
   const formatMoney = value => `S$${Number(value).toLocaleString('en-SG')}`;
   const symbol = name => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 
-  function choice(option, selectedTile, disabled, iconOnly = false) {
-    return `<label class="comparison-choice"><input type="radio" name="replacement-tile" data-review-tile="${option.selectionKey}" value="${option.selectionKey}" aria-label="Choose ${escapeHTML(option.tile)}"${selectedTile === option.selectionKey ? ' checked' : ''}${disabled ? ' disabled' : ''}>${iconOnly ? '' : `<span>${selectedTile === option.selectionKey ? 'Selected' : 'Select'}</span>`}</label>`;
+  function choice(option, selectedTile, disabled, showText = false) {
+    return `<label class="comparison-choice"><input type="radio" name="replacement-tile" data-review-tile="${option.selectionKey}" value="${option.selectionKey}" aria-label="Choose ${escapeHTML(option.tile)}"${selectedTile === option.selectionKey ? ' checked' : ''}${disabled ? ' disabled' : ''}>${showText ? '<span>Choose this tile</span>' : ''}</label>`;
   }
 
   function tileIdentity(option, titleTag = 'strong') {
@@ -76,17 +88,17 @@
   }
 
   function table(selectedTile, disabled) {
-    return `<div class="quotation-comparison comparison-table-wrap" data-comparison-variant="a">
+    return `<div class="comparison-carousel" data-comparison-variant="a"><p class="comparison-swipe-hint">Swipe the table or use the arrows to compare all three options</p><div class="comparison-table-wrap" id="comparison-scroll" tabindex="0" aria-label="Scrollable tile comparison table">
       <table class="comparison-table">
-        <caption class="sr-only">Original bathroom tile specification and two replacement options</caption>
-        <thead><tr><th scope="col">Details</th>${DATA.map(option => `<th scope="col"${columnAttributes(option, '', selectedTile)}>${tileIdentity(option)}</th>`).join('')}</tr></thead>
-        <tbody>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<tr data-specification="${field}"><th scope="row">${escapeHTML(LABELS[field])}</th>${DATA.map(option => `<td${columnAttributes(option, field, selectedTile)}>${valueHTML(option, field)}</td>`).join('')}</tr>`).join('')}<tr class="comparison-selection"><th scope="row">Your choice</th><td><span class="sr-only">Original tile cannot be selected.</span><span aria-hidden="true">—</span></td>${proposedTiles().map(option => `<td${columnAttributes(option, '', selectedTile)}>${choice(option, selectedTile, disabled)}</td>`).join('')}</tr></tbody>
+        <caption class="sr-only">Three replacement options for the unavailable original bathroom tile</caption>
+        <thead><tr><th scope="col">Details</th>${proposedTiles().map(option => `<th scope="col"${columnAttributes(option, '', selectedTile)}>${tileIdentity(option)}</th>`).join('')}</tr></thead>
+        <tbody>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<tr data-specification="${field}"><th scope="row">${escapeHTML(LABELS[field])}</th>${proposedTiles().map(option => `<td${columnAttributes(option, field, selectedTile)}>${valueHTML(option, field)}</td>`).join('')}</tr>`).join('')}<tr class="comparison-selection"><th scope="row">Your choice</th>${proposedTiles().map(option => `<td${columnAttributes(option, '', selectedTile)}>${choice(option, selectedTile, disabled)}</td>`).join('')}</tr></tbody>
       </table>
-    </div>`;
+    </div><div class="comparison-pager"><button type="button" data-action="comparison-prev" aria-label="Previous tile option">‹</button><span class="comparison-pages" aria-label="Table position"><i class="active"></i><i></i><i></i></span><button type="button" data-action="comparison-next" aria-label="Next tile option">›</button></div></div>`;
   }
 
   function cards(selectedTile, disabled) {
-    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<div class="comparison-option-row"><article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>${option.selectionKey ? choice(option, selectedTile, disabled, true) : ''}</div>`).join('')}</div>`;
+    return `<div class="comparison-cards" data-comparison-variant="b">${proposedTiles().map(option => `<article class="comparison-card${selectedTile === option.selectionKey ? ' is-selected' : ''}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd>${valueHTML(option, field)}</dd></div>`).join('')}</dl><div class="comparison-card-choice">${choice(option, selectedTile, disabled, true)}</div></article>`).join('')}</div>`;
   }
 
   function originalBrief() {

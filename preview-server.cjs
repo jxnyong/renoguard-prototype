@@ -4,10 +4,6 @@ const path = require('node:path');
 const files = {
   '/': 'index.html',
   '/index.html': 'index.html',
-  '/web/': 'web/index.html',
-  '/web/index.html': 'web/index.html',
-  '/web/styles.css': 'web/styles.css',
-  '/web/app.js': 'web/app.js',
   '/shared/project-store.js': 'shared/project-store.js',
   '/mobile/styles.css': 'mobile/styles.css',
   '/mobile/app.js': 'mobile/app.js',
@@ -22,6 +18,7 @@ const files = {
   '/assets/materials/bianco.webp': 'assets/materials/bianco.webp',
   '/assets/materials/grigio.webp': 'assets/materials/grigio.webp',
   '/assets/materials/sabbia.webp': 'assets/materials/sabbia.webp',
+  '/assets/materials/avorio.svg': 'assets/materials/avorio.svg',
   '/assets/materials/sabbia-colour.svg': 'assets/materials/sabbia-colour.svg',
   '/assets/materials/sabbia-warmth.svg': 'assets/materials/sabbia-warmth.svg',
   '/assets/living-room.png': 'assets/living-room.png',
@@ -33,7 +30,7 @@ const types = {'.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=u
 const server = http.createServer((req, res) => {
   const requested = new URL(req.url, 'http://localhost');
   const pathname = requested.pathname;
-  if (['/mobile','/mobile/','/mobile/index.html','/web','/drafts'].includes(pathname) && ['GET', 'HEAD'].includes(req.method)) {
+  if (['/mobile','/mobile/','/mobile/index.html','/drafts'].includes(pathname) && ['GET', 'HEAD'].includes(req.method)) {
     res.writeHead(308, {'Location': pathname.startsWith('/mobile') ? '/' + requested.search : pathname + '/' + requested.search});
     res.end();
     return;

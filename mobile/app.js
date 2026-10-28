@@ -20,6 +20,7 @@
   const filters = { status: 'open', room: '', search: '', changes: 'pending' };
   let state = Store.getState();
   let route = '';
+  let lastRenderedRoute = '';
   let mutating = false;
   let content;
   let announcements;
@@ -28,7 +29,7 @@
   let approvalAcknowledged = false;
   let previewTile = null;
   let reviewReturnRoute = null;
-  const materials = { grigio: { name: 'Grigio Matte', label: 'Option A', tone: 'Cool grey', note: 'Closest match to your wall tiles' }, sabbia: { name: 'Sabbia Matte', label: 'Option B', tone: 'Warm sand', note: 'A warmer tone with subtle stone texture' } };
+  const materials = { grigio: { name: 'Grigio Matte', label: 'Option A', tone: 'Cool grey', note: 'Closest match to your wall tiles', image: 'assets/materials/grigio.webp' }, sabbia: { name: 'Sabbia Matte', label: 'Option B', tone: 'Warm sand', note: 'A warmer tone with subtle stone texture', image: 'assets/materials/sabbia.webp' }, avorio: { name: 'Avorio Matte', label: 'Option C', tone: 'Warm ivory', note: 'A light finish that brightens the room', image: 'assets/materials/avorio.svg' } };
   const demoDefectPhotos = {
     'DEF-021': [
       { src: 'assets/defects/cracked-tile-detail.webp', title: 'Cracked tile close-up', alt: 'A hairline crack running diagonally across a pale bathroom floor tile', closeup: true, sample: true },
@@ -217,12 +218,12 @@
   }
 
   function proposalCard() {
-    return `<article class="card proposal-card"><div class="proposal-main"><div class="card-top">${badge(state.proposal.revisionRequest ? 'Changes requested · Not approved' : 'Your approval needed', 'amber')}<span class="record-id">VO-015</span></div><div class="proposal-title"><img class="proposal-thumbnail" src="assets/materials/${state.proposal.tile}.webp" alt="${tileName()} tile sample"><div><p class="eyebrow">Bathroom · Flooring</p><h3>New bathroom floor tiles</h3><p>Original tile out of stock. John has proposed two close matches.</p></div></div><div class="impact-inline"><div><small>Additional cost</small><strong>+${money(PROPOSAL_COST)}</strong></div><div><small>Proposed completion</small><strong class="date-impact">14 Jul <span>was 1 Jul</span></strong></div></div>${link('Review the two options', 'change/VO-015', 'primary')}</div><a class="card-link" href="#defect/DEF-021">${icon('defects')}Cracked bathroom tiles · DEF-021${icon('right')}</a></article>`;
+    return `<article class="card proposal-card"><div class="proposal-main"><div class="card-top">${badge(state.proposal.revisionRequest ? 'Changes requested · Not approved' : 'Your approval needed', 'amber')}<span class="record-id">VO-015</span></div><div class="proposal-title"><img class="proposal-thumbnail" src="${materials[state.proposal.tile].image}" alt="${tileName()} tile sample"><div><p class="eyebrow">Bathroom · Flooring</p><h3>New bathroom floor tiles</h3><p>Original tile out of stock. John has proposed three close matches.</p></div></div><div class="impact-inline"><div><small>Additional cost</small><strong>+${money(PROPOSAL_COST)}</strong></div><div><small>Proposed completion</small><strong class="date-impact">14 Jul <span>was 1 Jul</span></strong></div></div>${link('Review the three options', 'change/VO-015', 'primary')}</div><a class="card-link" href="#defect/DEF-021">${icon('defects')}Cracked bathroom tiles · DEF-021${icon('right')}</a></article>`;
   }
 
   function renovationProgress() {
     const stages = ['Prep', 'Electrical', 'Tiling', 'Carpentry', 'Handover'];
-    return `<div class="progress-top"><span class="progress-ring" role="progressbar" aria-label="Renovation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><svg viewBox="0 0 76 76" aria-hidden="true" focusable="false"><circle class="progress-ring-track" cx="38" cy="38" r="32"/><circle class="progress-ring-fill" cx="38" cy="38" r="32" pathLength="100" stroke-dasharray="60 100" transform="rotate(-90 38 38)"/></svg><span class="progress-ring-copy"><strong>60%</strong><small>complete</small></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling &amp; carpentry</h2><p>Stage 3 of 5 · Handover ${handover()}</p></div></div><ol class="stage-progress" aria-label="Renovation stages">${stages.map((stage, index) => `<li class="${index < 2 ? 'completed' : index === 2 ? 'current' : ''}" ${index === 2 ? 'aria-current="step"' : ''}><span>${stage}<span class="sr-only"> · ${index < 2 ? 'Completed' : index === 2 ? 'Current stage' : 'Upcoming'}</span></span></li>`).join('')}</ol>`;
+    return `<div class="progress-top"><span class="progress-ring" role="progressbar" aria-label="Renovation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><svg viewBox="0 0 76 76" aria-hidden="true" focusable="false"><circle class="progress-ring-track" cx="38" cy="38" r="32"/><circle class="progress-ring-fill" cx="38" cy="38" r="32" pathLength="100" stroke-dasharray="0 100" transform="rotate(-90 38 38)"/></svg><span class="progress-ring-copy"><strong>60%</strong><small>complete</small></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling &amp; carpentry</h2><p>Stage 3 of 5 · Handover ${handover()}</p></div></div><ol class="stage-progress" aria-label="Renovation stages">${stages.map((stage, index) => `<li class="${index < 2 ? 'completed' : index === 2 ? 'current' : ''}" ${index === 2 ? 'aria-current="step"' : ''}><span>${stage}<span class="sr-only"> · ${index < 2 ? 'Completed' : index === 2 ? 'Current stage' : 'Upcoming'}</span></span></li>`).join('')}</ol>`;
   }
 
   function overview() {
@@ -255,8 +256,8 @@
     const progress = state.walkthrough || {};
     return [
       { title: 'Report the cracked tiles', detail: 'Bathroom floor · DEF-021', target: 'report/room/bathroom', done: Boolean(progress.reported) },
-      { title: 'Review the proposed change', detail: 'Two replacement tiles · +S$250 · 14 Jul', target: 'change/VO-015', done: Boolean(progress.reviewed) },
-      { title: 'Compare both tile previews', detail: `${progress.previewedTiles?.length || 0} of 2 finishes viewed in the bathroom.`, target: 'preview/bathroom', done: Boolean(progress.previewed) },
+      { title: 'Review the proposed change', detail: 'Three replacement tiles · +S$250 · 14 Jul', target: 'change/VO-015', done: Boolean(progress.reviewed) },
+      { title: 'Compare tile previews', detail: `${progress.previewedTiles?.length || 0} of 3 finishes viewed in the bathroom.`, target: 'preview/bathroom', done: Boolean(progress.previewed) },
       { title: 'Read the quotation', detail: 'Open VO-015 and check the S$250 cost breakdown.', target: 'documents', done: Boolean(progress.quoteRead) },
       { title: 'Check the budget', detail: 'S$30,000 becomes S$29,750 after approval.', target: 'budget', done: Boolean(progress.budgetChecked) },
       { title: 'Approve your chosen tile', detail: 'Confirm the cost and revised completion date.', target: 'approve/VO-015', done: state.proposal.status === 'approved' },
@@ -364,7 +365,7 @@
     dialog.classList.remove('photo-viewer');
     const records = openDefects().filter(d => d.room === room);
     const metadata = window.RenoGuardRooms.rooms.find(r => r.name === room);
-    document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><p class="eyebrow">Room overview · ${metadata.area}</p>${action('Close', 'close-room', 'quiet compact')}</div><h2 id="room-dialog-title">${esc(room)}</h2><p class="intro">${records.length ? `${records.length} open ${records.length===1?'issue':'issues'} in this room` : 'No open issues in this room'}</p>${room==='Bathroom'&&proposalReady()?`<a class="room-change-summary" href="#change/VO-015">${icon('changes')}<span><strong>Bathroom floor tile replacement</strong><small>${state.proposal.status==='approved'?'Approved · '+tileName():'Approval needed · two tile options'} · +S$250</small></span>${icon('right')}</a>`:''}${records.map(d=>`<a class="sheet-record" href="#defect/${d.id}">${statusBadge(d.status)}<strong>${esc(d.title)}</strong>${icon('right')}</a>`).join('')}<div class="action-stack">${link(room==='Bathroom'&&!proposalReady()?'Report the bathroom tiles':room==='Bathroom'?'Open AR room preview':'Enter 3D room view',room==='Bathroom'&&!proposalReady()?'report/room/bathroom':`preview/${slug}`,'primary')}${link('Room details & records',`room/${slug}`)}</div>`;
+    document.getElementById('room-dialog-content').innerHTML = `<div class="sheet-handle" aria-hidden="true"></div><div class="heading-row"><p class="eyebrow">Room overview · ${metadata.area}</p>${action('Close', 'close-room', 'quiet compact')}</div><h2 id="room-dialog-title">${esc(room)}</h2><p class="intro">${records.length ? `${records.length} open ${records.length===1?'issue':'issues'} in this room` : 'No open issues in this room'}</p>${room==='Bathroom'&&proposalReady()?`<a class="room-change-summary" href="#change/VO-015">${icon('changes')}<span><strong>Bathroom floor tile replacement</strong><small>${state.proposal.status==='approved'?'Approved · '+tileName():'Approval needed · three tile options'} · +S$250</small></span>${icon('right')}</a>`:''}${records.map(d=>`<a class="sheet-record" href="#defect/${d.id}">${statusBadge(d.status)}<strong>${esc(d.title)}</strong>${icon('right')}</a>`).join('')}<div class="action-stack">${link(room==='Bathroom'&&!proposalReady()?'Report the bathroom tiles':room==='Bathroom'?'Open AR room preview':'Enter 3D room view',room==='Bathroom'&&!proposalReady()?'report/room/bathroom':`preview/${slug}`,'primary')}${link('Room details & records',`room/${slug}`)}</div>`;
     dialog.showModal();
   }
 
@@ -375,7 +376,7 @@
     const preview = previewTile || state.proposal.tile;
     const material=materials[preview];
     const previewAction = state.proposal.status === 'approved' ? link('View approved change', 'change/VO-015', 'primary') : action(state.proposal.selectionMade ? 'Review selected tile' : 'Use this tile & review', 'use-preview-tile', 'primary');
-    return `<div class="ar-preview"><div class="ar-scene ${preview==='sabbia'?'warm-floor':''}" id="ar-scene" role="region" aria-label="Bathroom preview with ${material.name} floor tiles"><img class="bathroom-photo" src="assets/bathroom.webp" alt="Realistic bathroom with a floating toilet, walnut cabinet and stone floor"><img class="floor-overlay colour" src="assets/materials/sabbia-colour.svg" alt=""><img class="floor-overlay warmth" src="assets/materials/sabbia-warmth.svg" alt=""><div class="ar-scene-top"><span class="ar-tag">${icon('camera')} Bathroom preview</span><span class="ar-demo">Simulated AR</span></div><div class="floor-area ${showFloorGuide?'':'is-hidden'}" id="floor-guide"><svg viewBox="0 0 390 540" preserveAspectRatio="none"><path d="M0 362 80 346 214 330 308 334 390 312"/><circle cx="80" cy="346" r="4"/><circle cx="214" cy="330" r="4"/><circle cx="308" cy="334" r="4"/></svg><span>Floor area · 4.5 m²</span></div><button class="floor-guide-button" data-action="toggle-floor" aria-pressed="${showFloorGuide}" aria-label="Show floor boundary">${icon('rooms')}</button><span class="preview-sample-label">Illustrative view · not a live camera</span></div><div class="ar-controls"><p class="eyebrow">Preview & choose a floor finish</p><div class="tile-options" aria-label="Bathroom floor tile options">${Object.entries(materials).map(([key,m])=>`<button data-action="select-tile" data-tile="${key}" aria-pressed="${preview===key}" ${state.proposal.status==='approved'?'disabled':''}><img src="assets/materials/${key}.webp" alt=""><span><small>${m.label}</small><strong>${m.name}</strong></span><i>${preview===key?'✓':''}</i></button>`).join('')}</div><p class="help ar-choice-status" id="ar-choice-status" aria-live="polite">${state.proposal.status === 'approved' ? 'Approved tile · ' + esc(tileName()) : state.proposal.selectionMade ? esc(tileName()) + ' selected for review. Not approved yet.' : 'Tap a finish to save your tile choice.'}</p><div id="material-summary" aria-live="polite"><h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span></div><div class="ar-specs"><div><small>Extra cost</small><strong>+S$250</strong></div><div><small>Ready by</small><strong>14 Jul</strong></div><div><small>Finish</small><strong>Matte</strong></div></div>${state.proposal.status==='approved'?notice('This is your approved tile. Withdraw the approval first to select a different option.'):''}${previewAction}<p class="help">Colour and lighting are illustrative. Confirm a physical sample with your designer.</p></div></div>`;
+    return `<div class="ar-preview"><div class="ar-scene ${preview==='sabbia'?'warm-floor':preview==='avorio'?'ivory-floor':''}" id="ar-scene" role="region" aria-label="Bathroom preview with ${material.name} floor tiles"><img class="bathroom-photo" src="assets/bathroom.webp" alt="Realistic bathroom with a floating toilet, walnut cabinet and stone floor"><img class="floor-overlay colour" src="assets/materials/sabbia-colour.svg" alt=""><img class="floor-overlay warmth" src="assets/materials/sabbia-warmth.svg" alt=""><div class="ar-scene-top"><span class="ar-tag">${icon('camera')} Bathroom preview</span><span class="ar-demo">Simulated AR</span></div><div class="floor-area ${showFloorGuide?'':'is-hidden'}" id="floor-guide"><svg viewBox="0 0 390 540" preserveAspectRatio="none"><path d="M0 362 80 346 214 330 308 334 390 312"/><circle cx="80" cy="346" r="4"/><circle cx="214" cy="330" r="4"/><circle cx="308" cy="334" r="4"/></svg><span>Floor area · 4.5 m²</span></div><button class="floor-guide-button" data-action="toggle-floor" aria-pressed="${showFloorGuide}" aria-label="Show floor boundary">${icon('rooms')}</button><span class="preview-sample-label">Illustrative view · not a live camera</span></div><div class="ar-controls"><p class="eyebrow">Preview & choose a floor finish</p><div class="tile-options" aria-label="Bathroom floor tile options">${Object.entries(materials).map(([key,m])=>`<button data-action="select-tile" data-tile="${key}" aria-pressed="${preview===key}" ${state.proposal.status==='approved'?'disabled':''}><img src="${m.image}" alt=""><span><small>${m.label}</small><strong>${m.name}</strong></span><i>${preview===key?'✓':''}</i></button>`).join('')}</div><p class="help ar-choice-status" id="ar-choice-status" aria-live="polite">${state.proposal.status === 'approved' ? 'Approved tile · ' + esc(tileName()) : state.proposal.selectionMade ? esc(tileName()) + ' selected for review. Not approved yet.' : 'Tap a finish to save your tile choice.'}</p><div id="material-summary" aria-live="polite"><h1 id="screen-title" tabindex="-1">${material.name}</h1><p>600 × 600 mm · Matte porcelain</p><span class="material-note">${icon('sparkles')}${material.note}</span></div><div class="ar-specs"><div><small>Extra cost</small><strong>+S$250</strong></div><div><small>Ready by</small><strong>14 Jul</strong></div><div><small>Finish</small><strong>Matte</strong></div></div>${state.proposal.status==='approved'?notice('This is your approved tile. Withdraw the approval first to select a different option.'):''}${previewAction}<p class="help">Colour and lighting are illustrative. Confirm a physical sample with your designer.</p></div></div>`;
   }
 
   function updateTile(tile) {
@@ -387,7 +388,7 @@
       mutate(() => Store.selectTile(tile));
       if (isWalkthrough() && state.walkthrough.reported) mutate(() => Store.recordTilePreview(tile));
       const material = materials[tile];
-      scene.classList.toggle('warm-floor', tile === 'sabbia');
+      scene.classList.toggle('warm-floor', tile === 'sabbia'); scene.classList.toggle('ivory-floor', tile === 'avorio');
       scene.setAttribute('aria-label', `Bathroom preview with ${material.name} floor tiles`);
       document.querySelectorAll('[data-action="select-tile"]').forEach(button => {
         const selected = button.dataset.tile === tile;
@@ -449,7 +450,7 @@
 
   function reviewSources() {
     const resources = [
-      ['camera', 'Preview in your bathroom', 'Compare both floor finishes', 'preview/bathroom'],
+      ['camera', 'Preview in your bathroom', 'Compare three floor finishes', 'preview/bathroom'],
       ['file', 'View quotation', 'Breakdown of the additional S$250', 'document/quotation'],
       ['budget', 'View project budget', `${money(totals().available)} remaining`, 'budget']
     ];
@@ -566,7 +567,7 @@
   function reportReceipt(id) {
     const defect = findDefect(id);
     if (!defect) return missing('Defect record not found', 'defects');
-    return `<div class="report-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('check')}</div><h1 id="screen-title" tabindex="-1">Defect report saved</h1><p>${esc(id)} · ${esc(defect.room)}</p></header><div class="card"><p class="eyebrow">${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p></div>${isWalkthrough() && id === 'DEF-021' ? notice('<strong>Demo update: quotation ready</strong>John has proposed two replacement tiles. Review the sample proposal on your dashboard.') : ''}<div class="action-stack">${link(isWalkthrough() && id === 'DEF-021' ? 'Continue to dashboard' : 'Done', isWalkthrough() && id === 'DEF-021' ? 'overview' : 'defects', 'primary')}${link('View report', `defect/${id}`)}</div><p class="demo-note">${STUDY_CONTEXT ? 'Saved for this test session.' : 'Saved on this device.'}</p>${demoSessionActions()}</div>`;
+    return `<div class="report-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('check')}</div><h1 id="screen-title" tabindex="-1">Defect report saved</h1><p>${esc(id)} · ${esc(defect.room)}</p></header><div class="card"><p class="eyebrow">${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p></div>${isWalkthrough() && id === 'DEF-021' ? notice('<strong>Demo update: quotation ready</strong>John has proposed three replacement tiles. Review the sample proposal on your dashboard.') : ''}<div class="action-stack">${link(isWalkthrough() && id === 'DEF-021' ? 'Continue to dashboard' : 'Done', isWalkthrough() && id === 'DEF-021' ? 'overview' : 'defects', 'primary')}${link('View report', `defect/${id}`)}</div><p class="demo-note">${STUDY_CONTEXT ? 'Saved for this test session.' : 'Saved on this device.'}</p>${demoSessionActions()}</div>`;
   }
 
   function reportScreen() {
@@ -741,7 +742,7 @@
     if(!['quotation','scope'].includes(type))return missing('Document not found','documents');
     const quote=type==='quotation';
     return heading(quote?'Bathroom tile variation':'Main renovation quotation',quote?'Sample document · VO-015':'Sample original scope',quote?'Prepared by John Tan · 18 Jun 2026':'Agreed scope · 2 Apr 2026')+(proposalReady()?`<a class="linked-row" href="#defect/DEF-021">${icon('defects')}Bathroom cracked tiles · DEF-021${icon('right')}</a>`:'')+section(quote?'Revised tile work':'Original bathroom flooring',`<p>${quote?'Replace the full 4.5 m² bathroom floor to keep a uniform finish because the original tile is out of stock. Remove the existing tiles, prepare the floor, and lay and grout your selected replacement.':'Supply and install Bianco Matte porcelain floor tiles, 600 × 600 mm, matte finish, as part of the agreed bathroom renovation.'}</p>`)+
-      (quote?`<div class="card quote-breakdown"><dl class="details">${row('Remove tiles & prepare floor','S$80')}${row('Replacement tile price difference','S$120')}${row('Laying & grouting','S$50')}${row('Total additional cost','<strong>S$250</strong>')}${row('Options','Grigio Matte or Sabbia Matte')}${row('Proposed completion','14 Jul 2026 · was 1 Jul')}${row('Payment due','14 Jul 2026 · after approval')}</dl></div>`:'')+`<details class="record-information terms-explained"><summary>Terms explained</summary><div class="stack"><div><h3>Variation order</h3><p>A written change to your original scope and quotation. Review the added cost before approving.</p></div><div><h3>Lead time</h3><p>The time needed to source replacement tiles and arrange the work. The proposed finish date is about two weeks later.</p></div></div></details>`+`<div class="action-stack">${proposalReady()?link('Back to change review',reviewReturnTarget(),'primary'):link('All documents','documents','primary')}${link('Check my budget','budget')}${proposalReady()?link('All documents','documents','quiet'):''}</div>`;
+      (quote?`<div class="card quote-breakdown"><dl class="details">${row('Remove tiles & prepare floor','S$80')}${row('Replacement tile price difference','S$120')}${row('Laying & grouting','S$50')}${row('Total additional cost','<strong>S$250</strong>')}${row('Options','Grigio, Sabbia or Avorio Matte')}${row('Proposed completion','14 Jul 2026 · was 1 Jul')}${row('Payment due','14 Jul 2026 · after approval')}</dl></div>`:'')+`<details class="record-information terms-explained"><summary>Terms explained</summary><div class="stack"><div><h3>Variation order</h3><p>A written change to your original scope and quotation. Review the added cost before approving.</p></div><div><h3>Lead time</h3><p>The time needed to source replacement tiles and arrange the work. The proposed finish date is about two weeks later.</p></div></div></details>`+`<div class="action-stack">${proposalReady()?link('Back to change review',reviewReturnTarget(),'primary'):link('All documents','documents','primary')}${link('Check my budget','budget')}${proposalReady()?link('All documents','documents','quiet'):''}</div>`;
   }
 
   function timelineScreen() {
@@ -755,7 +756,7 @@
   function helperScreen(topic) {
     const metrics = totals();
     const answers = {
-      change: !proposalReady() ? `<p>Start by reporting the cracked bathroom tiles. The sample replacement proposal will then appear for review.</p>${link('Report the bathroom tiles', 'report/room/bathroom')}` : `<p>The original tile is unavailable until <strong>September 2026</strong>. Choose between cool-grey Grigio Matte and warm-sand Sabbia Matte, both the same size and finish.</p><p>Additional cost: <strong>${money(PROPOSAL_COST)}</strong>. Proposed completion: 14 Jul 2026, about two weeks later than 1 Jul.</p>${link('Read source · VO-015', 'change/VO-015')}`,
+      change: !proposalReady() ? `<p>Start by reporting the cracked bathroom tiles. The sample replacement proposal will then appear for review.</p>${link('Report the bathroom tiles', 'report/room/bathroom')}` : `<p>The original tile is unavailable until <strong>September 2026</strong>. Choose from cool-grey Grigio, warm-sand Sabbia or light-ivory Avorio Matte. All share the same size and finish.</p><p>Additional cost: <strong>${money(PROPOSAL_COST)}</strong>. Proposed completion: 14 Jul 2026, about two weeks later than 1 Jul.</p>${link('Read source · VO-015', 'change/VO-015')}`,
       budget: `<p>Committed costs are <strong>${money(metrics.approved)}</strong>, leaving <strong>${money(metrics.available)}</strong> of the ${money(PROJECT_BUDGET)} budget.</p><p>${!proposalReady() ? 'No additional costs have been proposed yet.' : state.proposal.status === 'approved' ? 'The approved tile change is included.' : `The pending ${money(PROPOSAL_COST)} change is excluded. Approval would leave ${money(metrics.available - PROPOSAL_COST)}.`}</p>${link('Read source · Budget', 'budget')}`,
       next: `<p>${metrics.actions ? `${metrics.actions} ${metrics.actions === 1 ? 'action needs' : 'actions need'} your attention.` : 'No homeowner decisions are currently waiting.'}</p><p>Review pending changes, inspect repairs marked ready, and discuss issues marked for follow-up.</p>${link('Read source · Defect records', 'defects')}`
     };
@@ -840,6 +841,16 @@
   function render({ focus = false, restore = false } = {}) {
     updateChrome();
     content.innerHTML = screenHTML();
+    const routeChanged = route !== lastRenderedRoute;
+    lastRenderedRoute = route;
+    if (routeChanged && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      content.animate([{ opacity: .35, transform: 'translateY(16px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      content.querySelectorAll('.card,.menu-row,.review-section,.comparison-card').forEach((item, index) => item.animate([{ opacity: .4, transform: 'translateY(18px)' }, { opacity: 1, transform: 'translateY(0)' }], { duration: 380, delay: Math.min(index, 7) * 40, easing: 'cubic-bezier(.2,.8,.2,1)' }));
+    }
+    if (routeChanged && route === 'overview') {
+      const ring = content.querySelector('.progress-ring-fill');
+      if (ring) requestAnimationFrame(() => { ring.style.strokeDasharray = '60 100'; });
+    }
     document.querySelector('.mobile-app').classList.toggle('home-screen', route === 'overview');
     const variation = isReviewRoute(route) && proposalReady() && (state.proposal.status !== 'approved' || route.startsWith('change/'));
     document.querySelector('.mobile-app').classList.toggle('variation-mode', variation);
@@ -862,6 +873,12 @@
     state = Store.getState();
     try {
       switch (button.dataset.action) {
+        case 'comparison-prev':
+        case 'comparison-next': {
+          const scroller = document.getElementById('comparison-scroll');
+          if (scroller) scroller.scrollBy({ left: (button.dataset.action === 'comparison-next' ? 1 : -1) * 170, behavior: 'smooth' });
+          break;
+        }
         case 'switch-demo':
           if (button.dataset.mode !== state.demoMode) { mutate(() => Store.switchDemo(button.dataset.mode)); clearTransientState(); }
           navigate('overview', true); announce(`${demoName()} opened. Saved progress is kept separately.`); break;
@@ -981,7 +998,7 @@
     const hero=new Image(); hero.src='assets/bathroom.webp';
     const ready=hero.decode().catch(()=>{});
     const dismissStartup=()=>{startup.classList.add('loaded');startup.setAttribute('aria-hidden','true');};
-    Promise.all([document.fonts.ready,ready]).then(dismissStartup);
+    Promise.all([document.fonts.ready,ready,new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?100:1050))]).then(dismissStartup);
     window.setTimeout(dismissStartup,2500);
     route = STUDY_CONTEXT ? (QUOTATION_STUDY ? 'change/VO-015' : 'overview') : currentHash();
     if(state.proposal.status==='approved')filters.changes='approved';
@@ -1003,6 +1020,12 @@
       if (event.target.id === 'defect-search') { filters.search = event.target.value; refreshDefectResults(); }
       if (event.target.closest?.('#report-form, #text-form')) saveScreen();
     });
+    document.addEventListener('scroll', event => {
+      if (event.target.id !== 'comparison-scroll') return;
+      const scroller = event.target;
+      const page = Math.round(scroller.scrollLeft / Math.max(1, (scroller.scrollWidth - scroller.clientWidth) / 2));
+      document.querySelectorAll('.comparison-pages i').forEach((dot, index) => dot.classList.toggle('active', index === Math.min(2, page)));
+    }, true);
     document.addEventListener('change', event => {
       if (event.target.dataset.reviewTile) updateTile(event.target.dataset.reviewTile);
       if (event.target.id === 'walkthrough-guidance') {
