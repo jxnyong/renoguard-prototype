@@ -6,7 +6,7 @@
 
 The latest consultation request guides the current app. The team’s Figma screens and Maze examples provide ideas, while the attached easy-scenario prose defines the core homeowner journey. The revised navy/yellow construction theme replaces the earlier green/brass/Alice design direction.
 
-The course instructions require a scenario prototype, a navigation diagram and screenshots of its views, plus an experiment with **one independent variable, two dependent variables and at least 20 real participants**. The narrated scenario walkthrough is optional in the instructions, but the team plans to record one. A working frontend is sufficient; designer responses, AR and payments can be simulated.
+The course instructions describe a usual scope of **6–14 views**, depending on the easy scenario. They also require a navigation diagram and screenshots of its views, plus an experiment with **one independent variable, two dependent variables and at least 20 real participants**. The narrated scenario walkthrough is optional in the instructions, but the team plans to record one. A working frontend is sufficient; designer responses, AR and payments can be simulated.
 
 <br>
 
@@ -43,7 +43,9 @@ The figures stay consistent: every option adds **S$250**, completion changes fro
 
 ## Walkthrough screen count
 
-The recommended filming path uses **12 distinct views**, counting Home and Budget once even when revisited. The eight in-app checklist steps are milestones, not a screen count.
+Launch the normal app for a fresh Home screen without reports or hints. From **Profile → Prototype controls**, choose the comparison version, then **Start full walkthrough**. This restarts at Home with optional step hints. The same controls page contains the walkthrough checklist and a hint toggle for clean filming.
+
+The recommended filming path uses **12 distinct views**, counting Home and Budget once even when revisited. This fits the usual **6–14** range described in the instructions; 14 is not a minimum. The eight in-app checklist steps are milestones, not a screen count.
 
 | View | What to show |
 | --- | --- |
@@ -60,7 +62,7 @@ The recommended filming path uses **12 distinct views**, counting Home and Budge
 | 11. Approval receipt | Saved choice, updated budget, scheduled repair and unpaid milestone. |
 | 12. Payment timeline | New bathroom tile payment due 14 Jul 2026. |
 
-Revisit Change review as needed between preview, documents and Budget. Direct links can skip the Approvals list or document list, reducing a shorter run to **10 distinct views**; that is a navigation shortcut, not missing functionality. Optional defect-detail, profile, help and setup screens are outside this recorded path.
+Revisit Change review as needed between preview, documents and Budget. Direct links can skip the Approvals list or document list, reducing a shorter run to **10 distinct views**; that is a navigation shortcut, not missing functionality. Adding the defect-detail view and Rooms & previews overview would bring the film to **14 distinct views**, if useful to the story. Profile, prototype controls and the checklist are preparation screens and are outside the recorded scenario; adding them merely to reach a number is unnecessary.
 
 Keep the final navigation diagram and at least one screenshot of each scenario view for the assignment. The main README reserves space for the final diagram and high-fidelity video link. Record AI-assisted changes and the team's own review in the required journal rather than filling the project README with submission administration.
 
@@ -72,7 +74,7 @@ Keep the final navigation diagram and at least one screenshot of each scenario v
 
 **Independent variable:** comparison presentation — a horizontally paged table versus vertically stacked full-width cards. Keep the material order, text, images, prices, dates, transition duration and final approval safeguards the same. Both require browsing beyond the first option. Do not impose artificial delays to equalise completion times; time is an outcome to measure.
 
-Use `?variant=a&study=quotation` and `?variant=b&study=quotation`. These start with the same pending quotation, no tile chosen and hints off. Session progress is held in memory and resets on refresh. Use `study=scenario` for the complete walkthrough instead. Opening a different condition starts its own fresh session.
+Use `?variant=a&study=quotation` and `?variant=b&study=quotation`. These start with the same pending quotation, no tile chosen and hints off. Session progress is held in memory and resets on refresh. Use `?variant=a&walkthrough=1` or `?variant=b&walkthrough=1` for the complete walkthrough instead. Opening a direct experiment link starts a fresh session. The in-app A/B switch changes only the comparison layout and preserves the current progress. The default app also starts fresh on every reload and ignores older saved demos. Legacy `study=scenario` links open the fresh Home screen without hints.
 
 Use the same task in both conditions:
 

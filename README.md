@@ -13,7 +13,7 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Tile comparison** — three replacement options with matching A/B content.
 - **Room preview** — switch finishes in a realistic bathroom view.
 - **Quotes, budget and payments** — review the S$250 variation and its effect before approval.
-- **Demo controls** — scenario walkthrough, Explore mode and reset tools.
+- **Prototype controls** — switch A/B layouts, start an approval experiment or follow the full scenario.
 
 <br>
 
@@ -32,6 +32,8 @@ node preview-server.cjs
 ```
 
 Then open **[RenoGuard at http://127.0.0.1:8765/](http://127.0.0.1:8765/)**.
+
+The default link starts at **Home with no defect reports, pending proposals or walkthrough hints**. Progress lasts for the current session; refreshing starts fresh.
 
 Computers show a phone-sized preview; phones use the available screen width. No package installation or build step is required.
 
@@ -55,7 +57,7 @@ The easy scenario follows Thomas from reporting cracked bathroom tiles to review
 
 The recommended recording path uses **12 distinct screens**, with Home and Budget revisited. [See the screen-by-screen walkthrough and scenario notes](docs/iteration-2.md#walkthrough-screen-count).
 
-**Walkthrough steps** and **Reset demo** are available from Project tools, Profile and the approval receipt.
+Open **Profile → Prototype controls**, choose A or B, then select **Start full walkthrough**. It opens a fresh Home screen with step hints; turn them off from the same controls page for recording. The final version can be chosen after the experiment.
 
 | Video | Link |
 | --- | --- |
@@ -72,14 +74,14 @@ Start the preview server, then choose a focused experiment or the complete scena
 
 | Version | Comparison layout | Focused approval task | Full scenario |
 | --- | --- | --- | --- |
-| **A** | Swipeable table with arrows and position indicators | [Open A](http://127.0.0.1:8765/?variant=a&study=quotation) | [Walkthrough A](http://127.0.0.1:8765/?variant=a&study=scenario) |
-| **B** | Full-width cards with a centred radio inside each card | [Open B](http://127.0.0.1:8765/?variant=b&study=quotation) | [Walkthrough B](http://127.0.0.1:8765/?variant=b&study=scenario) |
+| **A** | Swipeable table with arrows and position indicators | [Open A](http://127.0.0.1:8765/?variant=a&study=quotation) | [Walkthrough A](http://127.0.0.1:8765/?variant=a&walkthrough=1) |
+| **B** | Full-width cards with a centred radio inside each card | [Open B](http://127.0.0.1:8765/?variant=b&study=quotation) | [Walkthrough B](http://127.0.0.1:8765/?variant=b&walkthrough=1) |
 
 The focused links start at the pending quotation and reset on refresh. Use these for the Maze comparison; use the full scenario for walkthrough filming.
 
 Both versions share the same three materials, typography, specifications, prices and approval flow. Every replacement adds **S$250**, leaves **S$29,750**, and proposes completion on **14 Jul 2026**. [Read the experiment notes](docs/iteration-2.md#focused-ab-experiment).
 
-Both versions run from one codebase. Saved demo versions and walkthrough settings are available under **Profile → Prototype setup**.
+Both versions run from one codebase. Use **Profile → Prototype controls** to switch versions without losing current progress. Starting an experiment or walkthrough opens a fresh session.
 
 <br>
 
@@ -87,7 +89,7 @@ Both versions run from one codebase. Saved demo versions and walkthrough setting
 
 **[Read the colours, typography and component guidelines →](docs/design-system.md)**
 
-For visual examples, **[open the live component sheet](http://127.0.0.1:8765/docs/design-system.html)** while the preview server is running. It uses the app's actual styles and comparison components.
+The guide includes **colour swatches, typography samples, icons and component images** directly on GitHub. For interactive examples, **[open the live component sheet](http://127.0.0.1:8765/docs/design-system.html)** while the preview server is running. It uses the app's actual styles and comparison components.
 
 - [Team Figma design and prototype](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=1-2)
 - [Iteration 2 scenario and consultation review](docs/iteration-2.md)
@@ -99,8 +101,7 @@ For visual examples, **[open the live component sheet](http://127.0.0.1:8765/doc
 
 - **Interface:** HTML, CSS and vanilla JavaScript
 - **Local preview:** Node.js
-- **Saved demos:** browser local storage
-- **Experiment sessions:** temporary in-memory state, reset on refresh
+- **Prototype sessions:** in-memory state, reset on refresh; no login or stored demo progress
 
 This is a frontend prototype. Designer updates, AR previews and payment records are simulated.
 
@@ -117,6 +118,7 @@ renoguard-prototype/
 │   ├── setup.md            Windows and macOS installation guide
 │   ├── design-system.md    Colour, type, component and motion guidelines
 │   ├── design-system.html  Live visual component sheet
+│   ├── images/             Embedded design-system reference images
 │   └── iteration-2.md      Scenario flow and consultation review
 ├── drafts/                 Earlier screen explorations
 ├── index.html              Mobile app entry point

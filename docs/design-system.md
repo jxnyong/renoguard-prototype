@@ -2,15 +2,23 @@
 
 Shared rules for the construction-inspired mobile prototype. The palette takes its cue from worksite signage and hard hats: navy for clear actions, yellow for identity, and orange for progress. The mark is an original upright hard hat; the app does not use character artwork.
 
+![RenoGuard hard-hat logo](../assets/renoguard-mark.svg)
+
 **[Open the live colour and component sheet →](http://127.0.0.1:8765/docs/design-system.html)**
 
-Start the preview server first. The sheet loads the same stylesheet and comparison component as the app, rather than maintaining separate visual examples.
+The images below are embedded in this guide, so they display directly on GitHub without running the app. To try the interactive examples, start the preview server. The sheet loads the same stylesheet and comparison component as the app, rather than maintaining separate visual examples.
 
 [Back to the project README](../README.md)
 
 <br>
 
-## Colour foundations
+## 🎨 Colour foundations
+
+![RenoGuard colour palette with labelled swatches and hex codes](images/design-colours.jpg)
+
+<details>
+<summary>Colour tokens and usage</summary>
+
 
 | Colour / token | Hex | Use |
 | --- | --- | --- |
@@ -31,15 +39,22 @@ Start the preview server first. The sheet loads the same stylesheet and comparis
 | Danger · `--red` | `#A23A31` | Destructive actions and field errors |
 | Focus · `--focus` | `#9A6200` | Keyboard focus outlines |
 
+</details>
+
 Use named tokens in `mobile/styles.css`. Colour supports a text label, icon or checked state; it does not carry status alone. Yellow and orange are accents, not body-text colours.
 
 Checked contrast pairs: white on primary navy **11.46:1**, muted on canvas **5.43:1**, warning on its tint **5.67:1**, success on its tint **6.33:1**, and progress orange against the track **3.20:1**. These checks cover the named pairs, not a claim that every possible state has been independently certified.
 
 <br>
 
-## Typography
+## 🔤 Typography
+
+![RenoGuard typography scale and spacing reference](images/design-typography.jpg)
 
 Use the device's native sans-serif stack: Apple system font on Apple devices, Segoe UI on Windows, then Arial/sans-serif. No font installation or external font service is required.
+
+<details>
+<summary>Type sizes and usage</summary>
 
 | Role | Size | Weight | Usage |
 | --- | --- | --- | --- |
@@ -53,13 +68,15 @@ Use the device's native sans-serif stack: Apple system font on Apple devices, Se
 | Form input | 16 px | 400 | Typed text and form selections; avoids iOS focus zoom |
 | Progress figure | 22 px | 700 | Centred percentage, without a second label |
 
+</details>
+
 **A/B comparison typography is fixed across both layouts:** option names **14 px / 650 / 1.5 line height**; specification values **13 px / 400 / 1.5**; specification labels **13 px / 500 / 1.5**; option labels and notes **12 px / 1.5**. Both use **48 × 48 px** material samples and the same 18 px native radio circle. Never reduce just one variant's type to fit its layout.
 
 A large desktop monitor does not enlarge the app's CSS font sizes. The desktop preview is a 390 × 844 frame and scales down as a whole when the browser window is shorter. Real phones use their available width; text keeps its role-based size and wraps naturally.
 
 <br>
 
-## Spacing and alignment
+## 📐 Spacing and alignment
 
 - Use the **4 / 8 / 12 / 16 / 20 / 24 px** rhythm.
 - Page edges: **20 px**, changing to **16 px** below 360 px wide.
@@ -75,7 +92,9 @@ Keep one shared rule for a component. Add a local exception only when its role a
 
 <br>
 
-## Components and behaviour
+## 🧩 Components and behaviour
+
+![RenoGuard buttons, status pills, forms, progress, icons and navigation](images/design-components.jpg)
 
 | Component | States and rules | Source |
 | --- | --- | --- |
@@ -104,10 +123,10 @@ The comparison component owns its data and paging behaviour. Both layouts use th
 
 <br>
 
-## Motion and loading
+## 🎞️ Motion and loading
 
 - Screen entry: a short **220 ms** fade with an **8 px** rise.
-- Saved demos may add a light card entrance; focused study sessions use the same page transition in A and B.
+- The main app and full walkthrough may add a light card entrance; focused study sessions use the same page transition in A and B.
 - Home progress fills over **900 ms** on entry. The underlying value is always 60%, including rerenders and reduced-motion mode.
 - Table navigation scrolls smoothly to a complete option; manual swipe updates the same indicator.
 - The startup bar runs while fonts and the bathroom image are prepared. A short minimum presentation keeps it legible; a timeout prevents a blocked loading screen.
@@ -116,7 +135,7 @@ The comparison component owns its data and paging behaviour. Both layouts use th
 
 <br>
 
-## Images and material previews
+## 🖼️ Images and material previews
 
 The original bathroom and grey/sand samples come from the team's earlier design assets. The ivory option uses a visibly different fine mineral texture. `assets/bathroom-avorio.png` was made with the built-in image-generation tool from the original room photo; the app clips its floor material over the original room so fixtures remain in the base image.
 
@@ -124,11 +143,11 @@ Generation brief: **replace only the visible floor with warm ivory matte 600 × 
 
 <br>
 
-## Maintaining the system
+## 🔧 Maintaining the system
 
 1. Change shared tokens or components before adding a screen-specific override.
 2. Check A and B together at 390 px and 320 px, including selected, unselected, keyboard and disabled states.
-3. Check the live component sheet after changing a shared style.
+3. Check the live component sheet after changing a shared style. Refresh the three section screenshots in `docs/images/` so this guide stays accurate.
 4. Preserve the same quotation facts and approval safeguards in both variants.
 5. Update this guide when a component's role or behaviour changes.
 

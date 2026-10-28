@@ -17,7 +17,7 @@
     .reference-header h1 { font-size:30px; margin:4px 0 8px; }
     .reference-header p { max-width:650px; color:var(--muted); }
     .reference-header > a { margin-left:auto; white-space:nowrap; }
-    .reference-section { margin-top:40px; }
+    .reference-section { margin-top:40px; scroll-margin-top:16px; }
     .reference-section > h2 { margin-bottom:12px; }
     .reference-section > p { max-width:750px; margin-bottom:20px; color:var(--muted); }
     .palette { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; }
@@ -29,6 +29,9 @@
     .component { min-width:0; padding:20px; border:1px solid var(--line); border-radius:18px; background:var(--white); }
     .component > h3 { margin-bottom:18px; font-size:15px; }
     .component .stack { gap:12px; }
+    .icon-catalogue { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; }
+    .icon-catalogue div { display:grid; justify-items:center; gap:8px; padding:12px 4px; color:var(--primary); }
+    .icon-catalogue small { font-size:12px; color:var(--muted); }
     .pill-row { display:flex; flex-wrap:wrap; gap:12px; }
     .type-row { display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:20px; padding:16px 0; border-bottom:1px solid var(--line); }
     .type-row:last-child { border-bottom:0; }
@@ -72,7 +75,7 @@
       <a class="text-link" href="./">Open app →</a>
     </header>
 
-    <section class="reference-section">
+    <section class="reference-section" id="colours">
       <h2>Colour palette</h2><p>Navy identifies actions. Yellow gives the brand its worksite character. Amber marks a pending decision; green confirms a completed action. Status always includes words.</p>
       <div class="palette">
         <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary)"></div><strong>Primary navy</strong><code>#183C5A · --primary</code></div>
@@ -93,7 +96,7 @@
       </div>
     </section>
 
-    <section class="reference-section">
+    <section class="reference-section" id="typography">
       <h2>Typography</h2><p>The native system sans-serif keeps text consistent within each device. A and B share exactly the same name, specification and label styles.</p>
       <div class="component">
         <div class="type-row"><small>Display · 32 px / 700</small><span class="type-display">S$29,750</span></div>
@@ -106,18 +109,19 @@
       <p class="scale-note">Spacing: 4 / 8 / 12 / 16 / 20 / 24 px · Page margin: 20 px, 16 px on narrow phones · Card inset: 16 px · Tap targets: at least 44 px · Reference phone: 390 × 844 CSS px.</p>
     </section>
 
-    <section class="reference-section">
+    <section class="reference-section" id="components">
       <h2>Shared components</h2>
       <div class="component-grid">
-        <div class="component"><h3>Actions</h3><div class="stack"><button class="button primary" type="button">Approve · S$250</button><button class="button secondary" type="button">Request changes</button><button class="button danger" type="button">Reset demo</button><button class="button primary" type="button" disabled>Review approval</button></div></div>
+        <div class="component"><h3>Actions</h3><div class="stack"><button class="button primary" type="button">Approve · S$250</button><button class="button secondary" type="button">Request changes</button><button class="button danger" type="button">Reset project</button><button class="button primary" type="button" disabled>Review approval</button></div></div>
         <div class="component"><h3>Status & information</h3><div class="pill-row"><span class="status amber">Pending approval</span><span class="status green">Approved</span><span class="status neutral">Repair scheduled</span></div><div class="notice amber"><svg aria-hidden="true"><use href="#i-info"/></svg><div><strong>Review before approving</strong>Additional cost and completion date remain visible before you confirm.</div></div></div>
         <div class="component"><h3>Form fields</h3><div class="field"><label for="sample-room">Room</label><select id="sample-room"><option>Bathroom</option><option>Kitchen</option></select></div><div class="field"><label for="sample-detail">What needs fixing?</label><textarea id="sample-detail" placeholder="Describe the issue…"></textarea><p class="help">Labels stay close to their fields; input text is 16 px to avoid mobile auto-zoom.</p></div></div>
         <div class="component"><h3>Project progress</h3><div class="progress-top"><span class="progress-ring" role="progressbar" aria-label="Renovation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><svg viewBox="0 0 76 76" aria-hidden="true"><circle class="progress-ring-track" cx="38" cy="38" r="32"/><circle class="progress-ring-fill" cx="38" cy="38" r="32" pathLength="100" stroke-dasharray="60 100" transform="rotate(-90 38 38)"/></svg><span class="progress-ring-copy"><strong>60%</strong></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling & carpentry</h2><p>Stage 3 of 5 · Handover 1 Jul</p></div></div><p class="scale-note">The percentage is centred on its own. The accessible progress label supplies the meaning.</p></div>
+<div class="component"><h3>Iconography</h3><div class="icon-catalogue"><div><svg aria-hidden="true"><use href="#i-home"/></svg><small>Home</small></div><div><svg aria-hidden="true"><use href="#i-defects"/></svg><small>Defects</small></div><div><svg aria-hidden="true"><use href="#i-changes"/></svg><small>Approvals</small></div><div><svg aria-hidden="true"><use href="#i-budget"/></svg><small>Budget</small></div><div><svg aria-hidden="true"><use href="#i-more"/></svg><small>Tools</small></div><div><svg aria-hidden="true"><use href="#i-clock"/></svg><small>Timeline</small></div><div><svg aria-hidden="true"><use href="#i-back"/></svg><small>Back</small></div><div><svg aria-hidden="true"><use href="#i-arrow"/></svg><small>Next</small></div><div><svg aria-hidden="true"><use href="#i-info"/></svg><small>Information</small></div></div><p class="scale-note">Shared 24 px grid · 1.8 px stroke · rounded caps and joins. Pair icons with a visible or accessible label.</p></div>
         <div class="component" id="navigation-example"><h3>Bottom navigation</h3><nav class="bottom-nav reference-nav" aria-label="Navigation example"><a href="docs/design-system.html#navigation-example" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-defects"/></svg><span>Defects</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-changes"/></svg><span>Approvals</span><span class="nav-dot"></span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-budget"/></svg><span>Budget</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-more"/></svg><span>Tools</span></a></nav><p class="scale-note">The active item uses a tint and label weight. A dot marks an outstanding action.</p></div>
       </div>
     </section>
 
-    <section class="reference-section">
+    <section class="reference-section" id="comparisons">
       <h2>A/B comparison components</h2><p>Both show the same three materials, 48 px samples, 14 px names, 13 px details, 12 px labels and radio-only choices. The component owns table paging, keyboard navigation and position feedback.</p>
       <details><summary>Version A · horizontal comparison table</summary><div class="specimen" id="reference-table"></div></details>
       <details><summary>Version B · full-width cards with a centred radio</summary><div class="specimen" id="reference-cards"></div></details>

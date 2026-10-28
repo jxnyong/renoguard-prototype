@@ -1,5 +1,4 @@
-/* Shared project data for the desktop and mobile prototypes.
-   Replace this local adapter with a backend adapter when the project needs one. */
+/* Session-only prototype data. Every page load starts a fresh project or experiment. */
 ((root) => {
   'use strict';
 
@@ -9,12 +8,9 @@
   const UI_VARIANT = !isDesktop && ['a', 'b'].includes(requestedVariant) ? requestedVariant : null;
   const VARIANT_CONTEXT = UI_VARIANT !== null;
   const requestedStudy = query.get('study');
-  const STUDY_MODE = VARIANT_CONTEXT && ['scenario', 'quotation'].includes(requestedStudy) ? requestedStudy : null;
+  const STUDY_MODE = requestedStudy === 'quotation' ? 'quotation' : null;
   const STUDY_CONTEXT = STUDY_MODE !== null;
-  const scopedKey = key => VARIANT_CONTEXT ? `${key}.variant.${UI_VARIANT}` : key;
-  const STORAGE_KEY = scopedKey('renoguard.homeowner.v2');
-  const WALKTHROUGH_KEY = scopedKey('renoguard.walkthrough.v1');
-  const DEMO_MODE_KEY = scopedKey('renoguard.mobileDemoMode');
+  const GUIDED_WALKTHROUGH = !STUDY_CONTEXT && query.get('walkthrough') === '1';
   const SCENARIO_DATE = '18 Jun 2026';
   const PROPOSAL_COST = 250;
   const PROJECT_BUDGET = 45000;
@@ -24,7 +20,6 @@
   const DEFECT_STATUSES = ['approval', 'verification', 'scheduled', 'verified', 'reported', 'followup', 'withdrawn'];
   const listeners = new Set();
   const clone = value => JSON.parse(JSON.stringify(value));
-  let storageAvailable = true;
 
   function money(value) {
     const number = Number(value);
@@ -32,7 +27,7 @@
     return `S$${number.toLocaleString('en-SG', { maximumFractionDigits: 0 })}`;
   }
 
-  function getInitialState(mode = 'explore') {
+  function getInitialState(mode = 'walkthrough') {
     const initial = {
       version: 2,
       demoMode: mode,
@@ -51,7 +46,7 @@
       ]
     };
     if (mode === 'walkthrough') {
-      initial.walkthrough = { guidance: !VARIANT_CONTEXT, reported: STUDY_MODE === 'quotation', reviewed: false, previewed: false, previewedTiles: [], quoteRead: false, budgetChecked: false, updatedBudgetViewed: false, paymentViewed: false };
+      initial.walkthrough = { guidance: GUIDED_WALKTHROUGH, reported: STUDY_MODE === 'quotation', reviewed: false, previewed: false, previewedTiles: [], quoteRead: false, budgetChecked: false, updatedBudgetViewed: false, paymentViewed: false };
       initial.activity = [];
       initial.notificationsRead = true;
     }
@@ -128,7 +123,7 @@
     if (demoMode === 'walkthrough') {
       const previous = value.walkthrough || {};
       validated.walkthrough = Object.fromEntries(['reported', 'reviewed', 'quoteRead', 'budgetChecked'].map(key => [key, Boolean(previous[key])]));
-      validated.walkthrough.guidance = STUDY_CONTEXT ? false : typeof previous.guidance === 'boolean' ? previous.guidance : !VARIANT_CONTEXT;
+      validated.walkthrough.guidance = STUDY_CONTEXT ? false : Boolean(previous.guidance);
       // Preserve a completed preview step from older saves that did not track each tile.
       validated.walkthrough.previewedTiles = Array.isArray(previous.previewedTiles)
         ? [...new Set(previous.previewedTiles.filter(tile => ['grigio', 'sabbia', 'avorio'].includes(tile)))]
@@ -142,39 +137,8 @@
     return validated;
   }
 
-  function preferredMode() {
-    if (isDesktop) return 'explore';
-    if (STUDY_CONTEXT) return 'walkthrough';
-    const fallback = VARIANT_CONTEXT ? 'walkthrough' : 'explore';
-    try {
-      const saved = root.localStorage.getItem(DEMO_MODE_KEY);
-      return ['explore', 'walkthrough'].includes(saved) ? saved : fallback;
-    } catch { return fallback; }
-  }
-
-  const storageKey = mode => mode === 'walkthrough' ? WALKTHROUGH_KEY : STORAGE_KEY;
-  let activeMode = preferredMode();
-
-  function readSavedState(mode = activeMode) {
-    if (STUDY_CONTEXT) return getInitialState(mode);
-    let saved;
-    try {
-      saved = root.localStorage.getItem(storageKey(mode));
-      storageAvailable = true;
-    } catch {
-      storageAvailable = false;
-      return getInitialState(mode);
-    }
-    if (!saved) return getInitialState(mode);
-    try {
-      return validateState({ ...JSON.parse(saved), demoMode: mode });
-    } catch {
-      // Corrupt or obsolete demo data should not prevent either interface opening.
-      return getInitialState(mode);
-    }
-  }
-
-  let state = readSavedState();
+  const activeMode = 'walkthrough';
+  let state = getInitialState(activeMode);
 
   function getState() {
     return clone(state);
@@ -216,21 +180,9 @@
   }
 
   function saveState(next) {
-    // Validate before replacing the in-memory state or writing persistent data.
     const validated = validateState(next);
-    if (validated.demoMode !== activeMode) throw new TypeError('Save project data in its own demo mode.');
+    if (validated.demoMode !== activeMode) throw new TypeError('Use the current project session.');
     state = validated;
-    if (STUDY_CONTEXT) {
-      notify('local');
-      return getState();
-    }
-    try {
-      root.localStorage.setItem(storageKey(activeMode), JSON.stringify(state));
-      storageAvailable = true;
-    } catch {
-      // Private browsing, quota, and blocked storage all retain a usable session.
-      storageAvailable = false;
-    }
     notify('local');
     return getState();
   }
@@ -355,8 +307,7 @@
     const samplePhotos = record.samplePhotos === undefined ? true : record.samplePhotos;
     if (typeof samplePhotos !== 'boolean') throw new TypeError('Sample photos must be enabled or disabled.');
     const next = getState();
-    if (next.demoMode === 'walkthrough' && !next.walkthrough.reported) {
-      if (record.room !== 'Bathroom' || record.category !== 'Flooring') throw new TypeError('The walkthrough starts with the bathroom flooring defect.');
+    if (next.demoMode === 'walkthrough' && !next.walkthrough.reported && record.room === 'Bathroom' && record.category === 'Flooring') {
       const defect = findDefect(next, 'DEF-021');
       Object.assign(defect, { description, photoName, samplePhotos, status: 'approval', reported: 'Just now' });
       next.defects = [defect, ...next.defects.filter(item => item.id !== defect.id)];
@@ -433,30 +384,6 @@
     return saveState(initial);
   }
 
-  function restartWalkthrough() {
-    if (STUDY_CONTEXT) throw new Error('Open the full walkthrough to restart the complete scenario.');
-    if (isDesktop) throw new Error('Open the mobile app to restart the full walkthrough.');
-    const previous = activeMode === 'walkthrough' ? state : readSavedState('walkthrough');
-    const initial = getInitialState('walkthrough');
-    initial.walkthrough.guidance = previous.walkthrough.guidance;
-    activeMode = 'walkthrough';
-    try { root.localStorage.setItem(DEMO_MODE_KEY, activeMode); }
-    catch { storageAvailable = false; }
-    return saveState(initial);
-  }
-
-  function switchDemo(mode) {
-    if (STUDY_CONTEXT) return getState();
-    if (!['explore', 'walkthrough'].includes(mode)) throw new TypeError('Choose a valid demo mode.');
-    if (mode === activeMode) return getState();
-    activeMode = mode;
-    state = readSavedState(mode);
-    try { root.localStorage.setItem(DEMO_MODE_KEY, mode); }
-    catch { storageAvailable = false; }
-    notify('local');
-    return getState();
-  }
-
   function markWalkthroughStep(step) {
     if (state.demoMode !== 'walkthrough' || !state.walkthrough.reported || !['reviewed', 'quoteRead', 'budgetChecked', 'updatedBudgetViewed', 'paymentViewed'].includes(step) || state.walkthrough[step]) return getState();
     if (['updatedBudgetViewed', 'paymentViewed'].includes(step) && state.proposal.status !== 'approved') return getState();
@@ -483,16 +410,8 @@
     return saveState(next);
   }
 
-  root.addEventListener?.('storage', event => {
-    if (STUDY_CONTEXT) return;
-    if ((event.key === DEMO_MODE_KEY || event.key === null) && !isDesktop) activeMode = preferredMode();
-    else if (event.key !== storageKey(activeMode) && event.key !== null) return;
-    state = readSavedState();
-    notify('storage');
-  });
-
   root.RenoGuardStore = Object.freeze({
-    constants: Object.freeze({ PROPOSAL_COST, PROJECT_BUDGET, ORIGINAL_COMMITMENT, ROOMS, DEFECT_CATEGORIES, UI_VARIANT, VARIANT_CONTEXT, STUDY_CONTEXT, STUDY_MODE, SCENARIO_DATE }),
+    constants: Object.freeze({ PROPOSAL_COST, PROJECT_BUDGET, ORIGINAL_COMMITMENT, ROOMS, DEFECT_CATEGORIES, UI_VARIANT, VARIANT_CONTEXT, STUDY_CONTEXT, STUDY_MODE, GUIDED_WALKTHROUGH, SCENARIO_DATE }),
     getInitialState,
     getState,
     saveState,
@@ -500,7 +419,6 @@
     getProjectDefects,
     hasProposal,
     money,
-    get storageAvailable() { return storageAvailable; },
     subscribe,
     selectTile,
     approveProposal,
@@ -516,8 +434,6 @@
     restoreDefect,
     markNotificationsRead,
     reset,
-    restartWalkthrough,
-    switchDemo,
     markWalkthroughStep,
     setWalkthroughGuidance,
     recordTilePreview

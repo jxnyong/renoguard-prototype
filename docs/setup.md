@@ -96,6 +96,8 @@ RenoGuard preview: http://127.0.0.1:8765
 
 Keep the terminal open, then **[open RenoGuard at http://127.0.0.1:8765/](http://127.0.0.1:8765/)**.
 
+The default page starts fresh at Home with no defect reports or hints. Open **Profile → Prototype controls** to choose A/B, launch the approval experiment, or start the full walkthrough. Refreshing clears session progress.
+
 The mobile app automatically uses a phone-sized frame on computers. No browser device-mode configuration is needed.
 
 **Stop the server**
@@ -149,7 +151,7 @@ Refresh the browser. If Git reports local edits or diverging commits, review you
 
 The same app serves both conditions. Open [Version A](http://127.0.0.1:8765/?variant=a&study=quotation) or [Version B](http://127.0.0.1:8765/?variant=b&study=quotation). Both start at the pending quotation and reset on reload. The only intended difference is the comparison layout: a horizontally scrollable table in A and stacked full-width cards in B. Each includes the same three replacement tiles, typography, cost, dates and approval controls. A uses radio circles below its option columns; B centres the circle inside the right side of each card. Neither shows Select/Selected text. Use the same participant task in both conditions.
 
-For the complete easy scenario, use `/?variant=a&study=scenario` or `/?variant=b&study=scenario`. These start at Home before the defect report. Public study links can use the same query strings when hosting is arranged later; no duplicate code folders are needed.
+For the complete easy scenario, use `/?variant=a&walkthrough=1` or `/?variant=b&walkthrough=1`. These start at Home before the defect report. Public study links can use the same query strings when hosting is arranged later; no duplicate code folders are needed.
 
 The focused task is: review the change, choose Sabbia Matte, confirm the S$250 additional cost and 14 Jul 2026 completion, and approve. The [experiment notes](iteration-2.md#focused-ab-experiment) propose two primary measures and describe the pilot checks. Keep the app session continuous: refreshing an experiment link starts it again.
 <br>

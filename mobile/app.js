@@ -3,7 +3,7 @@
   'use strict';
   const Store = window.RenoGuardStore;
   if (!Store) throw new Error('Load the shared project store before the mobile app.');
-  const { PROPOSAL_COST, PROJECT_BUDGET, ORIGINAL_COMMITMENT, ROOMS, DEFECT_CATEGORIES, UI_VARIANT, VARIANT_CONTEXT, STUDY_CONTEXT, STUDY_MODE } = Store.constants;
+  const { PROPOSAL_COST, PROJECT_BUDGET, ORIGINAL_COMMITMENT, ROOMS, DEFECT_CATEGORIES, UI_VARIANT, STUDY_CONTEXT, STUDY_MODE, GUIDED_WALKTHROUGH } = Store.constants;
   const QUOTATION_STUDY = STUDY_MODE === 'quotation';
   const money = Store.money;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
@@ -31,6 +31,7 @@
   let reviewReturnRoute = null;
   let comparisonController = null;
   let comparisonPosition = 0;
+  let activeVariant = UI_VARIANT || 'a';
   const materials = window.RenoGuardComparison.materials;
   const demoDefectPhotos = {
     'DEF-021': [
@@ -69,19 +70,18 @@
   const showWalkthroughHints = () => isWalkthrough() && state.walkthrough.guidance;
   const proposalReady = () => Store.hasProposal(state);
   const firstScenarioReport = () => isWalkthrough() && !state.walkthrough.reported;
-  const demoName = () => isWalkthrough() ? 'Scenario walkthrough' : 'Explore project';
-  const demoResetLabel = () => QUOTATION_STUDY ? 'Reset approval demo' : 'Reset demo';
-  function fullScenarioURL(target = 'walkthrough') {
-    const url = new URL(location.href);
-    url.searchParams.delete('study');
-    url.searchParams.delete('screen');
-    url.searchParams.delete('approved_tile');
-    url.hash = target;
-    return `${url.pathname}${url.search}${url.hash}`;
+  const demoName = () => QUOTATION_STUDY ? 'Approval experiment' : GUIDED_WALKTHROUGH ? 'Full walkthrough' : 'Fresh project';
+  const demoResetLabel = () => QUOTATION_STUDY ? 'Reset experiment' : 'Reset project';
+  function entryURL(view = 'home', variant = activeVariant) {
+    const query = new URLSearchParams({ variant });
+    if (view === 'quotation') query.set('study', 'quotation');
+    if (view === 'walkthrough') query.set('walkthrough', '1');
+    return `${location.pathname}?${query}`;
   }
   function routeURL(target) {
     const url = new URL(location.href);
     url.hash = target;
+    if (url.searchParams.has('variant') || activeVariant !== 'a') url.searchParams.set('variant', activeVariant);
     if (STUDY_CONTEXT) {
       url.searchParams.set('screen', target.replaceAll('/', '-'));
       if (target.startsWith('approval-receipt') && state.proposal.status === 'approved') url.searchParams.set('approved_tile', state.proposal.tile);
@@ -90,9 +90,8 @@
     return `${url.pathname}${url.search}${url.hash}`;
   }
   function demoSessionActions() {
-    return `<div class="demo-session-actions" aria-label="Demo controls"><a class="text-link" href="#walkthrough">${icon('clock')}Walkthrough steps</a><a class="text-link danger-link" href="#reset">${icon('refresh')}${demoResetLabel()}</a></div>`;
+    return `<div class="demo-session-actions" aria-label="Prototype controls"><a class="text-link" href="#prototype-setup">${icon('changes')}Prototype controls</a><a class="text-link danger-link" href="#reset">${icon('refresh')}${demoResetLabel()}</a></div>`;
   }
-
 
   function announce(text) {
     announcements.textContent = '';
@@ -114,7 +113,7 @@
   function headerTitle() {
     const [screen, detail] = route.split('/');
     const titles = {
-      profile: 'Your profile', 'prototype-setup': 'Prototype setup', walkthrough: 'Walkthrough', rooms: 'Rooms & previews', room: 'Room details',
+      profile: 'Your profile', 'prototype-setup': 'Prototype controls', walkthrough: 'Walkthrough', rooms: 'Rooms & previews', room: 'Room details',
       preview: detail === 'bathroom' ? 'AR room preview' : '3D room view', material: 'Tile details',
       defect: 'Defect details', report: detail === 'edit' ? 'Edit report' : 'Report defect',
       'report-saved': 'Report saved', request: 'Request quotation', 'request-receipt': 'Request saved',
@@ -219,7 +218,6 @@
     document.getElementById('notification-dot').hidden = state.notificationsRead;
     document.getElementById('change-nav-dot').hidden = totals().pending === 0;
     document.getElementById('defect-nav-dot').hidden = !projectDefects().some(defect => ['verification', 'followup'].includes(defect.status));
-    document.getElementById('storage-notice').hidden = Store.storageAvailable;
     document.querySelectorAll('[data-tab]').forEach(tab => {
       if (tab.dataset.tab === parentTab(route)) tab.setAttribute('aria-current', 'page');
       else tab.removeAttribute('aria-current');
@@ -261,9 +259,7 @@
       section('Documents & payments', `<div class="menu-group">${menuRow('Quotes & variations', 'Original scope and proposed changes', 'documents', 'file')}${menuRow('Payment timeline', `Target handover · ${handover()} 2026`, 'timeline', 'clock')}</div>`) +
       section('Your home', `<div class="menu-group">${menuRow('Rooms & AR preview', 'Explore your home and compare finishes', 'rooms', 'rooms')}${menuRow('Project details', 'Punggol · 4-room BTO', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`) +
       section('Help', `<div class="menu-group">${menuRow('Project helper', 'Understand changes, costs and next steps', 'helper', 'sparkles')}</div>`) +
-      (STUDY_CONTEXT ? '' : section('Demo modes', `<p class="help">Each mode keeps its own saved progress.</p><div class="demo-modes">${[['walkthrough', 'Scenario walkthrough', 'One bathroom defect, from report to updated project records.'], ['explore', 'Explore project', 'Multiple room issues, repairs and project records.']].map(([mode, title, description]) => `<button class="demo-mode" data-action="switch-demo" data-mode="${mode}" aria-pressed="${state.demoMode === mode}"><span><strong>${title}</strong><small>${description}</small></span>${state.demoMode === mode ? badge('Active', 'green') : icon('right')}</button>`).join('')}</div>`)) +
-      section('Demo controls', `<div class="menu-group">${menuRow('Walkthrough steps', 'Report, review, preview and approve the tile change', 'walkthrough', 'clock')}${menuRow('Prototype setup', 'Versions and walkthrough settings', 'prototype-setup', 'changes')}</div>${QUOTATION_STUDY ? `<p class="help">The approval demo starts after the defect report.</p><div class="action-stack"><a class="button secondary" href="${esc(fullScenarioURL('restart-scenario'))}">Start full walkthrough${icon('arrow')}</a></div>` : ''}`) +
-      `<div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}<p class="help">${QUOTATION_STUDY ? 'Returns this quotation to pending, with no tile chosen.' : STUDY_CONTEXT ? 'Restarts this test session from the defect report.' : 'Resets only the active demo.'}</p></div><p class="demo-note">Interactive prototype. Reports and decisions stay in this browser; messages and payments are simulated.</p>`;
+      section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`);
   }
 
   function walkthroughSteps() {
@@ -289,15 +285,14 @@
   }
 
   function walkthroughScreen() {
-    if (!isWalkthrough()) return heading('Scenario walkthrough', 'Bathroom tile replacement') + `<div class="action-stack">${action('Open scenario walkthrough', 'switch-demo', 'primary', 'data-mode="walkthrough"')}${link('Restart full walkthrough', 'restart-scenario')}${link('Back to project tools', 'more', 'quiet')}</div>`;
+    if (STUDY_CONTEXT) return heading('Full walkthrough') + notice('The approval experiment covers choosing and approving a tile. Open the full walkthrough to start from Home and report the defect.') + `<div class="action-stack"><a class="button primary" href="${esc(entryURL('walkthrough'))}">Start full walkthrough${icon('arrow')}</a>${link('Prototype controls', 'prototype-setup')}</div>`;
     const steps = walkthroughSteps();
     const current = steps.findIndex(step => !step.done && !(state.proposal.status === 'approved' && step.beforeApproval));
     return heading('Scenario walkthrough', 'Bathroom tile replacement') +
-      (QUOTATION_STUDY ? notice('This approval demo starts with the bathroom defect already reported. Start the full walkthrough to include defect reporting.') + `<div class="action-stack"><a class="button secondary" href="${esc(fullScenarioURL('restart-scenario'))}">Start full walkthrough${icon('arrow')}</a></div>` : '') +
       `<ol class="request-timeline walkthrough-timeline">${steps.map((step, index) => {
         const skipped = !step.done && state.proposal.status === 'approved' && step.beforeApproval;
         return `<li class="${step.done ? 'complete' : index === current ? 'current' : skipped ? 'not-visited' : 'upcoming'}" ${index === current ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.done ? icon('check') : skipped ? '—' : ''}</span><div class="request-step-copy"><h3>${step.title}</h3><p>${step.detail}</p>${skipped ? '<small class="walkthrough-skipped">Not completed</small>' : ''}<span class="sr-only">${step.done ? 'Completed' : skipped ? 'Not completed' : index === current ? 'Current step' : 'Upcoming'}</span></div></li>`;
-      }).join('')}</ol><div class="action-stack">${current >= 0 ? link(`Continue · ${steps[current].title}`, steps[current].target, 'primary') : link('View updated budget', 'budget', 'primary')}${current < 0 ? link('View payment timeline', 'timeline') : ''}${!STUDY_CONTEXT ? link('Restart full walkthrough', 'restart-scenario') : ''}${link('Back to project tools', 'more', 'quiet')}</div>${STUDY_CONTEXT ? `<div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div>` : ''}`;
+      }).join('')}</ol><div class="action-stack">${current >= 0 ? link(`Continue · ${steps[current].title}`, steps[current].target, 'primary') : link('View updated budget', 'budget', 'primary')}${current < 0 ? link('View payment timeline', 'timeline') : ''}${link('Prototype controls', 'prototype-setup', 'quiet')}</div>${STUDY_CONTEXT ? `<div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div>` : ''}`;
   }
 
   function defectRow(defect) {
@@ -432,7 +427,7 @@
   }
 
   function changesScreen() {
-    if (!proposalReady()) return heading('Approvals') + `<div class="empty-state">${icon('changes')}<h2>No proposals to review yet</h2><p>Start the walkthrough by reporting the cracked bathroom tiles.</p>${link('Report the bathroom tiles', 'report/room/bathroom', 'primary')}</div>`;
+    if (!proposalReady()) return heading('Approvals') + `<div class="empty-state">${icon('changes')}<h2>No proposals to review yet</h2><p>Your designer’s proposals will appear here after a defect report.</p>${link('Report the bathroom tiles', 'report/room/bathroom', 'primary')}</div>`;
     const pending = state.proposal.status === 'pending';
     const matching = filters.changes === (pending ? 'pending' : 'approved');
     return heading('Approvals') +
@@ -459,7 +454,7 @@
   }
 
   function reviewTileSection() {
-    return reviewSection('Original & replacement options', window.RenoGuardComparison.render(UI_VARIANT || 'a', { selectedTile: selectedTile(), disabled: state.proposal.status === 'approved' }) +
+    return reviewSection('Original & replacement options', window.RenoGuardComparison.render(activeVariant, { selectedTile: selectedTile(), disabled: state.proposal.status === 'approved' }) +
       '<p class="help comparison-note">*Availability from the sample quotation dated 18 Jun 2026.</p>');
   }
 
@@ -551,14 +546,14 @@
     const defect=findDefect(id);
     if(!defect||defect.status!=='reported')return missing('Request unavailable',`defect/${id}`);
     if(defect.changeRequest)return requestReceipt(id);
-    return heading('Request a quotation',`${id} · ${defect.room}`,'Check the report details.')+`<div class="card"><p class="eyebrow">${esc(defect.room)} · ${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p>${photoGallery(id, defectPhotos(defect))}<a class="text-link" href="#report/edit/${id}">Edit report${icon('arrow')}</a></div>`+notice('<strong>No spending approved yet.</strong>You will review the quotation, options and completion date before deciding.',true)+`<div class="action-stack">${action('Save quotation request','request-confirm','primary',`data-id="${id}"`)}</div><p class="demo-note">Prototype request · saved on this device.</p>`;
+    return heading('Request a quotation',`${id} · ${defect.room}`,'Check the report details.')+`<div class="card"><p class="eyebrow">${esc(defect.room)} · ${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p>${photoGallery(id, defectPhotos(defect))}<a class="text-link" href="#report/edit/${id}">Edit report${icon('arrow')}</a></div>`+notice('<strong>No spending approved yet.</strong>You will review the quotation, options and completion date before deciding.',true)+`<div class="action-stack">${action('Save quotation request','request-confirm','primary',`data-id="${id}"`)}</div><p class="demo-note">Prototype request · saved for this session.</p>`;
   }
 
   function requestReceipt(id) {
     const defect = findDefect(id);
     if (!defect?.changeRequest) return missing('No quotation request saved', `defect/${id}`);
     const saved = new Date(defect.changeRequest.savedAt);
-    const savedTime = Number.isNaN(saved.valueOf()) ? 'Saved on this device' : saved.toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
+    const savedTime = Number.isNaN(saved.valueOf()) ? 'Saved for this session' : saved.toLocaleString('en-SG', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' });
     const steps = [
       { title: 'Defect logged', detail: `${defect.id} · ${defect.reported.replace(' · local demo', '')}`, state: 'complete' },
       { title: 'Quotation request saved', detail: savedTime, state: 'complete' },
@@ -566,7 +561,7 @@
       { title: 'Review & approve the variation', detail: 'You review the cost and timing before deciding.', state: 'upcoming' },
       { title: 'Repair scheduled', detail: 'Work can proceed after your approval.', state: 'upcoming' }
     ];
-    return `<div class="request-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('send')}</div><h1 id="screen-title" tabindex="-1">Quotation request saved</h1><p>No additional spending approved.</p>${badge('Pending quotation', 'amber')}</header><section class="request-progress card" aria-labelledby="request-progress-title"><h2 id="request-progress-title" class="eyebrow">What happens next</h2><ol class="request-timeline">${steps.map(step => `<li class="${step.state}" ${step.state === 'current' ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.state === 'complete' ? icon('check') : ''}</span><div class="request-step-copy"><h3>${esc(step.title)}</h3><p>${esc(step.detail)}</p><span class="sr-only">${step.state === 'complete' ? 'Completed' : step.state === 'current' ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol></section><div class="action-stack">${link('Back to home', 'overview', 'primary')}${link(`View defect ${id}`, `defect/${id}`)}</div><p class="demo-note">${STUDY_CONTEXT ? 'Saved for this test session.' : 'Saved on this device.'} No request has been sent to John.</p>${demoSessionActions()}</div>`;
+    return `<div class="request-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('send')}</div><h1 id="screen-title" tabindex="-1">Quotation request saved</h1><p>No additional spending approved.</p>${badge('Pending quotation', 'amber')}</header><section class="request-progress card" aria-labelledby="request-progress-title"><h2 id="request-progress-title" class="eyebrow">What happens next</h2><ol class="request-timeline">${steps.map(step => `<li class="${step.state}" ${step.state === 'current' ? 'aria-current="step"' : ''}><span class="request-timeline-node" aria-hidden="true">${step.state === 'complete' ? icon('check') : ''}</span><div class="request-step-copy"><h3>${esc(step.title)}</h3><p>${esc(step.detail)}</p><span class="sr-only">${step.state === 'complete' ? 'Completed' : step.state === 'current' ? 'Current step' : 'Upcoming'}</span></div></li>`).join('')}</ol></section><div class="action-stack">${link('Back to home', 'overview', 'primary')}${link(`View defect ${id}`, `defect/${id}`)}</div><p class="demo-note">Saved for this session. No request has been sent to John.</p>${demoSessionActions()}</div>`;
   }
 
   function getReportDraft() {
@@ -582,7 +577,7 @@
   function reportReceipt(id) {
     const defect = findDefect(id);
     if (!defect) return missing('Defect record not found', 'defects');
-    return `<div class="report-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('check')}</div><h1 id="screen-title" tabindex="-1">Defect report saved</h1><p>${esc(id)} · ${esc(defect.room)}</p></header><div class="card"><p class="eyebrow">${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p></div>${isWalkthrough() && id === 'DEF-021' ? notice('<strong>Quotation ready</strong>John has proposed three replacement tiles. Review the proposal from your dashboard.') : ''}<div class="action-stack">${link(isWalkthrough() && id === 'DEF-021' ? 'Continue to dashboard' : 'Done', isWalkthrough() && id === 'DEF-021' ? 'overview' : 'defects', 'primary')}${link('View report', `defect/${id}`)}</div><p class="demo-note">${STUDY_CONTEXT ? 'Saved for this test session.' : 'Saved on this device.'}</p>${demoSessionActions()}</div>`;
+    return `<div class="report-confirmation"><header class="request-hero"><div class="request-send-mark">${icon('check')}</div><h1 id="screen-title" tabindex="-1">Defect report saved</h1><p>${esc(id)} · ${esc(defect.room)}</p></header><div class="card"><p class="eyebrow">${esc(defect.category)}</p><p class="request-description">${esc(defect.description)}</p></div>${isWalkthrough() && id === 'DEF-021' ? notice('<strong>Quotation ready</strong>John has proposed three replacement tiles. Review the proposal from your dashboard.') : ''}<div class="action-stack">${link(isWalkthrough() && id === 'DEF-021' ? 'Continue to dashboard' : 'Done', isWalkthrough() && id === 'DEF-021' ? 'overview' : 'defects', 'primary')}${link('View report', `defect/${id}`)}</div><p class="demo-note">Saved for this session.</p>${demoSessionActions()}</div>`;
   }
 
   function reportScreen() {
@@ -789,21 +784,16 @@
   function profileScreen() {
     return heading('Your profile') + `<div class="card profile-identity"><span class="profile-avatar" aria-hidden="true">TE</span><div><h2>Thomas Eng</h2><p>Homeowner</p></div></div>` +
       section('Your project', `<div class="menu-group">${menuRow('Punggol · 4-room BTO', 'View renovation details', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`) +
-      section('Demo & walkthrough', `<div class="menu-group">${menuRow('Walkthrough steps', 'Follow the bathroom tile scenario', 'walkthrough', 'clock')}${menuRow('Prototype setup', 'Preview versions and walkthrough settings', 'prototype-setup', 'changes')}</div>`) + `<div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div>`;
-  }
-
-  function variantURL(variant, study = null) {
-    return `${location.pathname}?variant=${variant}${study ? `&study=${study}` : ''}#${study === 'quotation' ? 'change/VO-015' : 'overview'}`;
+      section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`);
   }
 
   function prototypeSetupScreen() {
-    const versions = [['a', 'Version A', 'Compare the original and replacements in a table'], ['b', 'Version B', 'Review a detailed card for each tile option']];
-    return heading('Prototype setup') +
-      section('Compare versions', `<p>Both versions use the same scenario and actions, with separate saved progress.</p><div class="demo-modes">${versions.map(([value, title, description]) => `<a class="demo-mode" href="${esc(variantURL(value))}" ${VARIANT_CONTEXT && UI_VARIANT === value ? 'aria-current="page"' : ''}><span><strong>${title}</strong><small>${description}</small></span>${VARIANT_CONTEXT && UI_VARIANT === value ? badge('Active', 'green') : icon('right')}</a>`).join('')}</div>`) +
-      section('Full scenario experiment', `<p>Start from defect reporting, with hints off and fresh progress on every reload.</p><div class="study-preview-links">${versions.map(([value, title]) => `<a class="button secondary" href="${esc(variantURL(value, 'scenario'))}">${title}${icon('arrow')}</a>`).join('')}</div>`) +
-      section('Focused approval experiment', `<p>Start at the pending quotation, with hints off and fresh progress on each reload.</p><div class="study-preview-links">${versions.map(([value, title]) => `<a class="button secondary" href="${esc(variantURL(value, 'quotation'))}">${title}${icon('arrow')}</a>`).join('')}</div>`) +
-      section('Walkthrough settings', STUDY_CONTEXT ? `<p>Experiment sessions keep hints off. Open the saved demo to configure hints for practice or filming.</p><div class="action-stack"><a class="button secondary" href="${esc(fullScenarioURL('prototype-setup'))}">Open saved demo settings${icon('arrow')}</a></div>` : isWalkthrough() ? `<div class="card"><label class="setting-toggle" for="walkthrough-guidance"><span><strong>Show walkthrough hints</strong><small>Suggested steps and a prefilled first report for practice or filming.</small></span><input id="walkthrough-guidance" type="checkbox" ${showWalkthroughHints() ? 'checked' : ''}></label></div><p class="help">For a new user-test session, turn hints off and reset the demo. Reset keeps this setting.</p><div class="action-stack">${link('View walkthrough steps', 'walkthrough', 'quiet')}${link('Restart full walkthrough', 'restart-scenario')}</div>` : `<p>Open Scenario walkthrough in Project tools to configure hints.</p>${link('Open project tools', 'more', 'quiet')}`) +
-      `<div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div><p class="demo-note">Scenario date: 18 Jun 2026. Designer responses and project updates are simulated. Experiment responses are not collected.</p>`;
+    const versions = [['a', 'Version A', 'Swipeable table'], ['b', 'Version B', 'Stacked cards']];
+    return heading('Prototype controls') +
+      `<section class="prototype-version"><h2>App version</h2><div class="version-switch" role="group" aria-label="App version">${versions.map(([value,title,detail]) => `<button type="button" data-action="set-version" data-version="${value}" aria-pressed="${activeVariant === value}"><strong>${title}</strong><span>${detail}</span></button>`).join('')}</div><p class="help">Changes the comparison layout and keeps your current progress.</p></section>` +
+      `<section class="prototype-session card"><div class="prototype-session-heading"><span class="menu-icon">${icon('changes')}</span><div><h2>Approval experiment</h2><p>For your Maze A/B test</p></div></div><p>Starts at the tile proposal with the defect already reported. No tile is chosen and walkthrough hints are off.</p><a class="button primary" href="${esc(entryURL('quotation'))}">Open approval experiment${icon('arrow')}</a><p class="help">Use the opened page’s address in Maze. This opens a fresh Version ${activeVariant.toUpperCase()} session.</p></section>` +
+      `<section class="prototype-session card"><div class="prototype-session-heading"><span class="menu-icon">${icon('clock')}</span><div><h2>Full walkthrough</h2><p>For practice and video recording</p></div></div><p>Starts at Home with no reports. Follow Thomas from reporting the bathroom tiles to approval and the updated payment timeline.</p><a class="button secondary" href="${esc(entryURL('walkthrough'))}">Start full walkthrough${icon('arrow')}</a>${GUIDED_WALKTHROUGH ? `<label class="setting-toggle" for="walkthrough-guidance"><span><strong>Show step hints</strong><small>Turn off for a clean recording.</small></span><input id="walkthrough-guidance" type="checkbox" ${showWalkthroughHints() ? 'checked' : ''}></label>${link('View walkthrough steps', 'walkthrough', 'quiet')}` : ''}</section>` +
+      `<div class="prototype-return"><a class="text-link" href="${esc(entryURL())}">${icon('home')}Start a fresh project</a><p class="help">Home with no reports or hints. Refreshing any session clears its progress.</p></div><div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div>`;
   }
 
   function missing(title, target = 'overview', explanation = 'Open the connected record or return to your project overview.') {
@@ -812,7 +802,7 @@
 
   function screenHTML() {
     const [name, value] = route.split('/');
-    if (!proposalReady() && (['change', 'approve', 'revision', 'material'].includes(name) || (name === 'document' && value === 'quotation') || (name === 'preview' && value === 'bathroom'))) return missing('Report the defect first', 'report/room/bathroom', 'The walkthrough starts with the cracked bathroom tiles. A sample replacement proposal becomes available after you save the report.');
+    if (!proposalReady() && (['change', 'approve', 'revision', 'material'].includes(name) || (name === 'document' && value === 'quotation') || (name === 'preview' && value === 'bathroom'))) return missing('Report the defect first', 'report/room/bathroom', 'A replacement proposal becomes available after you report the bathroom floor tiles.');
     switch (name) {
       case 'overview': return overview();
       case 'more': return moreScreen();
@@ -847,15 +837,15 @@
       case 'helper': return helperScreen(value);
       case 'contact': return contactScreen();
       case 'project': return projectScreen();
-      case 'reset': return heading(QUOTATION_STUDY ? 'Reset approval demo?' : 'Reset this demo?', demoName(), QUOTATION_STUDY ? 'The quotation returns to pending with no tile chosen. The remaining budget returns to S$30,000. Your full walkthrough is kept.' : STUDY_CONTEXT ? 'Restart this test session from reporting the cracked tiles. Saved demos are kept.' : 'This mode’s reports, decisions and walkthrough progress will return to their starting point. Progress in the other mode is kept.') + `<div class="action-stack">${action(QUOTATION_STUDY ? 'Reset approval demo' : 'Confirm demo reset', 'reset-confirm', 'danger')}${link('Keep my changes', 'more')}</div>`;
-      case 'restart-scenario': return heading('Restart full walkthrough?', 'Bathroom tile replacement', 'Start again from reporting the cracked tiles. This version’s walkthrough reports, tile choice and approval will reset. Explore project is kept.') + `<div class="action-stack">${STUDY_CONTEXT ? `<a class="button danger" href="${esc(fullScenarioURL('restart-scenario'))}">Open full walkthrough${icon('arrow')}</a>` : action('Restart walkthrough', 'restart-scenario-confirm', 'danger')}${link('Keep my progress', 'walkthrough')}</div>`;
-      default: return missing('Screen not found');
+      case 'reset': return heading(QUOTATION_STUDY ? 'Reset experiment?' : 'Reset project?', demoName(), QUOTATION_STUDY ? 'Return to the tile proposal with no tile chosen and S$30,000 remaining.' : 'Clear this session’s reports and decisions, then return to Home.') + `<div class="action-stack">${action('Confirm reset', 'reset-confirm', 'danger')}${link('Keep my progress', 'prototype-setup')}</div>`;
+      case 'restart-scenario': return heading('Start full walkthrough?', 'Bathroom tile replacement', 'Open a fresh project at Home, with optional step hints for the complete scenario.') + `<div class="action-stack"><a class="button primary" href="${esc(entryURL('walkthrough'))}">Start full walkthrough${icon('arrow')}</a>${link('Keep my progress', 'prototype-setup')}</div>`;
+
     }
   }
 
   function render({ focus = false, restore = false } = {}) {
     const address = routeURL(route);
-    if (STUDY_CONTEXT && address !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, '', address);
+    if (address !== `${location.pathname}${location.search}${location.hash}`) history.replaceState(history.state, '', address);
     updateChrome();
     comparisonController?.destroy();
     content.innerHTML = screenHTML();
@@ -892,9 +882,18 @@
     state = Store.getState();
     try {
       switch (button.dataset.action) {
-        case 'switch-demo':
-          if (button.dataset.mode !== state.demoMode) { mutate(() => Store.switchDemo(button.dataset.mode)); clearTransientState(); }
-          navigate('overview', true); announce(`${demoName()} opened. Saved progress is kept separately.`); break;
+        case 'set-version': {
+          const version = button.dataset.version;
+          if (!['a', 'b'].includes(version)) break;
+          activeVariant = version;
+          const address = new URL(location.href);
+          address.searchParams.set('variant', version);
+          history.replaceState(history.state, '', `${address.pathname}${address.search}${address.hash}`);
+          render({ restore: true });
+          content.querySelector(`[data-version="${version}"]`)?.focus();
+          announce(`Version ${version.toUpperCase()} selected. Your current progress is kept.`);
+          break;
+        }
         case 'open-room': openRoom(button.dataset.room); break;
         case 'open-defect-photo': openDefectPhoto(id, Number(button.dataset.index), button.dataset.source); break;
         case 'request-confirm':
@@ -984,13 +983,9 @@
         }
         case 'reset-confirm':
           mutate(() => Store.reset()); clearTransientState();
-          navigate(QUOTATION_STUDY ? 'change/VO-015' : 'overview', true); announce(QUOTATION_STUDY ? 'Approval demo reset. Choose a tile to begin again.' : STUDY_CONTEXT ? 'Scenario demo reset. Begin with the bathroom defect report.' : `${demoName()} reset. The other demo was kept.`);
+          navigate(QUOTATION_STUDY ? 'change/VO-015' : 'overview', true); announce(QUOTATION_STUDY ? 'Experiment reset. Choose a tile to begin again.' : 'Project reset. No defects reported.');
           break;
-        case 'restart-scenario-confirm':
-          if (STUDY_CONTEXT) break;
-          mutate(() => Store.restartWalkthrough()); clearTransientState();
-          navigate('walkthrough', true); announce('Full walkthrough restarted. Begin by reporting the cracked bathroom tiles. Explore project was kept.');
-          break;
+
       }
     } catch (error) { announce(error.message); content.insertAdjacentHTML('afterbegin', notice(esc(error.message), true)); }
   }
@@ -1019,7 +1014,7 @@
     Promise.all([document.fonts.ready,ready,new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?100:1050))]).then(dismissStartup);
     window.setTimeout(dismissStartup,2500);
     comparisonPosition = state.proposal.selectionMade ? Object.keys(materials).indexOf(state.proposal.tile) : 0;
-    route = STUDY_CONTEXT ? (QUOTATION_STUDY ? 'change/VO-015' : 'overview') : currentHash();
+    route = QUOTATION_STUDY ? 'change/VO-015' : 'overview';
     if(state.proposal.status==='approved')filters.changes='approved';
     history.replaceState({ renoMobile: true, depth: 0 }, '', routeURL(route));
     enterScreen(); render({ restore: true });
@@ -1076,8 +1071,7 @@
     };
     window.addEventListener('popstate', historyChanged);
     window.addEventListener('hashchange', historyChanged);
-    Store.subscribe((next, metadata) => {
-      const modeChanged = next.demoMode !== state.demoMode;
+    Store.subscribe(next => {
       if(next.proposal.tile!==state.proposal.tile || next.proposal.status!==state.proposal.status || next.proposal.selectionMade!==state.proposal.selectionMade) approvalAcknowledged=false;
       sessionPhotos.forEach((photo, id) => {
         const previous = state.defects.find(defect => defect.id === id);
@@ -1087,10 +1081,8 @@
       state = next;
       updateChrome();
       if (mutating) return;
-      if (modeChanged) { clearTransientState(); navigate('overview', true); announce(`${demoName()} opened in this tab.`); return; }
       saveScreen();
       if (!['report', 'revision', 'followup', 'inspect'].includes(route.split('/')[0])) render();
-      if (metadata.source === 'storage') announce('Project records updated from the other interface.');
     });
   }
 
