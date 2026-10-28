@@ -1,12 +1,12 @@
 # RenoGuard design system
 
-Shared rules for the construction-inspired mobile prototype. The palette takes its cue from worksite signage and hard hats: navy for clear actions, yellow for identity, and orange for progress. The mark is an original upright hard hat; the app does not use character artwork.
+Shared rules for the construction-inspired mobile prototype. The palette takes its cue from worksite signage and hard hats: yellow for primary actions and selected navigation, navy for readable text and budget summaries, and orange for progress. The mark is an original upright hard hat; the app does not use character artwork.
 
 ![RenoGuard hard-hat logo](../assets/renoguard-mark.svg)
 
-**[Open the live colour and component sheet →](http://127.0.0.1:8765/docs/design-system.html)**
+**[Open the live colour and component sheet →](https://renoguard-prototype.vercel.app/docs/design-system.html)**
 
-The images below are embedded in this guide, so they display directly on GitHub without running the app. To try the interactive examples, start the preview server. The sheet loads the same stylesheet and comparison component as the app, rather than maintaining separate visual examples.
+The images below display directly on GitHub. The hosted sheet includes interactive examples and loads the same stylesheet and comparison component as the app. For local changes, use the preview server's `/docs/design-system.html` page.
 
 [Back to the project README](../README.md)
 
@@ -22,10 +22,12 @@ The images below are embedded in this guide, so they display directly on GitHub 
 
 | Colour / token | Hex | Use |
 | --- | --- | --- |
-| Primary navy · `--primary` | `#183C5A` | Main actions, links, active navigation |
-| Deep navy · `--primary-dark` | `#102B43` | Loading screen, pressed actions |
+| Primary navy · `--primary` | `#183C5A` | Budget summaries, links, icons and selected tile outlines |
+| Deep navy · `--primary-dark` | `#102B43` | Text on yellow actions, loading screen |
 | Navy tint · `--primary-soft` | `#DFEBF3` | Selected tiles and information surfaces |
-| Worksite yellow · `--build-yellow` | `#FFCC3D` | Logo and restrained brand accents |
+| Worksite yellow · `--build-yellow` | `#FFCC3D` | Primary actions, active bottom navigation, Home summary accent, logo and budget usage |
+| Yellow tint · `--build-yellow-soft` | `#FFF4CF` | Selected tabs and navigation icon backgrounds |
+| Pressed yellow · `--build-yellow-pressed` | `#EFB820` | Hover and press feedback on enabled primary actions |
 | Progress orange · `--build-orange` | `#B75B17` | Completed portion of the progress ring |
 | Ink · `--ink` | `#17324A` | Primary text |
 | Muted · `--muted` | `#536879` | Labels, captions and secondary text |
@@ -41,9 +43,9 @@ The images below are embedded in this guide, so they display directly on GitHub 
 
 </details>
 
-Use named tokens in `mobile/styles.css`. Colour supports a text label, icon or checked state; it does not carry status alone. Yellow and orange are accents, not body-text colours.
+Use named tokens in `mobile/styles.css`. Colour supports a text label, icon or checked state; it does not carry status alone. Yellow action surfaces use deep navy text. Keep warnings labelled in amber and completed actions labelled in green.
 
-Checked contrast pairs: white on primary navy **11.46:1**, muted on canvas **5.43:1**, warning on its tint **5.67:1**, success on its tint **6.33:1**, and progress orange against the track **3.20:1**. These checks cover the named pairs, not a claim that every possible state has been independently certified.
+Checked contrast pairs: deep navy on worksite yellow **9.63:1**, deep navy on pressed yellow **7.97:1**, white on primary navy **11.46:1**, muted on canvas **5.43:1**, warning on its tint **5.67:1**, success on its tint **6.33:1**, and progress orange against the track **3.20:1**. These checks cover the named pairs, not a claim that every possible state has been independently certified.
 
 <br>
 
@@ -82,6 +84,7 @@ A large desktop monitor does not enlarge the app's CSS font sizes. The desktop p
 - Page edges: **20 px**, changing to **16 px** below 360 px wide.
 - Unboxed headings: **4 px** inside the card edge. This creates a small optical inset without looking detached.
 - Card content: **16 px** inside the border. Status, title, metadata and actions share that inset.
+- Budget trade breakdown: heading, labels, bar endpoints and note share the card's content edges. Amounts align on the right; pending additions sit on a separate line below the relevant bar.
 - Label-to-field gap: **8 px**. Helper text follows its field by **8 px**.
 - Section spacing: **24 px**. Related stacked controls use **12 px**.
 - Cards use an **18 px** radius; primary controls use a **14 px** radius unless their component has a specific shape.
@@ -100,11 +103,12 @@ Keep one shared rule for a component. Add a local exception only when its role a
 | --- | --- | --- |
 | Hard-hat mark | Upright, square proportions, no rotation; reuse at every size | `assets/renoguard-mark.svg` |
 | App header | Brand on primary screens; centred title between equal Back/Home controls on detail screens | `index.html`, `.app-header` |
-| Bottom navigation | Home, Defects, Approvals, Budget, Tools; current item has text and a tinted background | `.bottom-nav` |
-| Primary / secondary / danger action | Common 48 px height, visible focus, disabled state and press feedback | `.button` |
+| Bottom navigation | Home, Defects, Approvals, Budget, Tools; current item uses yellow with bold navy text | `.bottom-nav` |
+| Primary / secondary / danger action | Yellow primary, white secondary, red-tinted danger; common 48 px height, visible focus, disabled state and press feedback | `.button` |
 | Card and record | Shared content inset, border and role-based title size | `.card`, `.record-row` |
 | Status pill | Pending / approved / scheduled labels with semantic tints | `.status` |
 | Progress ring and stage tracker | 60% centred; ring fills on Home entry and remains accurate after rerenders | `renovationProgress()` |
+| Approved cost by trade | Shared card insets; bars show each trade's share of the current approved total, not construction completion | `.budget-trades`, `.trade-bar` |
 | Form field | Label, input, helper and error form one group; errors explain the correction | `.field` |
 | Defect photo | A thumbnail opens an enlarged sample image; counts stay beside the photo | `.record-thumbnail`, `.defect-photos` |
 | Original specification | Material name, size, finish and stock warning appear before either comparison | `originalBrief()` |
