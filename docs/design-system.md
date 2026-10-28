@@ -1,48 +1,135 @@
-# RenoGuard design system · Iteration 2
+# RenoGuard design system
 
-## Direction
+Shared rules for the construction-inspired mobile prototype. The palette takes its cue from worksite signage and hard hats: navy for clear actions, yellow for identity, and orange for progress. The mark is an original upright hard hat; the app does not use character artwork.
 
-The previous Figma draft used green, brass, Alice type, and a shield. The revised prototype takes a playful construction direction inspired by Bob the Builder without using the character, name as a product mark, or copyrighted artwork. A simple hard-hat mark expresses building and safety while retaining the RenoGuard name. The palette makes the experience warmer and easier to recognise in the filmed walkthrough.
+**[Open the live colour and component sheet →](http://127.0.0.1:8765/docs/design-system.html)**
 
-## Colour tokens
+Start the preview server first. The sheet loads the same stylesheet and comparison component as the app, rather than maintaining separate visual examples.
 
-| Token | Hex | Use |
+[Back to the project README](../README.md)
+
+<br>
+
+## Colour foundations
+
+| Colour / token | Hex | Use |
 | --- | --- | --- |
-| Navy / primary | `#183C5A` | Actions, active navigation, main text accents |
-| Deep navy | `#102B43` | Pressed actions, loading background |
-| Worksite yellow | `#FFCC3D` | Hard-hat logo, progress and structural accents |
-| Safety orange | `#E87D24` | Progress ring and carousel position |
-| Pale blue | `#DFEBF3` | Active and selected surfaces |
-| Ink | `#17324A` | Primary text |
-| Muted | `#536879` | Supporting text |
-| Line | `#CCD8DF` | Dividers and input outlines |
-| Canvas | `#F5F8F8` | App background |
-| Warm alert | `#FFF0C9` | Pending cost and decision surfaces |
+| Primary navy · `--primary` | `#183C5A` | Main actions, links, active navigation |
+| Deep navy · `--primary-dark` | `#102B43` | Loading screen, pressed actions |
+| Navy tint · `--primary-soft` | `#DFEBF3` | Selected tiles and information surfaces |
+| Worksite yellow · `--build-yellow` | `#FFCC3D` | Logo and restrained brand accents |
+| Progress orange · `--build-orange` | `#B75B17` | Completed portion of the progress ring |
+| Ink · `--ink` | `#17324A` | Primary text |
+| Muted · `--muted` | `#536879` | Labels, captions and secondary text |
+| Line · `--line` | `#CCD8DF` | Borders, dividers, unfilled progress |
+| Canvas · `--canvas` | `#F5F8F8` | App background |
+| Surface · `--white` | `#FFFFFF` | Cards and fields |
+| Success · `--success` | `#276244` | Approved and verified status text |
+| Success tint · `--success-soft` | `#E8F3EC` | Success status background |
+| Warning · `--amber` | `#8B5100` | Pending decisions and cost warnings |
+| Warning tint · `--amber-soft` | `#FFF0C9` | Warning backgrounds |
+| Danger · `--red` | `#A23A31` | Destructive actions and field errors |
+| Focus · `--focus` | `#9A6200` | Keyboard focus outlines |
 
-Use text labels as well as colour for status. Keep navy text on pale surfaces and white text on navy. The palette is defined in `mobile/styles.css`; use tokens rather than adding page-specific colours.
+Use named tokens in `mobile/styles.css`. Colour supports a text label, icon or checked state; it does not carry status alone. Yellow and orange are accents, not body-text colours.
 
-## Type, spacing and logo
+Checked contrast pairs: white on primary navy **11.46:1**, muted on canvas **5.43:1**, warning on its tint **5.67:1**, success on its tint **6.33:1**, and progress orange against the track **3.20:1**. These checks cover the named pairs, not a claim that every possible state has been independently certified.
 
-The interface uses Inter where installed, then Segoe UI or Arial. This replaces the Figma draft's decorative Alice type for easier reading at phone size. Screen titles are 28 px, section titles 19–20 px, card titles 16 px, body 14–15 px, and notes 11–12 px. A/B option names use the same 14 px rule and specification rows use the same 13 px rule. Use the existing 4/8/12/16/20/24 px spacing rhythm, at least 44 px touch targets, and 16–20 px card radii.
+<br>
 
-The logo is the inline hard-hat symbol in `index.html`, shown on yellow in the header and loading screen. It is an original geometric mark. Do not import Bob the Builder character imagery into the app.
+## Typography
 
-## Shared components
+Use the device's native sans-serif stack: Apple system font on Apple devices, Segoe UI on Windows, then Arial/sans-serif. No font installation or external font service is required.
 
-| Component | Source | Rule |
+| Role | Size | Weight | Usage |
+| --- | --- | --- | --- |
+| Display number | 32–33 px | 650–700 | Main remaining-budget figure |
+| Screen title | 26 px | 650 | One main heading per screen |
+| Section heading | 18 px | 650 | Groups such as Cost & timing |
+| Card title | 15 px | 650 | Records and menu items |
+| Body | 14 px | 400 | Descriptions and instructions |
+| Supporting text | 12 px | 400–500 | Dates, notes and secondary labels |
+| Small navigation label | 11 px | 400–650 | Bottom navigation and short metadata |
+| Form input | 16 px | 400 | Typed text and form selections; avoids iOS focus zoom |
+| Progress figure | 22 px | 700 | Centred percentage, without a second label |
+
+**A/B comparison typography is fixed across both layouts:** option names **14 px / 650 / 1.5 line height**; specification values **13 px / 400 / 1.5**; specification labels **13 px / 500 / 1.5**; option labels and notes **12 px / 1.5**. Both use **48 × 48 px** material samples and the same 18 px native radio circle. Never reduce just one variant's type to fit its layout.
+
+A large desktop monitor does not enlarge the app's CSS font sizes. The desktop preview is a 390 × 844 frame and scales down as a whole when the browser window is shorter. Real phones use their available width; text keeps its role-based size and wraps naturally.
+
+<br>
+
+## Spacing and alignment
+
+- Use the **4 / 8 / 12 / 16 / 20 / 24 px** rhythm.
+- Page edges: **20 px**, changing to **16 px** below 360 px wide.
+- Unboxed headings: **4 px** inside the card edge. This creates a small optical inset without looking detached.
+- Card content: **16 px** inside the border. Status, title, metadata and actions share that inset.
+- Label-to-field gap: **8 px**. Helper text follows its field by **8 px**.
+- Section spacing: **24 px**. Related stacked controls use **12 px**.
+- Cards use an **18 px** radius; primary controls use a **14 px** radius unless their component has a specific shape.
+- Interactive targets are at least **44 × 44 px**. Tile choices have a **48 px** high invisible target around the radio.
+- Keep tap controls and text in separate grid/flex columns with a defined gap; never use adjacent inline text without spacing.
+
+Keep one shared rule for a component. Add a local exception only when its role actually differs, rather than repeatedly overriding a screen until it looks right.
+
+<br>
+
+## Components and behaviour
+
+| Component | States and rules | Source |
 | --- | --- | --- |
-| Header and bottom navigation | `index.html`, `mobile/styles.css` | Same chrome on all primary screens; detail screens show Back and Home. |
-| Primary, secondary, danger buttons | `.button` in `mobile/styles.css` | Shared height, radius, focus and press feedback. |
-| Cards and status pills | `.card`, `.status` | Same padding, border and state language across screens. |
-| Progress ring and stage tracker | `renovationProgress()` | Animates from empty each time Home is entered. |
-| Comparison data and radio choices | `mobile/comparison.js` | A and B share tile facts and accessible choice labels. |
-| Cost/timing impact and approval summary | `mobile/comparison.js` | Identical in both experiment conditions. |
-| Defect, quotation, budget and payment records | `shared/project-store.js` | State changes only after the relevant action. |
+| Hard-hat mark | Upright, square proportions, no rotation; reuse at every size | `assets/renoguard-mark.svg` |
+| App header | Brand on primary screens; centred title between equal Back/Home controls on detail screens | `index.html`, `.app-header` |
+| Bottom navigation | Home, Defects, Approvals, Budget, Tools; current item has text and a tinted background | `.bottom-nav` |
+| Primary / secondary / danger action | Common 48 px height, visible focus, disabled state and press feedback | `.button` |
+| Card and record | Shared content inset, border and role-based title size | `.card`, `.record-row` |
+| Status pill | Pending / approved / scheduled labels with semantic tints | `.status` |
+| Progress ring and stage tracker | 60% centred; ring fills on Home entry and remains accurate after rerenders | `renovationProgress()` |
+| Form field | Label, input, helper and error form one group; errors explain the correction | `.field` |
+| Defect photo | A thumbnail opens an enlarged sample image; counts stay beside the photo | `.record-thumbnail`, `.defect-photos` |
+| Original specification | Material name, size, finish and stock warning appear before either comparison | `originalBrief()` |
+| Cost / timeline impact | Same S$250, remaining budget and proposed date in both variants | `impact()` |
+| Approval summary | Same chosen tile, figures, acknowledgement and final action in both variants | `selectionSummary()`, `approvalConfirmation()` |
 
-## Motion and accessibility
+### Version A: swipeable comparison table
 
-The loading bar fills once while assets are prepared. Screen entry uses a short upward fade; cards stagger gently. Buttons give press feedback. Version A's table scrolls smoothly with visible arrows and position marks. Motion is disabled by `prefers-reduced-motion`. Focus remains visible, table controls have labels, and the UI keeps semantic radio buttons and descriptive status text.
+A fixed label column remains visible while one replacement option fills the remaining width. Swiping, arrow buttons, position buttons and keyboard arrows all reach the same three positions. The current position reads **Option A/B/C · 1/2/3 of 3**; end arrows disable appropriately. Selecting a tile or returning from its preview retains the relevant option in view.
 
-## Team maintenance
+### Version B: full-width option cards
 
-Update the shared token or component before adding a local override. Keep A/B content, tile order, image size, typography, cost, and approval action identical; change only the presentation under study. Record new design decisions here and update the scenario notes when the walkthrough changes.
+Each card shares the page gutters. Its information and a **centred radio inside the right edge** occupy separate columns with a 12 px gap. There is no extra selection row, Select/Selected text or outer button box. The checked circle and highlighted card show the pending choice.
+
+The comparison component owns its data and paging behaviour. Both layouts use the same material order, labels, facts, images and choice names. Choosing a tile does not approve it. Budget and payments change only after the common confirmation step.
+
+<br>
+
+## Motion and loading
+
+- Screen entry: a short **220 ms** fade with an **8 px** rise.
+- Saved demos may add a light card entrance; focused study sessions use the same page transition in A and B.
+- Home progress fills over **900 ms** on entry. The underlying value is always 60%, including rerenders and reduced-motion mode.
+- Table navigation scrolls smoothly to a complete option; manual swipe updates the same indicator.
+- The startup bar runs while fonts and the bathroom image are prepared. A short minimum presentation keeps it legible; a timeout prevents a blocked loading screen.
+- Respect `prefers-reduced-motion`: remove entrance, progress and smooth-scroll animation while preserving every action and final state.
+- Keep keyboard focus visible even when a pointer-controlled button has no visible box.
+
+<br>
+
+## Images and material previews
+
+The original bathroom and grey/sand samples come from the team's earlier design assets. The ivory option uses a visibly different fine mineral texture. `assets/bathroom-avorio.png` was made with the built-in image-generation tool from the original room photo; the app clips its floor material over the original room so fixtures remain in the base image.
+
+Generation brief: **replace only the visible floor with warm ivory matte 600 × 600 mm porcelain containing small grey/taupe mineral flecks; preserve the camera, crop, walls, fixtures, light and grout geometry; no UI or text.** This remains an illustrative material preview, not a live AR camera or a guarantee of installed colour.
+
+<br>
+
+## Maintaining the system
+
+1. Change shared tokens or components before adding a screen-specific override.
+2. Check A and B together at 390 px and 320 px, including selected, unselected, keyboard and disabled states.
+3. Check the live component sheet after changing a shared style.
+4. Preserve the same quotation facts and approval safeguards in both variants.
+5. Update this guide when a component's role or behaviour changes.
+
+The team's [earlier Figma design system](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=0-1) and [component sheet](https://www.figma.com/design/ffrTmJHTCUY2NdfNZG7SkK/RenoGuard---High-Fidelity?node-id=13-1787) are reference material. The current construction palette and code components are documented here.

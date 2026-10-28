@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <base href="../">
+  <title>RenoGuard · Design system</title>
+  <link rel="icon" href="assets/renoguard-mark.svg">
+  <link rel="stylesheet" href="mobile/styles.css">
+  <script src="mobile/comparison.js" defer></script>
+  <style>
+    html,body { height:auto; min-height:100%; overflow:visible; }
+    body { background:var(--canvas); }
+    .reference { max-width:1120px; min-height:0; margin:auto; padding:48px 24px 64px; }
+    .reference-header { display:flex; align-items:center; gap:16px; padding-bottom:28px; border-bottom:1px solid var(--line); }
+    .reference-header > img { width:64px; height:64px; flex:none; }
+    .reference-header h1 { font-size:30px; margin:4px 0 8px; }
+    .reference-header p { max-width:650px; color:var(--muted); }
+    .reference-header > a { margin-left:auto; white-space:nowrap; }
+    .reference-section { margin-top:40px; }
+    .reference-section > h2 { margin-bottom:12px; }
+    .reference-section > p { max-width:750px; margin-bottom:20px; color:var(--muted); }
+    .palette { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; }
+    .swatch { padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--white); }
+    .swatch-colour { height:68px; margin-bottom:10px; border:1px solid #17324a12; border-radius:9px; background:var(--swatch); }
+    .swatch strong,.swatch code { display:block; font-size:12px; line-height:1.6; }
+    .swatch code { color:var(--muted); }
+    .component-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; gap:20px; }
+    .component { min-width:0; padding:20px; border:1px solid var(--line); border-radius:18px; background:var(--white); }
+    .component > h3 { margin-bottom:18px; font-size:15px; }
+    .component .stack { gap:12px; }
+    .pill-row { display:flex; flex-wrap:wrap; gap:12px; }
+    .type-row { display:grid; grid-template-columns:150px minmax(0,1fr); align-items:center; gap:20px; padding:16px 0; border-bottom:1px solid var(--line); }
+    .type-row:last-child { border-bottom:0; }
+    .type-row > small { color:var(--muted); }
+    .type-display { font-size:32px; font-weight:700; letter-spacing:-.6px; }
+    .type-title { font-size:var(--text-title); font-weight:650; line-height:1.2; }
+    .type-section { font-size:var(--text-section); font-weight:650; }
+    .type-item { font-size:var(--text-item); font-weight:650; }
+    .type-body { font-size:var(--text-body); line-height:1.6; }
+    .type-note { font-size:var(--text-small); line-height:1.5; color:var(--muted); }
+    .scale-note { padding:16px 0 0; color:var(--muted); font-size:12px; }
+    .specimen { width:100%; max-width:390px; margin:16px auto 0; padding:20px; border-radius:20px; background:var(--canvas); }
+    .reference details { border:1px solid var(--line); border-radius:18px; padding:16px; background:var(--white); }
+    .reference details + details { margin-top:16px; }
+    .reference summary { padding:8px; font-size:14px; font-weight:650; cursor:pointer; }
+    .reference footer { margin-top:40px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+    .component .field { margin:0 0 16px; }
+    .component .notice { margin-top:16px; }
+    .reference .reference-nav { position:static; left:auto; transform:none; width:100%; max-width:none; border:1px solid var(--line); border-radius:14px; }
+    .reference .comparison-options { font-family:inherit; }
+    @media(max-width:700px) { .reference { padding:24px 16px 40px; } .palette { grid-template-columns:repeat(3,minmax(0,1fr)); } .component-grid { grid-template-columns:1fr; } .reference-header { flex-wrap:wrap; } .reference-header > a { margin-left:80px; } }
+    @media(max-width:420px) { .palette { grid-template-columns:repeat(2,minmax(0,1fr)); } .type-row { grid-template-columns:1fr; gap:8px; } .specimen { padding:12px; } .reference details { padding:8px; } }
+  </style>
+</head>
+<body>
+  <svg class="icon-sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H4m6-6-6 6 6 6"/></symbol>
+    <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
+    <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/></symbol>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3z"/><path d="M9 20v-7h6v7"/></symbol>
+    <symbol id="i-defects" viewBox="0 0 24 24"><path d="m12 3 10 18H2zM12 9v5m0 3v.1"/></symbol>
+    <symbol id="i-changes" viewBox="0 0 24 24"><path d="M4 7h15m-4-4 4 4-4 4M20 17H5m4-4-4 4 4 4"/></symbol>
+    <symbol id="i-budget" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="15" rx="2"/><path d="M3 9h18m0 4h-6v4h6"/></symbol>
+    <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></symbol>
+  </svg>
+  <main class="reference">
+    <header class="reference-header">
+      <img src="assets/renoguard-mark.svg" width="64" height="64" alt="RenoGuard hard-hat logo">
+      <div><p class="eyebrow">Shared foundations & components</p><h1>RenoGuard design system</h1><p>A practical construction palette, clear type and one spacing rhythm. These examples load the app’s actual stylesheet and comparison components.</p></div>
+      <a class="text-link" href="./">Open app →</a>
+    </header>
+
+    <section class="reference-section">
+      <h2>Colour palette</h2><p>Navy identifies actions. Yellow gives the brand its worksite character. Amber marks a pending decision; green confirms a completed action. Status always includes words.</p>
+      <div class="palette">
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary)"></div><strong>Primary navy</strong><code>#183C5A · --primary</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-dark)"></div><strong>Deep navy</strong><code>#102B43 · --primary-dark</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-soft)"></div><strong>Selected surface</strong><code>#DFEBF3 · --primary-soft</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow)"></div><strong>Worksite yellow</strong><code>#FFCC3D · --build-yellow</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-orange)"></div><strong>Progress orange</strong><code>#B75B17 · --build-orange</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--ink)"></div><strong>Text</strong><code>#17324A · --ink</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--muted)"></div><strong>Secondary text</strong><code>#536879 · --muted</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--line)"></div><strong>Divider</strong><code>#CCD8DF · --line</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--canvas)"></div><strong>Canvas</strong><code>#F5F8F8 · --canvas</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--white)"></div><strong>Card surface</strong><code>#FFFFFF · --white</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--success)"></div><strong>Success</strong><code>#276244 · --success</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--success-soft)"></div><strong>Success surface</strong><code>#E8F3EC · --success-soft</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--amber)"></div><strong>Warning</strong><code>#8B5100 · --amber</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--amber-soft)"></div><strong>Warning surface</strong><code>#FFF0C9 · --amber-soft</code></div>
+        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--red)"></div><strong>Danger</strong><code>#A23A31 · --red</code></div>
+      </div>
+    </section>
+
+    <section class="reference-section">
+      <h2>Typography</h2><p>The native system sans-serif keeps text consistent within each device. A and B share exactly the same name, specification and label styles.</p>
+      <div class="component">
+        <div class="type-row"><small>Display · 32 px / 700</small><span class="type-display">S$29,750</span></div>
+        <div class="type-row"><small>Screen title · 26 px / 650</small><span class="type-title">Review tile change</span></div>
+        <div class="type-row"><small>Section · 18 px / 650</small><span class="type-section">Cost & timing</span></div>
+        <div class="type-row"><small>Card title · 15 px / 650</small><span class="type-item">New bathroom floor tiles</span></div>
+        <div class="type-row"><small>Body · 14 px / 400</small><span class="type-body">Your budget changes after approval.</span></div>
+        <div class="type-row"><small>Supporting text · 12 px</small><span class="type-note">Prepared by John Tan · 18 Jun 2026</span></div>
+      </div>
+      <p class="scale-note">Spacing: 4 / 8 / 12 / 16 / 20 / 24 px · Page margin: 20 px, 16 px on narrow phones · Card inset: 16 px · Tap targets: at least 44 px · Reference phone: 390 × 844 CSS px.</p>
+    </section>
+
+    <section class="reference-section">
+      <h2>Shared components</h2>
+      <div class="component-grid">
+        <div class="component"><h3>Actions</h3><div class="stack"><button class="button primary" type="button">Approve · S$250</button><button class="button secondary" type="button">Request changes</button><button class="button danger" type="button">Reset demo</button><button class="button primary" type="button" disabled>Review approval</button></div></div>
+        <div class="component"><h3>Status & information</h3><div class="pill-row"><span class="status amber">Pending approval</span><span class="status green">Approved</span><span class="status neutral">Repair scheduled</span></div><div class="notice amber"><svg aria-hidden="true"><use href="#i-info"/></svg><div><strong>Review before approving</strong>Additional cost and completion date remain visible before you confirm.</div></div></div>
+        <div class="component"><h3>Form fields</h3><div class="field"><label for="sample-room">Room</label><select id="sample-room"><option>Bathroom</option><option>Kitchen</option></select></div><div class="field"><label for="sample-detail">What needs fixing?</label><textarea id="sample-detail" placeholder="Describe the issue…"></textarea><p class="help">Labels stay close to their fields; input text is 16 px to avoid mobile auto-zoom.</p></div></div>
+        <div class="component"><h3>Project progress</h3><div class="progress-top"><span class="progress-ring" role="progressbar" aria-label="Renovation progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="60"><svg viewBox="0 0 76 76" aria-hidden="true"><circle class="progress-ring-track" cx="38" cy="38" r="32"/><circle class="progress-ring-fill" cx="38" cy="38" r="32" pathLength="100" stroke-dasharray="60 100" transform="rotate(-90 38 38)"/></svg><span class="progress-ring-copy"><strong>60%</strong></span></span><div><p class="eyebrow">Your renovation</p><h2>Tiling & carpentry</h2><p>Stage 3 of 5 · Handover 1 Jul</p></div></div><p class="scale-note">The percentage is centred on its own. The accessible progress label supplies the meaning.</p></div>
+        <div class="component" id="navigation-example"><h3>Bottom navigation</h3><nav class="bottom-nav reference-nav" aria-label="Navigation example"><a href="docs/design-system.html#navigation-example" aria-current="page"><svg aria-hidden="true"><use href="#i-home"/></svg><span>Home</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-defects"/></svg><span>Defects</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-changes"/></svg><span>Approvals</span><span class="nav-dot"></span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-budget"/></svg><span>Budget</span></a><a href="docs/design-system.html#navigation-example"><svg aria-hidden="true"><use href="#i-more"/></svg><span>Tools</span></a></nav><p class="scale-note">The active item uses a tint and label weight. A dot marks an outstanding action.</p></div>
+      </div>
+    </section>
+
+    <section class="reference-section">
+      <h2>A/B comparison components</h2><p>Both show the same three materials, 48 px samples, 14 px names, 13 px details, 12 px labels and radio-only choices. The component owns table paging, keyboard navigation and position feedback.</p>
+      <details><summary>Version A · horizontal comparison table</summary><div class="specimen" id="reference-table"></div></details>
+      <details><summary>Version B · full-width cards with a centred radio</summary><div class="specimen" id="reference-cards"></div></details>
+    </section>
+    <footer>Source of truth: <code>mobile/styles.css</code>, <code>mobile/comparison.js</code> and <code>assets/renoguard-mark.svg</code>. Usage rules and design decisions are in <code>docs/design-system.md</code>.</footer>
+  </main>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const component = window.RenoGuardComparison;
+      [['reference-table','a'],['reference-cards','b']].forEach(([id,variant]) => {
+        const target = document.getElementById(id);
+        let controller;
+        const draw = (selectedTile = null) => {
+          controller?.destroy();
+          target.innerHTML = component.render(variant, { selectedTile });
+          target.querySelectorAll('input[type="radio"]').forEach(input => { input.name = id; });
+          controller = component.mount(target, { initialIndex: Math.max(0,Object.keys(component.materials).indexOf(selectedTile)) });
+        };
+        target.addEventListener('change', event => { if (event.target.dataset.reviewTile) draw(event.target.dataset.reviewTile); });
+        draw();
+      });
+    });
+  </script>
+</body>
+</html>

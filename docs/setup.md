@@ -1,10 +1,10 @@
 # Setup guide
 
-To develop locally, install Git and Node.js, download RenoGuard, and start the preview. Follow the section for your operating system, then continue to **Run the app**.
-
-
+To develop locally, install Git and Node.js, download RenoGuard, and start the preview. Choose [Windows](#windows) or [macOS](#macos), then continue to [Run the app](#run-the-app).
 
 You need **Git**, **Node.js LTS**, and a browser. No additional packages or build steps are required.
+
+<br>
 
 ## Windows
 
@@ -39,6 +39,8 @@ Set-Location renoguard-prototype
 ```
 
 Continue to [Run the app](#run-the-app).
+
+<br>
 
 ## macOS
 
@@ -76,6 +78,8 @@ cd renoguard-prototype
 
 Continue to [Run the app](#run-the-app).
 
+<br>
+
 ## Run the app
 
 From the `renoguard-prototype` folder, start the preview server:
@@ -90,12 +94,7 @@ The terminal should show:
 RenoGuard preview: http://127.0.0.1:8765
 ```
 
-Keep the terminal open and visit an address below in your browser:
-
-| View | Address |
-| --- | --- |
-| Mobile app | [http://127.0.0.1:8765/](http://127.0.0.1:8765/) |
-
+Keep the terminal open, then **[open RenoGuard at http://127.0.0.1:8765/](http://127.0.0.1:8765/)**.
 
 The mobile app automatically uses a phone-sized frame on computers. No browser device-mode configuration is needed.
 
@@ -104,6 +103,8 @@ The mobile app automatically uses a phone-sized frame on computers. No browser d
 Press <kbd>Ctrl</kbd> + <kbd>C</kbd> in the terminal. On macOS, use **Control**, not Command.
 
 *Use the preview address rather than opening HTML files directly. The server runs on this computer only.*
+
+<br>
 
 ## Reopen the app later
 
@@ -123,6 +124,8 @@ node preview-server.cjs
 
 Open [the mobile app](http://127.0.0.1:8765/) again. Installation and cloning are only needed once.
 
+<br>
+
 ## Get updates
 
 Stop the server, then check for local edits from the project folder:
@@ -140,13 +143,23 @@ node preview-server.cjs
 
 Refresh the browser. If Git reports local edits or diverging commits, review your changes before updating.
 
+<br>
+
 ## Local A/B preview
 
-The same app serves both conditions. Open `/?variant=a&study=quotation` or `/?variant=b&study=quotation` from the local preview address. Both start at the pending quotation and reset on reload. The only intended difference is the comparison layout: a horizontally scrollable table in A and stacked full-width cards in B. Each includes the same three replacement tiles, cost, dates, and approval controls. Use the same participant task in both conditions.
+The same app serves both conditions. Open [Version A](http://127.0.0.1:8765/?variant=a&study=quotation) or [Version B](http://127.0.0.1:8765/?variant=b&study=quotation). Both start at the pending quotation and reset on reload. The only intended difference is the comparison layout: a horizontally scrollable table in A and stacked full-width cards in B. Each includes the same three replacement tiles, typography, cost, dates and approval controls. A uses radio circles below its option columns; B centres the circle inside the right side of each card. Neither shows Select/Selected text. Use the same participant task in both conditions.
 
 For the complete easy scenario, use `/?variant=a&study=scenario` or `/?variant=b&study=scenario`. These start at Home before the defect report. Public study links can use the same query strings when hosting is arranged later; no duplicate code folders are needed.
 
-The focused task is: review the change, choose Sabbia Matte, confirm the S$250 additional cost and 14 Jul 2026 completion, and approve. Record the approved tile, task time, cost/date accuracy, and a 1–7 satisfaction rating in Maze. Pilot both versions on a phone and desktop before recruitment.
+The focused task is: review the change, choose Sabbia Matte, confirm the S$250 additional cost and 14 Jul 2026 completion, and approve. The [experiment notes](iteration-2.md#focused-ab-experiment) propose two primary measures and describe the pilot checks. Keep the app session continuous: refreshing an experiment link starts it again.
+<br>
+
+## Design-system reference
+
+With the preview server running, [open the visual component sheet](http://127.0.0.1:8765/docs/design-system.html). It shows the palette, typography, components and both comparison layouts using the app's actual styles. Read [the design-system guide](design-system.md) for usage rules.
+
+<br>
+
 ## Optional: Visual Studio Code
 
 1. Install [Visual Studio Code](https://code.visualstudio.com/Download).
@@ -155,6 +168,8 @@ The focused task is: review the change, choose Sabbia Matte, confirm the S$250 a
 4. Run `node preview-server.cjs`.
 
 No extensions are required. Restart VS Code if it was open while you installed Git or Node.js.
+
+<br>
 
 ## Troubleshooting
 
