@@ -203,11 +203,11 @@ The independent variable is the **tile comparison layout**:
 | Version | Comparison layout |
 | --- | --- |
 | A | Table: compare the original tile and both replacements side by side, then select a replacement in its column. |
-| B | Cards: review the original tile and each replacement in a separate card, then select a replacement using the control outside the card on its right, beside the header. |
+| B | Cards: review the original tile and each replacement in a separate card, then select a replacement using the radio circle outside the card on its right, vertically centred. |
 
-Both show the same tile specifications, original scope, quotation facts, source links and AR preview. They use the same selection labels, confirmation page, checkbox, approval action and receipt. Neither starts with a tile selected. Grigio Matte and Sabbia Matte each add **S$250**, leaving **S$29,750**, with proposed completion on **14 Jul 2026**. Only the comparison presentation changes; cost and timing details and the approval steps stay the same.
+Both show the same tile specifications, original scope, quotation facts, source links and AR preview. They use the same accessible tile-choice names, confirmation page, checkbox, approval action and receipt. Neither starts with a tile selected. Grigio Matte and Sabbia Matte each add **S$250**, leaving **S$29,750**, with proposed completion on **14 Jul 2026**. Only the comparison presentation changes; cost and timing details and the approval steps stay the same.
 
-Corresponding text uses shared typography in both layouts: tile names **14 px**, specifications **13 px**, and option labels, notes and selection labels **12 px**, with matching font weights and line heights. Tile samples are **48 × 48 px** in both. Selection placement is part of the layout comparison: a column selector in A and an external selector beside each replacement card in B.
+Corresponding text uses shared typography in both layouts: tile names **14 px**, specifications **13 px**, and option labels and notes **12 px**, with matching font weights and line heights. Tile samples are **48 × 48 px** in both. Selection presentation is part of the layout comparison: a labelled column selector in A and a centred external radio circle in B. B has no visible Select/Selected text or surrounding button box; its circle retains an accessible name and a **48 × 48 px** tap area.
 
 In every mode, tapping a tile in the AR preview saves it as the pending choice. **Back** or **Review selected tile** returns with that choice retained. It remains unapproved: the budget and payments change only after final confirmation.
 

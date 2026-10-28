@@ -67,8 +67,8 @@
   const formatMoney = value => `S$${Number(value).toLocaleString('en-SG')}`;
   const symbol = name => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
 
-  function choice(option, selectedTile, disabled) {
-    return `<label class="comparison-choice"><input type="radio" name="replacement-tile" data-review-tile="${option.selectionKey}" value="${option.selectionKey}" aria-label="Choose ${escapeHTML(option.tile)}"${selectedTile === option.selectionKey ? ' checked' : ''}${disabled ? ' disabled' : ''}><span>${selectedTile === option.selectionKey ? 'Selected' : 'Select'}</span></label>`;
+  function choice(option, selectedTile, disabled, iconOnly = false) {
+    return `<label class="comparison-choice"><input type="radio" name="replacement-tile" data-review-tile="${option.selectionKey}" value="${option.selectionKey}" aria-label="Choose ${escapeHTML(option.tile)}"${selectedTile === option.selectionKey ? ' checked' : ''}${disabled ? ' disabled' : ''}>${iconOnly ? '' : `<span>${selectedTile === option.selectionKey ? 'Selected' : 'Select'}</span>`}</label>`;
   }
 
   function tileIdentity(option, titleTag = 'strong') {
@@ -86,7 +86,7 @@
   }
 
   function cards(selectedTile, disabled) {
-    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<div class="comparison-option-row"><article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>${option.selectionKey ? choice(option, selectedTile, disabled) : ''}</div>`).join('')}</div>`;
+    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<div class="comparison-option-row"><article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>${option.selectionKey ? choice(option, selectedTile, disabled, true) : ''}</div>`).join('')}</div>`;
   }
 
   function originalBrief() {
