@@ -86,7 +86,7 @@
   }
 
   function cards(selectedTile, disabled) {
-    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}${option.selectionKey ? choice(option, selectedTile, disabled) : ''}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>`).join('')}</div>`;
+    return `<div class="comparison-cards" data-comparison-variant="b">${DATA.map(option => `<div class="comparison-option-row"><article class="comparison-card${selectedTile === option.selectionKey && option.selectionKey ? ' is-selected' : ''}${option.selectionKey ? '' : ' is-original'}"><header class="comparison-card-heading">${tileIdentity(option, 'h3')}</header><dl>${ROW_ORDER.filter(field => field !== 'tile').map(field => `<div data-specification="${field}"><dt>${escapeHTML(LABELS[field])}</dt><dd${option.key === 'original' && field === 'stock' ? ' class="stock-alert"' : ''}>${valueHTML(option, field)}</dd></div>`).join('')}</dl></article>${option.selectionKey ? choice(option, selectedTile, disabled) : ''}</div>`).join('')}</div>`;
   }
 
   function originalBrief() {
