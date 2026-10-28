@@ -149,7 +149,7 @@ Refresh the browser. If Git reports local edits or diverging commits, review you
 
 ## Local A/B preview
 
-The same app serves both conditions. Open [Version A](http://127.0.0.1:8765/?variant=a&study=quotation) or [Version B](http://127.0.0.1:8765/?variant=b&study=quotation). Both start at the pending quotation and reset on reload. The only intended difference is the comparison layout: a horizontally scrollable table in A and stacked full-width cards in B. Each includes the same three replacement tiles, typography, cost, dates and approval controls. A uses radio circles below its option columns; B centres the circle inside the right side of each card. Neither shows Select/Selected text. Use the same participant task in both conditions.
+The same app serves both conditions. Open [Version A](http://127.0.0.1:8765/?variant=a&study=quotation) or [Version B](http://127.0.0.1:8765/?variant=b&study=quotation). Both start at Home with the bathroom defect already reported and its proposal pending. Participants navigate to the approval themselves. Reloading returns to this starting state. The only intended difference is the comparison layout: a horizontally scrollable table in A and stacked full-width cards in B. Each includes the same three replacement tiles, typography, cost, dates and approval controls. A uses radio circles below its option columns; B centres the circle inside the right side of each card. Neither shows Select/Selected text. Use the same participant task in both conditions.
 
 For the complete easy scenario, use `/?variant=a&walkthrough=1` or `/?variant=b&walkthrough=1`. These start at Home before the defect report. Public study links can use the same query strings when hosting is arranged later; no duplicate code folders are needed.
 

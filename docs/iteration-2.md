@@ -22,7 +22,7 @@ The course instructions describe a usual scope of **6–14 views**, depending on
 | Choice labels | Radio-only controls in both versions. No Select/Selected or Choose this tile text beside the circle. |
 | Third finish | Avorio uses an ivory mineral texture, not another opacity setting on the sand overlay. |
 | Scenario | Reporting, designer update, comparison, preview, quotation, budget, approval and payment updates remain linked. |
-| Focused experiment | Separate A/B starting links open the pending quotation, not the entire reporting scenario. |
+| Focused experiment | Separate A/B links start at Home with a pending proposal, including finding the approval before comparing tiles. |
 | Shared implementation | One codebase and one material dataset; no duplicated app folders. |
 | Documentation | A concise README with a copyable preview command, detailed setup guide, design-system rules and a live component sheet. |
 | Project cleanup | The unused desktop interface is removed; earlier screen explorations remain under drafts. Hosting instructions are omitted from the setup guide. |
@@ -74,17 +74,17 @@ Keep the final navigation diagram and at least one screenshot of each scenario v
 
 **Independent variable:** comparison presentation — a horizontally paged table versus vertically stacked full-width cards. Keep the material order, text, images, prices, dates, transition duration and final approval safeguards the same. Both require browsing beyond the first option. Do not impose artificial delays to equalise completion times; time is an outcome to measure.
 
-Use `?variant=a&study=quotation` and `?variant=b&study=quotation`. These start with the same pending quotation, no tile chosen and hints off. Session progress is held in memory and resets on refresh. Use `?variant=a&walkthrough=1` or `?variant=b&walkthrough=1` for the complete walkthrough instead. Opening a direct experiment link starts a fresh session. The in-app A/B switch changes only the comparison layout and preserves the current progress. The default app also starts fresh on every reload and ignores older saved demos. Legacy `study=scenario` links open the fresh Home screen without hints.
+Use `?variant=a&study=quotation` and `?variant=b&study=quotation`. Both start at Home with the same bathroom defect already reported, its quotation pending, no tile chosen and hints off. Participants can use the Needs attention card or the Approvals tab to find the proposal; both versions offer the same routes. Session progress is held in memory and resets on refresh. Use `?variant=a&walkthrough=1` or `?variant=b&walkthrough=1` for the complete walkthrough instead. Opening a direct experiment link starts a fresh session. The in-app A/B switch changes only the comparison layout and preserves the current progress. The default app also starts fresh on every reload and ignores older saved demos. Legacy `study=scenario` links open the fresh Home screen without hints.
 
 Use the same task in both conditions:
 
-> Your designer has proposed replacement bathroom tiles. Review the extra cost and revised completion date, choose Sabbia Matte, and approve the change. Finish when the approval receipt appears.
+> Your designer has proposed replacement bathroom tiles. Starting from your project Home screen, find the pending proposal, review the extra cost and revised completion date, choose Sabbia Matte, and approve the change. Finish when the approval receipt appears.
 
 ### Two suggested primary measures
 
 Confirm these with the team and mentor before recruitment:
 
-1. **Correct-task completion time:** from the first comparison screen to the receipt for Sabbia Matte. Agree on a common time limit after piloting. Log wrong choices, timeouts and abandoned attempts separately; do not treat them as successful completion times.
+1. **Correct-task completion time:** from the Home screen at task start to the receipt for Sabbia Matte. This includes finding the pending approval; do not restart the timer when the comparison opens. Agree on a common time limit after piloting. Log wrong choices, timeouts and abandoned attempts separately; do not treat them as successful completion times.
 2. **Post-task satisfaction:** “Overall, how satisfied are you with reviewing and approving this change?” Use the same 1–7 scale, anchored Very dissatisfied and Very satisfied, after every attempt.
 
 Completion status is necessary context for interpreting time. If the team chooses accuracy or completion rate as a primary measure instead, replace one of the two above rather than silently expanding the experiment to four dependent variables.
@@ -97,7 +97,7 @@ Decide between-subjects or within-subjects in the experiment design. Assign cond
 
 One published copy of this static app can serve both query-string variants. There is no need to copy the app into two folders. Deployment instructions are intentionally kept out of the local setup guide for now.
 
-The app mirrors its current study screen in a **screen query parameter**, alongside its in-app fragment. The approved receipt also includes **approved_tile=sabbia** for the target outcome. This gives the hosted experiment distinct start, confirmation and outcome addresses while preserving the app session.
+The app mirrors its current study screen in a **screen query parameter**, alongside its in-app fragment. The approved receipt also includes **approved_tile=sabbia** for the target outcome. The starting screen is `screen=overview`; this gives the hosted experiment distinct Home, review, confirmation and outcome addresses while preserving the app session. Set the Maze task start at Home so navigation is included in the recorded time.
 
 Maze documents support for [query-parameter changes in website-test paths](https://help.maze.co/articles/7929597285-website-test-how-are-url-query-parameters-handled-in-live-website-testing). This still needs an actual pilot: do not assume every radio change or carousel swipe becomes a separate Maze path step. See [Maze's HTML-prototype guidance](https://help.maze.co/articles/9607895110-testing-an-html-prototype-in-maze).
 

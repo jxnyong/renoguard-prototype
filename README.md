@@ -77,7 +77,7 @@ Start the preview server, then choose a focused experiment or the complete scena
 | **A** | Swipeable table with arrows and position indicators | [Open A](http://127.0.0.1:8765/?variant=a&study=quotation) | [Walkthrough A](http://127.0.0.1:8765/?variant=a&walkthrough=1) |
 | **B** | Full-width cards with a centred radio inside each card | [Open B](http://127.0.0.1:8765/?variant=b&study=quotation) | [Walkthrough B](http://127.0.0.1:8765/?variant=b&walkthrough=1) |
 
-The focused links start at the pending quotation and reset on refresh. Use these for the Maze comparison; use the full scenario for walkthrough filming.
+The experiment links start at **Home with a pending bathroom tile proposal** and reset on refresh. Participants find the approval themselves before comparing and choosing a tile. Use these for the Maze comparison; use the full scenario for walkthrough filming.
 
 Both versions share the same three materials, typography, specifications, prices and approval flow. Every replacement adds **S$250**, leaves **S$29,750**, and proposes completion on **14 Jul 2026**. [Read the experiment notes](docs/iteration-2.md#focused-ab-experiment).
 

@@ -106,7 +106,7 @@
 
   function currentHash() {
     const hash = location.hash.replace(/^#\/?/, '');
-    try { return decodeURIComponent(hash) || (QUOTATION_STUDY ? 'change/VO-015' : 'overview'); }
+    try { return decodeURIComponent(hash) || 'overview'; }
     catch { return 'overview'; }
   }
 
@@ -791,7 +791,7 @@
     const versions = [['a', 'Version A', 'Swipeable table'], ['b', 'Version B', 'Stacked cards']];
     return heading('Prototype controls') +
       `<section class="prototype-version"><h2>App version</h2><div class="version-switch" role="group" aria-label="App version">${versions.map(([value,title,detail]) => `<button type="button" data-action="set-version" data-version="${value}" aria-pressed="${activeVariant === value}"><strong>${title}</strong><span>${detail}</span></button>`).join('')}</div><p class="help">Changes the comparison layout and keeps your current progress.</p></section>` +
-      `<section class="prototype-session card"><div class="prototype-session-heading"><span class="menu-icon">${icon('changes')}</span><div><h2>Approval experiment</h2><p>For your Maze A/B test</p></div></div><p>Starts at the tile proposal with the defect already reported. No tile is chosen and walkthrough hints are off.</p><a class="button primary" href="${esc(entryURL('quotation'))}">Open approval experiment${icon('arrow')}</a><p class="help">Use the opened page’s address in Maze. This opens a fresh Version ${activeVariant.toUpperCase()} session.</p></section>` +
+      `<section class="prototype-session card"><div class="prototype-session-heading"><span class="menu-icon">${icon('changes')}</span><div><h2>Approval experiment</h2><p>For your Maze A/B test</p></div></div><p>Starts at Home with a pending tile proposal. Find the approval, compare the options and make your choice. The defect is already reported; hints are off.</p><a class="button primary" href="${esc(entryURL('quotation'))}">Open approval experiment${icon('arrow')}</a><p class="help">Use the opened page’s address in Maze. This opens a fresh Version ${activeVariant.toUpperCase()} session.</p></section>` +
       `<section class="prototype-session card"><div class="prototype-session-heading"><span class="menu-icon">${icon('clock')}</span><div><h2>Full walkthrough</h2><p>For practice and video recording</p></div></div><p>Starts at Home with no reports. Follow Thomas from reporting the bathroom tiles to approval and the updated payment timeline.</p><a class="button secondary" href="${esc(entryURL('walkthrough'))}">Start full walkthrough${icon('arrow')}</a>${GUIDED_WALKTHROUGH ? `<label class="setting-toggle" for="walkthrough-guidance"><span><strong>Show step hints</strong><small>Turn off for a clean recording.</small></span><input id="walkthrough-guidance" type="checkbox" ${showWalkthroughHints() ? 'checked' : ''}></label>${link('View walkthrough steps', 'walkthrough', 'quiet')}` : ''}</section>` +
       `<div class="prototype-return"><a class="text-link" href="${esc(entryURL())}">${icon('home')}Start a fresh project</a><p class="help">Home with no reports or hints. Refreshing any session clears its progress.</p></div><div class="demo-reset">${link(demoResetLabel(), 'reset', 'danger')}</div>`;
   }
@@ -837,7 +837,7 @@
       case 'helper': return helperScreen(value);
       case 'contact': return contactScreen();
       case 'project': return projectScreen();
-      case 'reset': return heading(QUOTATION_STUDY ? 'Reset experiment?' : 'Reset project?', demoName(), QUOTATION_STUDY ? 'Return to the tile proposal with no tile chosen and S$30,000 remaining.' : 'Clear this session’s reports and decisions, then return to Home.') + `<div class="action-stack">${action('Confirm reset', 'reset-confirm', 'danger')}${link('Keep my progress', 'prototype-setup')}</div>`;
+      case 'reset': return heading(QUOTATION_STUDY ? 'Reset experiment?' : 'Reset project?', demoName(), QUOTATION_STUDY ? 'Return to Home with the tile proposal pending, no tile chosen and S$30,000 remaining.' : 'Clear this session’s reports and decisions, then return to Home.') + `<div class="action-stack">${action('Confirm reset', 'reset-confirm', 'danger')}${link('Keep my progress', 'prototype-setup')}</div>`;
       case 'restart-scenario': return heading('Start full walkthrough?', 'Bathroom tile replacement', 'Open a fresh project at Home, with optional step hints for the complete scenario.') + `<div class="action-stack"><a class="button primary" href="${esc(entryURL('walkthrough'))}">Start full walkthrough${icon('arrow')}</a>${link('Keep my progress', 'prototype-setup')}</div>`;
 
     }
@@ -983,7 +983,7 @@
         }
         case 'reset-confirm':
           mutate(() => Store.reset()); clearTransientState();
-          navigate(QUOTATION_STUDY ? 'change/VO-015' : 'overview', true); announce(QUOTATION_STUDY ? 'Experiment reset. Choose a tile to begin again.' : 'Project reset. No defects reported.');
+          navigate('overview', true); announce(QUOTATION_STUDY ? 'Experiment reset. Find the pending approval from Home.' : 'Project reset. No defects reported.');
           break;
 
       }
@@ -1014,7 +1014,7 @@
     Promise.all([document.fonts.ready,ready,new Promise(resolve=>setTimeout(resolve,window.matchMedia('(prefers-reduced-motion: reduce)').matches?100:1050))]).then(dismissStartup);
     window.setTimeout(dismissStartup,2500);
     comparisonPosition = state.proposal.selectionMade ? Object.keys(materials).indexOf(state.proposal.tile) : 0;
-    route = QUOTATION_STUDY ? 'change/VO-015' : 'overview';
+    route = 'overview';
     if(state.proposal.status==='approved')filters.changes='approved';
     history.replaceState({ renoMobile: true, depth: 0 }, '', routeURL(route));
     enterScreen(); render({ restore: true });
