@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="1020" viewBox="0 0 1500 1020" role="img" aria-labelledby="title desc">
+<title id="title">RenoGuard Easy Scenario — 12 Distinct Screens</title>
+<desc id="desc">A three-row serpentine filming flow. Report: Home, Report Defect, Defect Saved, revisit Home, Approvals. Review from right to left: Change Review, Bathroom Preview, Quotes and Variations via Budget, Quotation Detail, Budget. Approve from left to right: revisit Change Review, Approval Confirmation, Approval Receipt, revisit Budget, Payment Timeline. Repeated screens count once. A and B share this flow.</desc>
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M1 1 6 4 1 7" fill="none" stroke="#536879" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<style>text{font-family:Arial,Helvetica,sans-serif;fill:#17324A}.heading{font-size:19px;font-weight:700}.body{font-size:16px;fill:#536879}.label{font-size:16px;font-weight:700;letter-spacing:1.2px}.edge{fill:none;stroke:#536879;stroke-width:2;marker-end:url(#arrow)}.number{font-size:14px;font-weight:700}.repeat{stroke-dasharray:6 5}</style>
+<rect width="1500" height="1020" fill="#F5F8F8"/>
+<rect x="0" y="0" width="1500" height="10" fill="#FFCC3D"/>
+<text x="52" y="65" font-size="14" font-weight="700" letter-spacing="2">RENOGUARD / EASY SCENARIO</text>
+<text x="52" y="112" font-size="36" font-weight="700">From Cracked Tiles To An Approved Change</text>
+<text x="52" y="146" class="body">12 distinct screens · Same journey in Version A and Version B · Follow the arrows across each row</text>
+<rect x="26" y="175" width="1448" height="206" rx="20" fill="#FFF4CF"/>
+<rect x="26" y="423" width="1448" height="206" rx="20" fill="#DFEBF3"/>
+<rect x="26" y="671" width="1448" height="206" rx="20" fill="#E8F3EC"/>
+<text x="52" y="205" class="label">01 / REPORT &amp; RECEIVE</text>
+<text x="1428" y="205" text-anchor="end" class="body">Read left to right →</text>
+<text x="52" y="453" class="label">02 / COMPARE &amp; CHECK</text>
+<text x="1428" y="453" text-anchor="end" class="body">← Read right to left</text>
+<text x="52" y="701" class="label">03 / APPROVE &amp; TRACK</text>
+<text x="1428" y="701" text-anchor="end" class="body">Read left to right →</text><g><rect x="52" y="225" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="68" y="238" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="83" y="255" text-anchor="middle" class="number" style="fill:white">01</text>
+ 
+ <text x="68" y="288" class="heading">Home</text>
+ <text x="68" y="315" class="body">Fresh project; no reports</text></g><g><rect x="334" y="225" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="350" y="238" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="365" y="255" text-anchor="middle" class="number" style="fill:white">02</text>
+ 
+ <text x="350" y="288" class="heading">Report Defect</text>
+ <text x="350" y="315" class="body">Bathroom floor damage</text><text x="350" y="338" class="body">Description + photographs</text></g><g><rect x="616" y="225" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="632" y="238" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="647" y="255" text-anchor="middle" class="number" style="fill:white">03</text>
+ 
+ <text x="632" y="288" class="heading">Defect Saved</text>
+ <text x="632" y="315" class="body">Report reference saved</text><text x="632" y="338" class="body">Designer update simulated</text></g><g><rect x="898" y="225" width="248" height="136" rx="14" fill="#FFF" stroke="#8195A3" class="repeat"/>
+ <rect x="914" y="238" width="30" height="24" rx="7" fill="#EDF1F3"/>
+ <text x="929" y="255" text-anchor="middle" class="number" style="fill:#536879">01</text>
+ <text x="953" y="255" font-size="12" font-weight="700" fill="#536879">REVISIT</text>
+ <text x="914" y="288" class="heading">Home</text>
+ <text x="914" y="315" class="body">Pending tile proposal</text><text x="914" y="338" class="body">Open the Approvals tab</text></g><g><rect x="1180" y="225" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="1196" y="238" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="1211" y="255" text-anchor="middle" class="number" style="fill:white">04</text>
+ 
+ <text x="1196" y="288" class="heading">Approvals</text>
+ <text x="1196" y="315" class="body">Find the pending proposal</text><text x="1196" y="338" class="body">Open bathroom tile change</text></g><g><rect x="1180" y="473" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="1196" y="486" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="1211" y="503" text-anchor="middle" class="number" style="fill:white">05</text>
+ 
+ <text x="1196" y="536" class="heading">Change Review</text>
+ <text x="1196" y="563" class="body">Compare three options</text><text x="1196" y="586" class="body">+S$250 · 14 Jul 2026</text></g><g><rect x="898" y="473" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="914" y="486" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="929" y="503" text-anchor="middle" class="number" style="fill:white">06</text>
+ 
+ <text x="914" y="536" class="heading">Bathroom Preview</text>
+ <text x="914" y="563" class="body">Try the floor finishes</text><text x="914" y="586" class="body">Keep the preferred tile</text></g><g><rect x="616" y="473" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="632" y="486" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="647" y="503" text-anchor="middle" class="number" style="fill:white">07</text>
+ 
+ <text x="632" y="536" class="heading">Quotes &amp; Variations</text>
+ <text x="632" y="563" class="body">Open via Budget → Quotes</text><text x="632" y="586" class="body">Find the uploaded VO-015</text></g><g><rect x="334" y="473" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="350" y="486" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="365" y="503" text-anchor="middle" class="number" style="fill:white">08</text>
+ 
+ <text x="350" y="536" class="heading">Quotation Detail</text>
+ <text x="350" y="563" class="body">S$80 + S$120 + S$50</text><text x="350" y="586" class="body">Check the S$250 breakdown</text></g><g><rect x="52" y="473" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="68" y="486" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="83" y="503" text-anchor="middle" class="number" style="fill:white">09</text>
+ 
+ <text x="68" y="536" class="heading">Budget</text>
+ <text x="68" y="563" class="body">Check before approving</text><text x="68" y="586" class="body">S$30,000 → S$29,750</text></g><g><rect x="52" y="721" width="248" height="136" rx="14" fill="#FFF" stroke="#8195A3" class="repeat"/>
+ <rect x="68" y="734" width="30" height="24" rx="7" fill="#EDF1F3"/>
+ <text x="83" y="751" text-anchor="middle" class="number" style="fill:#536879">05</text>
+ <text x="107" y="751" font-size="12" font-weight="700" fill="#536879">REVISIT</text>
+ <text x="68" y="784" class="heading">Change Review</text>
+ <text x="68" y="811" class="body">Keep or change the tile</text><text x="68" y="834" class="body">Tap Review Approval</text></g><g><rect x="334" y="721" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="350" y="734" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="365" y="751" text-anchor="middle" class="number" style="fill:white">10</text>
+ 
+ <text x="350" y="784" class="heading">Approval Confirmation</text>
+ <text x="350" y="811" class="body">Check tile, cost and date</text><text x="350" y="834" class="body">Acknowledge, then approve</text></g><g><rect x="616" y="721" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="632" y="734" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="647" y="751" text-anchor="middle" class="number" style="fill:white">11</text>
+ 
+ <text x="632" y="784" class="heading">Approval Receipt</text>
+ <text x="632" y="811" class="body">Choice recorded</text><text x="632" y="834" class="body">Repair scheduled; unpaid</text></g><g><rect x="898" y="721" width="248" height="136" rx="14" fill="#FFF" stroke="#8195A3" class="repeat"/>
+ <rect x="914" y="734" width="30" height="24" rx="7" fill="#EDF1F3"/>
+ <text x="929" y="751" text-anchor="middle" class="number" style="fill:#536879">09</text>
+ <text x="953" y="751" font-size="12" font-weight="700" fill="#536879">REVISIT</text>
+ <text x="914" y="784" class="heading">Budget</text>
+ <text x="914" y="811" class="body">Updated remaining budget</text><text x="914" y="834" class="body">S$29,750</text></g><g><rect x="1180" y="721" width="248" height="136" rx="14" fill="#FFF" stroke="#CCD8DF" />
+ <rect x="1196" y="734" width="30" height="24" rx="7" fill="#183C5A"/>
+ <text x="1211" y="751" text-anchor="middle" class="number" style="fill:white">12</text>
+ 
+ <text x="1196" y="784" class="heading">Payment Timeline</text>
+ <text x="1196" y="811" class="body">New bathroom tiles</text><text x="1196" y="834" class="body">S$250 due 14 Jul 2026</text></g><path class="edge" d="M305 293H329"/><path class="edge" d="M587 293H611"/><path class="edge" d="M869 293H893"/><path class="edge" d="M1151 293H1175"/><path class="edge" d="M329 541H305"/><path class="edge" d="M611 541H587"/><path class="edge" d="M893 541H869"/><path class="edge" d="M1175 541H1151"/><path class="edge" d="M305 789H329"/><path class="edge" d="M587 789H611"/><path class="edge" d="M869 789H893"/><path class="edge" d="M1151 789H1175"/><path class="edge" d="M1434 293H1486V541H1434"/><path class="edge" d="M46 541H13V789H46"/>
+<rect x="52" y="904" width="25" height="17" rx="4" fill="#FFF" stroke="#8195A3" stroke-dasharray="4 3"/>
+<text x="88" y="918" class="body">Dashed cards revisit a screen; count it once.</text>
+<text x="785" y="918" class="body">Numbers identify screens, not every navigation step.</text>
+<text x="52" y="955" class="body">This is the recommended filming route, not every available link. Budget is also visited to open Quotes.</text>
+<text x="52" y="983" class="body">The focused A/B experiment starts at Home with a pending proposal and finishes at the chosen tile’s receipt.</text>
+</svg>

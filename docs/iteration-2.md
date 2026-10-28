@@ -43,6 +43,10 @@ The figures stay consistent: every option adds **S$250**, completion changes fro
 
 ## Walkthrough screen count
 
+![Easy scenario walkthrough: 12 distinct screens, with revisits marked.](images/easy-scenario-flow.svg)
+
+[Open the full-size flow diagram](images/easy-scenario-flow.svg). This shows the recommended recording route; it does not restrict the app's other navigation paths. Screen numbers identify distinct views, not every visit. Budget is also visited when opening Quotes from its navigation tabs.
+
 Launch the normal app for a fresh Home screen without reports or hints. From **Profile → Prototype controls**, choose the comparison version, then **Start full walkthrough**. This restarts at Home with optional step hints. The same controls page contains the walkthrough checklist and a hint toggle for clean filming.
 
 The recommended filming path uses **12 distinct views**, counting Home and Budget once even when revisited. This fits the usual **6–14** range described in the instructions; 14 is not a minimum. The eight in-app checklist steps are milestones, not a screen count.

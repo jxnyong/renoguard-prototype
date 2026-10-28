@@ -66,7 +66,11 @@ Open **Profile → Prototype controls**, choose A or B, then select **Start full
 | High-fidelity walkthrough | Coming soon |
 | Low-fidelity walkthrough | [Watch on YouTube](https://www.youtube.com/watch?v=oRJ63LUH_NY) |
 
-<!-- Add the final flow diagram and high-fidelity video link here. -->
+![Easy scenario flow: 12 distinct screens across reporting, reviewing and approving. Dashed cards mark revisited screens.](docs/images/easy-scenario-flow.svg)
+
+[Open the full-size walkthrough flow diagram](docs/images/easy-scenario-flow.svg). Follow the arrows across each row; dashed cards revisit an existing screen.
+
+<!-- Add the final high-fidelity video link above. -->
 
 <br>
 
