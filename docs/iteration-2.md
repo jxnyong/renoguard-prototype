@@ -76,7 +76,7 @@ Keep the final navigation diagram and at least one screenshot of each scenario v
 
 ### Loop11 automatic completion pilot
 
-The Loop11 participant links for project **112897 / A** and **112898 / B** now attempt to activate Loop11's existing task-completion button after a real **Sabbia Matte** approval. The receipt remains visible for at least 1.2 seconds before the attempt. This is an undocumented UI adapter, not an official Loop11 API; success URLs still determine the study's success classification.
+The Loop11 participant links for project **112915 / A** and **112914 / B** now attempt to activate Loop11's existing task-completion button after a real **Sabbia Matte** approval. The receipt remains visible for at least 1.2 seconds before the attempt. This is an undocumented UI adapter, not an official Loop11 API; success URLs still determine the study's success classification.
 
 Normal visits, full walkthroughs, other tiles and direct receipt URLs do not trigger it. A collapsed toolbar is expanded through the Loop11 Alt+X shortcut before task completion. If expansion fails or the toolbar is inaccessible or changed, the receipt prompts the participant to complete the task manually. Add `&l11_autocomplete=0` to a participant link to disable the adapter. Both variants use the same rules and delay.
 

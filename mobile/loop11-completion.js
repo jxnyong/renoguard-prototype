@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const initial = new URL(location.href).searchParams;
-  const studies = { a: '112897', b: '112898' };
+  const studies = { a: '112915', b: '112914' };
   const enabled = initial.get('study') === 'quotation' &&
     studies[initial.get('variant')] === initial.get('l11_uid') &&
     initial.get('l11_autocomplete') !== '0';

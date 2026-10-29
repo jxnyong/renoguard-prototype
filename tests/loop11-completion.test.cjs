@@ -4,7 +4,7 @@ const vm = require('node:vm');
 const fs = require('node:fs');
 const source = fs.readFileSync(require('node:path').join(__dirname, '../mobile/loop11-completion.js'), 'utf8');
 
-function harness(query = 'variant=a&study=quotation&l11_uid=112897', options = {}) {
+function harness(query = 'variant=a&study=quotation&l11_uid=112915', options = {}) {
   let clicks = 0;
   let available = !options.missing;
   let collapsed = !!options.collapsed;
@@ -37,15 +37,16 @@ function harness(query = 'variant=a&study=quotation&l11_uid=112897', options = {
     flush() { let limit = 100; while (timers.length && limit--) timers.shift()(); assert.ok(limit > 0); },
     ready() { available = true; }, location, notes, keys, clicks: () => clicks };
 }
-for (const [variant, uid] of [['a', '112897'], ['b', '112898']]) {
+for (const [variant, uid] of [['a', '112915'], ['b', '112914']]) {
   test(`Version ${variant}: delayed, once-only completion`, () => {
     const h = harness(`variant=${variant}&study=quotation&l11_uid=${uid}`);
     h.fire('sabbia'); h.fire('sabbia'); assert.equal(h.clicks(), 0);
     h.flush(); h.fire('sabbia'); h.flush(); assert.equal(h.clicks(), 1);
   });
 }
-for (const query of ['', 'variant=a&study=quotation', 'variant=a&walkthrough=1&l11_uid=112897',
-  'variant=b&study=quotation&l11_uid=112897', 'variant=a&study=quotation&l11_uid=112897&l11_autocomplete=0']) {
+for (const query of ['', 'variant=a&study=quotation', 'variant=a&study=quotation&l11_uid=112897',
+  'variant=b&study=quotation&l11_uid=112898', 'variant=a&walkthrough=1&l11_uid=112915',
+  'variant=b&study=quotation&l11_uid=112915', 'variant=a&study=quotation&l11_uid=112915&l11_autocomplete=0']) {
   test(`Does not activate outside the intended study: ${query}`, () => {
     const h = harness(query); h.fire('sabbia'); h.flush(); assert.equal(h.clicks(), 0); assert.equal(h.notes.length, 0);
   });
@@ -69,7 +70,7 @@ for (const options of [{ missing: true }, { crossOrigin: true }, { disabled: tru
 test('Waits for a late-loaded Loop11 interface', () => {
   const h = harness(undefined, { missing: true }); h.fire('sabbia'); h.ready(); h.flush(); assert.equal(h.clicks(), 1);
 });
-for (const [variant, uid] of [['a', '112897'], ['b', '112898']]) {
+for (const [variant, uid] of [['a', '112915'], ['b', '112914']]) {
   test(`Version ${variant}: expands collapsed controls before completing once`, () => {
     const h = harness(`variant=${variant}&study=quotation&l11_uid=${uid}`, { collapsed: true });
     h.fire('sabbia'); h.flush(); h.fire('sabbia'); h.flush();
