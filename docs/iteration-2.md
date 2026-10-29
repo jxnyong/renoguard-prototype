@@ -78,7 +78,7 @@ Keep the final navigation diagram and at least one screenshot of each scenario v
 
 The Loop11 participant links for project **112897 / A** and **112898 / B** now attempt to activate Loop11's existing task-completion button after a real **Sabbia Matte** approval. The receipt remains visible for at least 1.2 seconds before the attempt. This is an undocumented UI adapter, not an official Loop11 API; success URLs still determine the study's success classification.
 
-Normal visits, full walkthroughs, other tiles and direct receipt URLs do not trigger it. If the toolbar is hidden, inaccessible or changed, the receipt prompts the participant to complete the task manually. Add `&l11_autocomplete=0` to a participant link to disable the adapter. Both variants use the same rules and delay.
+Normal visits, full walkthroughs, other tiles and direct receipt URLs do not trigger it. A collapsed toolbar is expanded through the Loop11 Alt+X shortcut before task completion. If expansion fails or the toolbar is inaccessible or changed, the receipt prompts the participant to complete the task manually. Add `&l11_autocomplete=0` to a participant link to disable the adapter. Both variants use the same rules and delay.
 
 Before recruitment, pilot each actual participant link: approve Sabbia, verify that the feedback questions appear once, submit the pilot answers, and check success classification and recorded duration in Loop11. The automated adapter tests use a simulated toolbar; they do not verify Loop11's server-side recording. Account for the transition delay when describing measured completion time. Exclude these pilot responses from the experiment results.
 
