@@ -948,6 +948,7 @@
           if (state.proposal.status !== 'pending') { navigate('change/VO-015'); announce('This approval is already recorded.'); break; }
           mutate(() => Store.approveProposal()); filters.changes = 'approved';
           navigate(`approval-receipt/${state.proposal.tile}`); announce(`Change approved. Remaining allowance ${money(totals().available)}.`);
+          window.RenoGuardLoop11?.approvalRecorded(state.proposal.tile);
           break;
         case 'withdraw-approval-confirm':
           if (state.proposal.status !== 'approved' || findDefect('DEF-021')?.status !== 'scheduled') { navigate('change/VO-015'); announce('This approval is no longer eligible for withdrawal.'); break; }

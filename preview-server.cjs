@@ -7,6 +7,7 @@ const files = {
   '/shared/project-store.js': 'shared/project-store.js',
   '/mobile/styles.css': 'mobile/styles.css',
   '/mobile/app.js': 'mobile/app.js',
+  '/mobile/loop11-completion.js': 'mobile/loop11-completion.js',
   '/mobile/room-model.js': 'mobile/room-model.js',
   '/mobile/comparison.js': 'mobile/comparison.js',
   '/docs/design-system.html': 'docs/design-system.html',
