@@ -7,11 +7,17 @@ const source = fs.readFileSync(require('node:path').join(__dirname, '../mobile/l
 function harness(query = 'variant=a&study=quotation&l11_uid=112897', options = {}) {
   let clicks = 0;
   let available = !options.missing;
+  let collapsed = !!options.collapsed;
+  const keys = [];
   const timers = [], notes = [];
   const location = { href: `https://example.test/?${query}&approved_tile=sabbia#approval-receipt/sabbia` };
   const button = { disabled: !!options.disabled, getAttribute: () => null,
-    getClientRects: () => options.hidden ? [] : [{}], click: () => { clicks++; } };
+    getClientRects: () => options.hidden || collapsed ? [] : [{}], click: () => { clicks++; } };
   const document = {
+    dispatchEvent(event) {
+      keys.push([event.type, event.keyCode]);
+      if (!options.expansionBlocked && event.type === 'keyup' && event.keyCode === 18) collapsed = false;
+    },
     querySelector: () => options.noReceipt ? null : {},
     createElement: () => ({ isConnected: true, setAttribute() {} }),
     getElementById(id) {
@@ -19,15 +25,17 @@ function harness(query = 'variant=a&study=quotation&l11_uid=112897', options = {
       if (id !== 'loop11-eui-iframe') throw Error('Unexpected target');
       if (options.crossOrigin) return { get contentDocument() { throw Error('SecurityError'); } };
       return available ? { contentDocument: { getElementById(id) {
+        if (id === 'loop11_eui_id_showButton') return collapsed ? { getClientRects: () => [{}] } : null;
         assert.equal(id, 'loop11_eui_id_completeTaskButton'); return button;
       } } } : null;
     }
   };
-  const window = { setTimeout: callback => timers.push(callback) };
+  const window = { setTimeout: callback => timers.push(callback),
+    KeyboardEvent: class { constructor(type, data) { this.type = type; Object.assign(this, data); } } };
   vm.runInNewContext(source, { window, document, location, URL });
   return { fire: tile => window.RenoGuardLoop11.approvalRecorded(tile),
     flush() { let limit = 100; while (timers.length && limit--) timers.shift()(); assert.ok(limit > 0); },
-    ready() { available = true; }, location, notes, clicks: () => clicks };
+    ready() { available = true; }, location, notes, keys, clicks: () => clicks };
 }
 for (const [variant, uid] of [['a', '112897'], ['b', '112898']]) {
   test(`Version ${variant}: delayed, once-only completion`, () => {
@@ -60,4 +68,17 @@ for (const options of [{ missing: true }, { crossOrigin: true }, { disabled: tru
 }
 test('Waits for a late-loaded Loop11 interface', () => {
   const h = harness(undefined, { missing: true }); h.fire('sabbia'); h.ready(); h.flush(); assert.equal(h.clicks(), 1);
+});
+for (const [variant, uid] of [['a', '112897'], ['b', '112898']]) {
+  test(`Version ${variant}: expands collapsed controls before completing once`, () => {
+    const h = harness(`variant=${variant}&study=quotation&l11_uid=${uid}`, { collapsed: true });
+    h.fire('sabbia'); h.flush(); h.fire('sabbia'); h.flush();
+    assert.equal(h.clicks(), 1);
+    assert.deepEqual(h.keys, [['keydown', 18], ['keydown', 88], ['keyup', 88], ['keyup', 18]]);
+  });
+}
+test('Blocked expansion falls back without repeated shortcuts or submission', () => {
+  const h = harness(undefined, { collapsed: true, expansionBlocked: true });
+  h.fire('sabbia'); h.flush(); assert.equal(h.clicks(), 0); assert.equal(h.keys.length, 4);
+  assert.match(h.notes[0].textContent, /Select.*Task completed/);
 });
