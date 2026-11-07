@@ -57,7 +57,7 @@ Screenshots will be added after the final design review.
 
 The easy scenario follows Thomas from reporting cracked bathroom tiles to reviewing the replacement quotation, previewing the finishes, checking his budget, approving a tile and reviewing the new payment milestone.
 
-The recommended recording path uses **12 distinct screens**, with Home and Budget revisited. [See the screen-by-screen walkthrough and scenario notes](docs/iteration-2.md#walkthrough-screen-count).
+The walkthrough shows **16 screen states across 14 distinct views**, including Home and Budget before and after the change. Rooms Overview is visited before reporting; Change Review opens the bathroom preview directly.
 
 Open **Profile → Prototype controls**, choose A or B, then select **Start full walkthrough**. It opens a fresh Home screen with step hints; turn them off from the same controls page for recording. The final version can be chosen after the experiment.
 
@@ -66,9 +66,9 @@ Open **Profile → Prototype controls**, choose A or B, then select **Start full
 | High-fidelity walkthrough | Coming soon |
 | Low-fidelity walkthrough | [Watch on YouTube](https://www.youtube.com/watch?v=oRJ63LUH_NY) |
 
-![Easy scenario flow: 12 distinct screens across reporting, reviewing and approving. Dashed cards mark revisited screens.](docs/images/easy-scenario-flow.svg)
+![Easy scenario: 16 numbered screen states](docs/images/easy-scenario-flow.svg)
 
-[Open the full-size walkthrough flow diagram](docs/images/easy-scenario-flow.svg). Follow the arrows across each row; dashed cards revisit an existing screen.
+[Open the full-size navigation diagram](docs/images/easy-scenario-flow.svg) or [download the PNG](docs/images/easy-scenario-flow.png). Follow screens 1–16; short notes identify navigation through existing pages.
 
 <!-- Add the final high-fidelity video link above. -->
 
