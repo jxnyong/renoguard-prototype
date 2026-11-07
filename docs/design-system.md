@@ -14,7 +14,9 @@ The images below display directly on GitHub. The hosted sheet includes interacti
 
 ## 🎨 Colour foundations
 
-![RenoGuard colour palette with labelled swatches and hex codes](images/design-colours.jpg)
+![RenoGuard colour palette with labelled swatches and hex codes](images/design-colours.png)
+
+**Primary:** worksite yellow and navy blue establish the construction theme. **Secondary:** deeper shades, soft tints and orange support interactions and progress. **Neutrals:** text, borders and surfaces. **Status:** green, amber and red communicate outcomes.
 
 <details>
 <summary>Colour tokens and usage</summary>

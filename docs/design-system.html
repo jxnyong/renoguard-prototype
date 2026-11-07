@@ -21,6 +21,8 @@
     .reference-section > h2 { margin-bottom:12px; }
     .reference-section > p { max-width:750px; margin-bottom:20px; color:var(--muted); }
     .palette { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:16px; }
+    .palette-primary { grid-template-columns:repeat(2,minmax(0,1fr)); }
+    #colours h3 { margin:28px 0 12px; font-size:18px; }
     .swatch { padding:10px; border:1px solid var(--line); border-radius:14px; background:var(--white); }
     .swatch-colour { height:68px; margin-bottom:10px; border:1px solid #17324a12; border-radius:9px; background:var(--swatch); }
     .swatch strong,.swatch code { display:block; font-size:12px; line-height:1.6; }
@@ -76,27 +78,12 @@
     </header>
 
     <section class="reference-section" id="colours">
-      <h2>Colour palette</h2><p>Worksite yellow highlights primary actions and selected navigation, with deep navy text. Navy anchors budget summaries. Amber labels pending decisions; green confirms completed actions.</p>
-      <div class="palette">
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary)"></div><strong>Primary navy</strong><code>#183C5A · --primary</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-dark)"></div><strong>Deep navy</strong><code>#102B43 · --primary-dark</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-soft)"></div><strong>Selected surface</strong><code>#DFEBF3 · --primary-soft</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow)"></div><strong>Worksite yellow</strong><code>#FFCC3D · --build-yellow</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow-soft)"></div><strong>Yellow tint</strong><code>#FFF4CF · --build-yellow-soft</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow-pressed)"></div><strong>Pressed yellow</strong><code>#EFB820 · --build-yellow-pressed</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-orange)"></div><strong>Progress orange</strong><code>#B75B17 · --build-orange</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--ink)"></div><strong>Text</strong><code>#17324A · --ink</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--muted)"></div><strong>Secondary text</strong><code>#536879 · --muted</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--line)"></div><strong>Divider</strong><code>#CCD8DF · --line</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--canvas)"></div><strong>Canvas</strong><code>#F5F8F8 · --canvas</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--white)"></div><strong>Card surface</strong><code>#FFFFFF · --white</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--success)"></div><strong>Success</strong><code>#276244 · --success</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--success-soft)"></div><strong>Success surface</strong><code>#E8F3EC · --success-soft</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--amber)"></div><strong>Warning</strong><code>#8B5100 · --amber</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--amber-soft)"></div><strong>Warning surface</strong><code>#FFF0C9 · --amber-soft</code></div>
-        <div class="swatch"><div class="swatch-colour" style="--swatch:var(--red)"></div><strong>Danger</strong><code>#A23A31 · --red</code></div>
-      </div>
-    </section>
+<h2>Colour palette</h2><p>Worksite yellow and navy blue lead the construction theme. Supporting colours, neutrals and status colours each have a separate role.</p>
+<h3>Primary Brand Colours</h3><div class="palette palette-primary"><div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow)"></div><strong>Worksite Yellow</strong><code>#FFCC3D</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary)"></div><strong>Navy Blue</strong><code>#183C5A</code></div></div>
+<h3>Secondary Colours</h3><div class="palette"><div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow-pressed)"></div><strong>Golden Yellow</strong><code>#EFB820</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-dark)"></div><strong>Deep Navy</strong><code>#102B43</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-yellow-soft)"></div><strong>Soft Yellow</strong><code>#FFF4CF</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--primary-soft)"></div><strong>Soft Blue</strong><code>#DFEBF3</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--build-orange)"></div><strong>Progress Orange</strong><code>#B75B17</code></div></div>
+<h3>Neutral Colours</h3><div class="palette"><div class="swatch"><div class="swatch-colour" style="--swatch:var(--ink)"></div><strong>Ink</strong><code>#17324A</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--muted)"></div><strong>Slate</strong><code>#536879</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--line)"></div><strong>Border Grey</strong><code>#CCD8DF</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--canvas)"></div><strong>Canvas</strong><code>#F5F8F8</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--white)"></div><strong>White</strong><code>#FFFFFF</code></div></div>
+<h3>Status Colours</h3><div class="palette"><div class="swatch"><div class="swatch-colour" style="--swatch:var(--success)"></div><strong>Success Green</strong><code>#276244</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--amber)"></div><strong>Warning Amber</strong><code>#8B5100</code></div><div class="swatch"><div class="swatch-colour" style="--swatch:var(--red)"></div><strong>Error Red</strong><code>#A23A31</code></div></div>
+</section>
 
     <section class="reference-section" id="typography">
       <h2>Typography</h2><p>The native system sans-serif keeps text consistent within each device. A and B share exactly the same name, specification and label styles.</p>

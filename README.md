@@ -93,6 +93,10 @@ Both versions run from one codebase. Use **Profile → Prototype controls** to s
 
 ## 🎨 Design system
 
+![RenoGuard colour palette: primary, secondary, neutral and status colours](docs/images/design-colours.png)
+
+[Download the colour palette (PNG)](docs/images/design-colours.png)
+
 **[Read the colours, typography and component guidelines →](docs/design-system.md)**
 
 The guide includes **colour swatches, typography samples, icons and component images** directly on GitHub. For interactive examples, **[open the live component sheet](http://127.0.0.1:8765/docs/design-system.html)** while the preview server is running. It uses the app's actual styles and comparison components.
