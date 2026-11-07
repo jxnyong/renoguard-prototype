@@ -15,7 +15,7 @@ Created for **SMU IS211 — Interaction Design and Prototyping**.
 - **Tile comparison** — three replacement options with matching A/B content.
 - **Room preview** — switch finishes in a realistic bathroom view.
 - **Quotes, budget and payments** — review the S$250 variation and its effect before approval.
-- **Prototype controls** — switch A/B layouts, start an approval experiment or follow the full scenario.
+- **A/B experiments** — dedicated links open either comparison layout for user testing.
 
 <br>
 
@@ -59,7 +59,7 @@ The easy scenario follows Thomas from reporting cracked bathroom tiles to review
 
 The walkthrough shows **16 screen states across 14 distinct views**, including Home and Budget before and after the change. Rooms Overview is visited before reporting; Change Review opens the bathroom preview directly.
 
-Open **Profile → Prototype controls**, choose A or B, then select **Start full walkthrough**. It opens a fresh Home screen with step hints; turn them off from the same controls page for recording. The final version can be chosen after the experiment.
+Use the full-scenario links below for filming. Prototype controls are hidden in the app by default; append `&prototype=1` to a walkthrough link to reveal setup controls and optional hints.
 
 | Video | Link |
 | --- | --- |
@@ -87,7 +87,7 @@ The experiment links start at **Home with a pending bathroom tile proposal** and
 
 Both versions share the same three materials, typography, specifications, prices and approval flow. Every replacement adds **S$250**, leaves **S$29,750**, and proposes completion on **14 Jul 2026**. [Read the experiment notes](docs/iteration-2.md#focused-ab-experiment).
 
-Both versions run from one codebase. Use **Profile → Prototype controls** to switch versions without losing current progress. Starting an experiment or walkthrough opens a fresh session.
+Both versions run from one codebase. The URL selects the variant; participant links keep setup, reset and walkthrough controls hidden. Starting an experiment or walkthrough opens a fresh session.
 
 <br>
 

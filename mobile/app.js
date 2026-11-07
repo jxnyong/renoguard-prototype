@@ -5,6 +5,8 @@
   if (!Store) throw new Error('Load the shared project store before the mobile app.');
   const { PROPOSAL_COST, PROJECT_BUDGET, ORIGINAL_COMMITMENT, ROOMS, DEFECT_CATEGORIES, UI_VARIANT, STUDY_CONTEXT, STUDY_MODE, GUIDED_WALKTHROUGH } = Store.constants;
   const QUOTATION_STUDY = STUDY_MODE === 'quotation';
+  // Opt-in authoring controls; participant and normal app links stay clean.
+  const SHOW_PROTOTYPE_CONTROLS = new URLSearchParams(location.search).get('prototype') === '1';
   const money = Store.money;
   const esc = value => String(value ?? '').replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[character]));
   const icon = name => `<svg aria-hidden="true"><use href="#i-${name}"></use></svg>`;
@@ -67,7 +69,7 @@
   const totals = () => Store.getMetrics(state);
   const openDefects = () => projectDefects().filter(defect => !['verified', 'withdrawn'].includes(defect.status));
   const isWalkthrough = () => state.demoMode === 'walkthrough';
-  const showWalkthroughHints = () => isWalkthrough() && state.walkthrough.guidance;
+  const showWalkthroughHints = () => SHOW_PROTOTYPE_CONTROLS && isWalkthrough() && state.walkthrough.guidance;
   const proposalReady = () => Store.hasProposal(state);
   const firstScenarioReport = () => isWalkthrough() && !state.walkthrough.reported;
   const demoName = () => QUOTATION_STUDY ? 'Approval experiment' : GUIDED_WALKTHROUGH ? 'Full walkthrough' : 'Fresh project';
@@ -90,6 +92,7 @@
     return `${url.pathname}${url.search}${url.hash}`;
   }
   function demoSessionActions() {
+    if (!SHOW_PROTOTYPE_CONTROLS) return '';
     return `<div class="demo-session-actions" aria-label="Prototype controls"><a class="text-link" href="#prototype-setup">${icon('changes')}Prototype controls</a><a class="text-link danger-link" href="#reset">${icon('refresh')}${demoResetLabel()}</a></div>`;
   }
 
@@ -259,7 +262,7 @@
       section('Documents & payments', `<div class="menu-group">${menuRow('Quotes & variations', 'Original scope and proposed changes', 'documents', 'file')}${menuRow('Payment timeline', `Target handover · ${handover()} 2026`, 'timeline', 'clock')}</div>`) +
       section('Your home', `<div class="menu-group">${menuRow('Rooms & AR preview', 'Explore your home and compare finishes', 'rooms', 'rooms')}${menuRow('Project details', 'Punggol · 4-room BTO', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`) +
       section('Help', `<div class="menu-group">${menuRow('Project helper', 'Understand changes, costs and next steps', 'helper', 'sparkles')}</div>`) +
-      section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`);
+      (SHOW_PROTOTYPE_CONTROLS ? section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`) : '');
   }
 
   function walkthroughSteps() {
@@ -571,7 +574,7 @@
     const [, mode, value] = route.split('/');
     const record = mode === 'edit' ? findDefect(value) : null;
     const guided = firstScenarioReport() && showWalkthroughHints() && mode !== 'edit';
-    const draft = { scenarioStart: firstScenarioReport() && mode !== 'edit', room: guided ? 'Bathroom' : record?.room || (mode === 'room' ? roomFromSlug(value) || '' : ''), category: guided ? 'Flooring' : record?.category || '', description: guided ? 'Hairline cracks across three newly installed bathroom floor tiles beside the shower.' : record?.description || '', photoName: record?.photoName || '', photo: record ? sessionPhotos.get(record.id) || '' : '', samplePhotos: guided || Boolean(record && defectPhotos(record).some(photo => photo.sample)), loading: false, token: 0 };
+    const draft = { scenarioStart: firstScenarioReport() && mode !== 'edit', room: guided ? 'Bathroom' : record?.room || (mode === 'room' ? roomFromSlug(value) || '' : ''), category: guided ? 'Flooring' : record?.category || '', description: record?.description || '', photoName: record?.photoName || '', photo: record ? sessionPhotos.get(record.id) || '' : '', samplePhotos: guided || Boolean(record && defectPhotos(record).some(photo => photo.sample)), loading: false, token: 0 };
     reportDrafts.set(route, draft);
     return draft;
   }
@@ -786,7 +789,7 @@
   function profileScreen() {
     return heading('Your profile') + `<div class="card profile-identity"><span class="profile-avatar" aria-hidden="true">TE</span><div><h2>Thomas Eng</h2><p>Homeowner</p></div></div>` +
       section('Your project', `<div class="menu-group">${menuRow('Punggol · 4-room BTO', 'View renovation details', 'project', 'home')}${menuRow('Project contact', 'John Tan · Northline Interiors', 'contact', 'info')}</div>`) +
-      section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`);
+      (SHOW_PROTOTYPE_CONTROLS ? section('Prototype', `<div class="menu-group">${menuRow('Prototype controls', 'Version A/B, approval experiment and full walkthrough', 'prototype-setup', 'changes')}</div>`) : '');
   }
 
   function prototypeSetupScreen() {

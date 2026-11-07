@@ -46,7 +46,7 @@
       ]
     };
     if (mode === 'walkthrough') {
-      initial.walkthrough = { guidance: GUIDED_WALKTHROUGH, reported: STUDY_MODE === 'quotation', reviewed: false, previewed: false, previewedTiles: [], quoteRead: false, budgetChecked: false, updatedBudgetViewed: false, paymentViewed: false };
+      initial.walkthrough = { guidance: false, reported: STUDY_MODE === 'quotation', reviewed: false, previewed: false, previewedTiles: [], quoteRead: false, budgetChecked: false, updatedBudgetViewed: false, paymentViewed: false };
       initial.activity = [];
       initial.notificationsRead = true;
     }
@@ -380,7 +380,6 @@
 
   function reset() {
     const initial = getInitialState(activeMode);
-    if (activeMode === 'walkthrough') initial.walkthrough.guidance = state.walkthrough.guidance;
     return saveState(initial);
   }
 
